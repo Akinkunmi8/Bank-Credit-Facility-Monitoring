@@ -1,0 +1,181 @@
+﻿@model Credit_Monitor.ViewModel.PendingConfirmedLoanViewModel
+
+@{
+    ViewData["Title"] = "Customer Details";
+}
+
+<div class="container-fluid py-3 bg-white shadow-sm rounded">
+    <div class="row align-items-center border-bottom pb-2 mb-3">
+        <div class="col-md-4">
+            <h6 class="mb-0 fw-bold">Application Id : <span class="text-primary">@Model.id</span></h6>
+        </div>
+        <div class="col-md-4 text-center">
+            <h6 class="mb-0 fw-bold">Applicant Name : <span class="text-primary">@Model.accounT_NAME</span></h6>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="small">
+                <a href="#" class="text-decoration-none me-2 border-end pe-2">View Workflow</a>
+                <a href="#" class="text-decoration-none me-2 border-end pe-2">Notes Manager</a>
+                <a href="#" class="text-decoration-none">Exchange Rate</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <h5 class="text-primary fw-bold">Post Disbursement Stage</h5>
+        </div>
+        <div class="col-md-6 text-end">
+            <div class="btn-group shadow-sm">
+                <button class="btn btn-outline-primary btn-sm px-3">KIV</button>
+                <button class="btn btn-outline-primary btn-sm px-3">Print</button>
+                <button class="btn btn-primary btn-sm px-4">Submit</button>
+                <button class="btn btn-outline-danger btn-sm px-3">Return</button>
+                <a asp-action="Staff" class="btn btn-secondary btn-sm px-3">Back</a>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs bg-light border-0 mb-3" id="detailsTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active fw-bold small text-uppercase" data-bs-toggle="tab" data-bs-target="#basicInfo">Basic Info</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-bold small text-uppercase" data-bs-toggle="tab">Document Status</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-bold small text-uppercase" data-bs-toggle="tab">Document Check List</button>
+        </li>
+    </ul>
+
+    <div class="tab-content border rounded p-4 bg-light bg-opacity-25">
+        <div class="tab-pane fade show active" id="basicInfo">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                <h6 class="text-primary fw-bold mb-0"><i class="bi bi-person-lines-fill me-2"></i>Basic Information</h6>
+                <button class="btn btn-info btn-sm text-white px-3"><i class="bi bi-question-circle me-1"></i>Help</button>
+            </div>
+
+            <p class="fw-bold text-dark border-start border-primary border-4 ps-2 mb-3">Personal Details</p>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="row align-items-center">
+                        <label class="col-sm-4 col-form-label small fw-bold">Applicant Type :</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control form-control-sm bg-light" value="Individual" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row align-items-center">
+                        <label class="col-sm-4 col-form-label small fw-bold">Borrower Type :</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control form-control-sm bg-light" value="Primary" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="row align-items-center">
+                        <label class="col-sm-4 col-form-label small fw-bold">Title :</label>
+                        <div class="col-sm-8">
+                            <select class="form-select form-select-sm"><option>Mrs</option></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row align-items-center">
+                        <label class="col-sm-4 col-form-label small fw-bold">First Name :</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control form-control-sm" value="TUNAWA">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="row align-items-center">
+                        <label class="col-sm-4 col-form-label small fw-bold">Middle Name :</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row align-items-center">
+                        <label class="col-sm-4 col-form-label small fw-bold">Last Name :</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control form-control-sm" value="PHIBE">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="row align-items-center">
+                        <label class="col-sm-4 col-form-label small fw-bold">Nature of Employment :</label>
+                        <div class="col-sm-8">
+                            <select class="form-select form-select-sm"><option>Salaried</option></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row align-items-center">
+                        <label class="col-sm-4 col-form-label small fw-bold">Name of Employer :</label>
+                        <div class="col-sm-8">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" value="College Of Education Waka Biu, Born">
+                                <button class="btn btn-outline-secondary"><i class="bi bi-list"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="row align-items-center">
+                        <label class="col-sm-4 col-form-label small fw-bold">Date of Birth :</label>
+                        <div class="col-sm-8">
+                            <input type="date" class="form-control form-control-sm" value="1982-05-21">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row align-items-center">
+                        <label class="col-sm-4 col-form-label small fw-bold">Age :</label>
+                        <div class="col-sm-4">
+                            <input type="number" class="form-control form-control-sm" value="42">
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="small fw-bold">Years</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4 text-muted" />
+    <partial name="_LoanDetailsPartial" model="Model" />
+</div>
+
+<style>
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        border: none;
+        padding: 10px 20px;
+    }
+
+        .nav-tabs .nav-link.active {
+            background-color: #f8f9fa;
+            color: #0d6efd;
+            border-bottom: 3px solid #0d6efd;
+        }
+
+    .form-control-sm, .form-select-sm {
+        border-radius: 2px;
+        border: 1px solid #ced4da;
+    }
+
+    label.small {
+        font-size: 0.82rem;
+        color: #495057;
+    }
+</style>
