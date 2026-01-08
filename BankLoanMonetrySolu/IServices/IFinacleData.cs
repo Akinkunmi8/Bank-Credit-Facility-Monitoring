@@ -16,6 +16,7 @@ namespace BankLoanMonetrySolu.IServices
         Task<bool> UpdateFinacleStatus(FinacleStatusUpdateDto dto);
         Task<FinacleResponseDto> GetALLLoans();
         Task<FinacleResponseDto> GetCustormerAndLoanDetailsByAppId(string appId);
+        Task<FincaleCompareDataDto> GetFinacleCompareData(string acctNum);
 
 
     }

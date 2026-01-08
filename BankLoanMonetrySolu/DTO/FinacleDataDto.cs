@@ -96,4 +96,26 @@ namespace BankLoanMonetrySolu.DTO
         public Guid? CustomerId { get; set; }
         public CustomerDetailsDto? Customer { get; set; }
     }
+
+
+    public class FincaleCompareDataDto
+    {
+        public string? ACCOUNT_NAME { get; set; }
+        public string? ACCOUNT_NUMBER { get; set; }
+        public string? FACILITY_TYPE { get; set; }
+        public string? SBU_NAME { get; set; }
+        public decimal? SANCTION_LIMIT { get; set; }
+        public decimal? TOTAL_BALANCE_FCY { get; set; }
+        public decimal? TOTAL_BALANCE_LCY { get; set; }
+        public decimal? TOTAL_BALANCE { get; set; }
+        public int FX_RATE { get; set; }
+        public decimal? INT_RATE { get; set; }
+        public string? FX_RATE_DISPLAY { get; set; }
+        public string? INT_RATE_DISPLAY { get; set; }
+        public DateTime? DATE_GRANTED { get; set; }
+        public DateTime? EXPIRY_DATE { get; set; }
+        public bool? IsSuccess { get; set; }
+        public string? ResponseMessage { get; set; }
+
+    }
 }

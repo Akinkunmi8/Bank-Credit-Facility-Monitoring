@@ -65,6 +65,13 @@ namespace BankLoanMonetrySolu.Controllers
             var response = await _finacleData.GetAllAprovedFinacleData(region);
             return Ok(response);
         }
+
+        [HttpGet("CompareData")]
+        public async Task<IActionResult> GetFinacleFinacle(string acctNum)
+        {
+            var response = await _finacleData.GetFinacleCompareData(acctNum);
+            return Ok(response);
+        }
     }
 }
 

@@ -333,5 +333,67 @@ namespace BankLoanMonetrySolu.Services
             }
         }
 
+        public async Task<FincaleCompareDataDto> GetFinacleCompareData(string acctNum)
+        {
+            try
+            {
+                var data = await _context.finacleDatas
+                    .Where(c => c.ACCOUNT_NUMBER == acctNum)
+                    .Select(c => new FinacleDataDto
+                    {
+                        ACCOUNT_NAME = c.ACCOUNT_NAME,
+                        ACCOUNT_NUMBER = c.ACCOUNT_NUMBER,
+                        SBU_NAME = c.SBU_NAME,
+                        FACILITY_TYPE = c.FACILITY_TYPE,
+                        TOTAL_BALANCE_FCY = c.TOTAL_BALANCE_FCY,
+                        TOTAL_BALANCE_LCY = c.TOTAL_BALANCE_LCY,
+                        SANCTION_LIMIT = c.SANCTION_LIMIT,
+                        INT_RATE = c.INT_RATE,
+                        FX_RATE = c.FX_RATE,
+                        DATE_GRANTED = c.DATE_GRANTED,
+                        EXPIRY_DATE = c.EXPIRY_DATE
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (data == null)
+                {
+                    return new FincaleCompareDataDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage = "No record found for the given account number"
+                    };
+                }
+
+                var result = _mapper.Map<FincaleCompareDataDto>(data);
+
+                // FCY / LCY decision
+                result.TOTAL_BALANCE = data.TOTAL_BALANCE_FCY != 0
+                    ? data.TOTAL_BALANCE_FCY
+                    : data.TOTAL_BALANCE_LCY;
+
+                // 🔥 Explicit formatting
+                result.INT_RATE_DISPLAY = result.INT_RATE.HasValue
+                    ? $"{result.INT_RATE.Value}%"
+                    : null;
+
+                // FX_RATE is int
+                result.FX_RATE_DISPLAY = $"{result.FX_RATE}%";
+
+                result.IsSuccess = true;
+                result.ResponseMessage = "Record retrieved successfully";
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new FincaleCompareDataDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = $"Failed to fetch record: {ex.Message}"
+                };
+            }
+        }
+
     }
 }
+

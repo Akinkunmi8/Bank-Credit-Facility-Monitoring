@@ -42,6 +42,31 @@ namespace BankLoanMonetrySolu.Controllers
             var result = await _catService.GetCATByAccountNum(accountNum);
             return result.IsSuccess ? Ok(result) : NotFound(result);
         }
+
+        [HttpGet("GetComparedData")]
+        public async Task<IActionResult> GetCatComparedData([FromQuery] string accountNum)
+        {
+            if (string.IsNullOrWhiteSpace(accountNum))
+            {
+                return BadRequest(new
+                {
+                    IsSuccess = false,
+                    ResponseMessage = "Account number is required"
+                });
+            }
+
+            var result = await _catService.GetCompareCatdata(accountNum);
+
+            if (result.IsSuccess == false)
+                return NotFound(new
+                {
+                    IsSuccess = false,
+                    ResponseMessage = result?.ResponseMessage ?? "Record not found"
+                });
+
+            return Ok(result);
+        }
+
     }
 }
 

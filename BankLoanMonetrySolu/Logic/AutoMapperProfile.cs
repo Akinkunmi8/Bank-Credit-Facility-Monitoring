@@ -9,8 +9,11 @@ namespace BankLoanMonetrySolu.Logic
         public AutoMapperProfile()
         {
             CreateMap<FinacleData,FinacleDataDto>();
+            CreateMap<FinacleDataDto, FincaleCompareDataDto>();
             CreateMap<CreditAvailmentTicket,CreditAvailmentTicketDto>();
             CreateMap<CustomerDetails,CustomerDetailsDto>();
+            CreateMap<CreditAvailmentTicketDto, CompareCatDto>();
+
         }
     }
 }

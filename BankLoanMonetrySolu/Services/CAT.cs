@@ -119,5 +119,57 @@ namespace BankLoanMonetrySolu.Services
                 };
             }
         }
+
+        public async Task<CompareCatDto> GetCompareCatdata(string accountNum)
+        {
+            try
+            {
+                // Select only the fields you need
+                var data = await _context.cat
+                    .Where(c => c.AccNum == accountNum)
+                    .Select(c => new CreditAvailmentTicketDto
+                    {
+                        CustomerName = c.CustomerName,
+                        AccNum = c.AccNum,
+                        Directorate = c.Directorate,
+                        ProductPaperType = c.ProductPaperType,
+                        DisbursementRequired = c.DisbursementRequired,
+                        ApprovalLimit = c.ApprovalLimit,
+                        interest = c.interest,
+                        Fees = c.Fees,
+                        Valuedate = c.Valuedate,
+                        MaturityOrExpiry = c.MaturityOrExpiry
+                    })
+                    .FirstOrDefaultAsync(); // get single record
+
+                if (data == null)
+                {
+                    return new CompareCatDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage = "No record found for the given account number"
+                    };
+                }
+
+                // Map to CompareCatDto
+                var result = _mapper.Map<CompareCatDto>(data);
+                result.IsSuccess = true;
+                result.ResponseMessage = "Record retrieved successfully";
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new CompareCatDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = $"Failed to fetch record: {ex.Message}"
+                };
+            }
+        }
+
+
     }
+
 }
+
