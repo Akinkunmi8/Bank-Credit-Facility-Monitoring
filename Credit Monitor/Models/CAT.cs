@@ -31,9 +31,9 @@ namespace Credit_Monitor.Models
         public decimal approvalLimit { get; set; }
 
         // Stored as strings to preserve the '%' symbol from your JSON
-        public string? interest { get; set; }
+        public decimal interest { get; set; }
 
-        public string? fees { get; set; }
+        public decimal fees { get; set; }
 
         public string? approvalLevel { get; set; }
 

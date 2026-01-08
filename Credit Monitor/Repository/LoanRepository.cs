@@ -1,6 +1,7 @@
 ﻿using Credit_Monitor.Data;
 using Credit_Monitor.Interfaces;
 using Credit_Monitor.Models;
+using Credit_Monitor.ViewModel;
 using Microsoft.EntityFrameworkCore;
 
 namespace Credit_Monitor.Repository
@@ -18,6 +19,18 @@ namespace Credit_Monitor.Repository
                 .Where(l => l.regioN_NAME != null && l.regioN_NAME.Equals(region, StringComparison.OrdinalIgnoreCase))
                 .ToList();
             return await Task.FromResult(loans);
+        }
+
+        public async Task<CAT?> GetCustomerLoanDetailsfromCAT(string AccNum)
+        {
+            var data = InMemoryCAT.Assessments.FirstOrDefault(a => a.accNum == AccNum);
+
+            return await Task.FromResult(data);
+        }
+
+        public async Task<PendingConfirmedLoan?> GetPendingConfirmedLoanByAccNumAsync(string AccNum)
+        {
+            return await Task.FromResult(InMemoryLoans.Loans.FirstOrDefault(l => l.accounT_NUMBER == AccNum));
         }
     }
 }

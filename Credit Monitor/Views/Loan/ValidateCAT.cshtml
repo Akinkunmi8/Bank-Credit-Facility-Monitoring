@@ -1,0 +1,95 @@
+﻿@model Credit_Monitor.ViewModel.ValidateCATPageViewModel
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold text-dark">CAT Validation Dashboard</h4>
+            <p class="text-muted">Comparing Account: <span class="fw-bold">@Model.Discrepancies.AccNum</span></p>
+        </div>
+        <div class="text-end">
+            @{
+                var accuracy = (1 - ((double)Model.Discrepancies.ErrorCount / Model.Discrepancies.TotalFields)) * 100;
+            }
+            <h2 class="@(accuracy == 100 ? "text-success" : "text-danger") fw-bold mb-0">@accuracy.ToString("0")%</h2>
+            <span class="badge @(accuracy == 100 ? "bg-success" : "bg-warning text-dark")">Accuracy Score</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white py-3">
+                    <h6 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Detailed Comparison Analysis</h6>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-uppercase small fw-bold">
+                            <tr>
+                                <th class="ps-3" style="width: 15%;">Field</th>
+                                <th style="width: 25%;">Finacle Value</th>
+                                <th style="width: 25%;">CAT Value</th>
+                                <th style="width: 25%;">Discrepancy Message</th>
+                                <th class="text-center" style="width: 10%;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <tbody>
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Customer Name", Fin = Model.FinacleData.accounT_NAME, Cat = Model.CatData.customerName, Result = Model.Discrepancies.CustomerName })
+
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Directorate/SBU", Fin = Model.FinacleData.sbU_NAME, Cat = Model.CatData.directorate, Result = Model.Discrepancies.Directorate })
+
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Facility Type", Fin = Model.FinacleData.facilitY_TYPE, Cat = Model.CatData.facilityType, Result = Model.Discrepancies.FacilityType })
+
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Approval Limit", Fin = Model.FinacleData.sanctioN_LIMIT.ToString("N2"), Cat = Model.CatData.approvalLimit.ToString("N2"), Result = Model.Discrepancies.ApprovalLimit })
+
+                            @{
+                                // Logic for Total Balance as defined in your method
+                                decimal finBalance = Model.FinacleData.totaL_BALANCE_LCY == 0 ? Model.FinacleData.totaL_BALANCE_FCY : Model.FinacleData.totaL_BALANCE_LCY;
+                            }
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Disbursed Amount", Fin = finBalance.ToString("N2"), Cat = Model.CatData.disbursementRequired.ToString("N2"), Result = Model.Discrepancies.DisbursmentRequired })
+
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Fees", Fin = Model.FinacleData.fX_RATE.ToString("N2"), Cat = Model.CatData.fees.ToString("N2"), Result = Model.Discrepancies.Fee })
+
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Interest Rate", Fin = Model.FinacleData.inT_RATE + "%", Cat = Model.CatData.interest + "%", Result = Model.Discrepancies.Interest })
+
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Value Date", Fin = Model.FinacleData.datE_GRANTED?.ToString("dd-MMM-yyyy"), Cat = Model.CatData.valuedate?.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.ValueDate })
+
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Maturity Date", Fin = Model.FinacleData.expirY_DATE?.ToString("dd-MMM-yyyy"), Cat = Model.CatData.maturityOrExpiry?.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.MaturityDate })
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-white text-muted small">
+                    Showing validation for @Model.Discrepancies.TotalFields core banking fields.
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header fw-bold bg-white">Action Center</div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h1 class="display-6 fw-bold">@Model.Discrepancies.ErrorCount</h1>
+                        <p class="text-muted small">Discrepancies Found</p>
+                    </div>
+
+                    @if (Model.Discrepancies.ErrorCount > 0)
+                    {
+                        <div class="alert alert-soft-danger border-danger small mb-3">
+                            <strong>Attention Required!</strong> Data mismatch must be resolved before confirmation.
+                        </div>
+                        <button class="btn btn-danger w-100 mb-2 py-2 fw-bold">Reject & Flag</button>
+                    }
+                    else
+                    {
+                        <div class="alert alert-soft-success border-success small mb-3">
+                            <strong>Ready!</strong> All data points match. You can proceed with confirmation.
+                        </div>
+                        <button class="btn btn-success w-100 mb-2 py-2 fw-bold">Confirm & Validate</button>
+                    }
+                    <button onclick="history.back()" class="btn btn-outline-secondary w-100 py-2">Go Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

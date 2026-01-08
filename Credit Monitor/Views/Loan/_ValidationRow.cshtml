@@ -1,0 +1,31 @@
+﻿@model dynamic
+
+@{
+    bool isValid = Model.Result.IsValid;
+}
+
+<tr class="@(isValid ? "" : "table-danger-subtle")">
+    <td class="ps-3 fw-bold text-secondary small">@Model.Label</td>
+    <td class="font-monospace small">@Model.Fin</td>
+    <td class="font-monospace small">@Model.Cat</td>
+    <td>
+        @if (isValid)
+        {
+            <span class="text-success small"><i class="bi bi-shield-check me-1"></i>Synchronized</span>
+        }
+        else
+        {
+            <span class="text-danger small fw-bold">@Model.Result.Message</span>
+        }
+    </td>
+    <td class="text-center">
+        @if (isValid)
+        {
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+        }
+        else
+        {
+            <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+        }
+    </td>
+</tr>

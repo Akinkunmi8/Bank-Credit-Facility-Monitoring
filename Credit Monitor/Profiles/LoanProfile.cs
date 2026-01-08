@@ -10,6 +10,7 @@ namespace Credit_Monitor.Profiles
             // CreateMap<Source, Destination>();
             // If property names are identical, AutoMapper handles them automatically.
             CreateMap<PendingConfirmedLoan, PendingConfirmedLoanViewModel>();
+            CreateMap<CATViewModel, CAT>().ReverseMap();           
 
             // If you had different names, you would use:
             // .ForMember(dest => dest.accounT_NAME, opt => opt.MapFrom(src => src.FullName));

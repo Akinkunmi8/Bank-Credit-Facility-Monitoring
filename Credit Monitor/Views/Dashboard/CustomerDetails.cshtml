@@ -4,38 +4,38 @@
     ViewData["Title"] = "Customer Details";
 }
 
-<div class="container-fluid py-3 bg-white shadow-sm rounded">
-    <div class="row align-items-center border-bottom pb-2 mb-3">
-        <div class="col-md-4">
-            <h6 class="mb-0 fw-bold">Application Id : <span class="text-primary">@Model.id</span></h6>
+<div class="sticky-top bg-white shadow-sm border-bottom pb-2 mb-3 pt-3" style="top: 0; z-index: 1020;">
+    <div class="container-fluid">
+        <div class="row align-items-center mb-2">
+            <div class="col-md-4">
+                <h6 class="mb-0 fw-bold">Application Id : <span class="text-primary">@Model.id</span></h6>
+            </div>
+            <div class="col-md-4 text-center">
+                <h6 class="mb-0 fw-bold">Applicant Name : <span class="text-primary">@Model.accounT_NAME</span></h6>
+            </div>
+           
         </div>
-        <div class="col-md-4 text-center">
-            <h6 class="mb-0 fw-bold">Applicant Name : <span class="text-primary">@Model.accounT_NAME</span></h6>
-        </div>
-        <div class="col-md-4 text-end">
-            <div class="small">
-                <a href="#" class="text-decoration-none me-2 border-end pe-2">View Workflow</a>
-                <a href="#" class="text-decoration-none me-2 border-end pe-2">Notes Manager</a>
-                <a href="#" class="text-decoration-none">Exchange Rate</a>
+
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="text-primary fw-bold mb-0">Post Disbursement Stage</h5>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="ValidateCAT" asp-controller="Loan" asp-route-AccNum="@Model.accounT_NUMBER" class="btn btn-warning btn-sm px-3 fw-bold">
+                        <i class="bi bi-shield-check me-1"></i>Validate with CAT
+                    </a>
+
+                    <button onclick="history.back()" class="btn btn-secondary btn-sm px-4">
+                        <i class="bi bi-arrow-left me-1"></i>Back
+                    </button>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <h5 class="text-primary fw-bold">Post Disbursement Stage</h5>
-        </div>
-        <div class="col-md-6 text-end">
-            <div class="btn-group shadow-sm">
-                <button class="btn btn-outline-primary btn-sm px-3">KIV</button>
-                <button class="btn btn-outline-primary btn-sm px-3">Print</button>
-                <button class="btn btn-primary btn-sm px-4">Submit</button>
-                <button class="btn btn-outline-danger btn-sm px-3">Return</button>
-                <a asp-action="Staff" class="btn btn-secondary btn-sm px-3">Back</a>
-            </div>
-        </div>
-    </div>
-
+<div class="container-fluid">
     <ul class="nav nav-tabs bg-light border-0 mb-3" id="detailsTab" role="tablist">
         <li class="nav-item">
             <button class="nav-link active fw-bold small text-uppercase" data-bs-toggle="tab" data-bs-target="#basicInfo">Basic Info</button>
@@ -48,7 +48,7 @@
         </li>
     </ul>
 
-    <div class="tab-content border rounded p-4 bg-light bg-opacity-25">
+    <div class="tab-content border rounded p-4 bg-light bg-opacity-25 shadow-sm">
         <div class="tab-pane fade show active" id="basicInfo">
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
                 <h6 class="text-primary fw-bold mb-0"><i class="bi bi-person-lines-fill me-2"></i>Basic Information</h6>
@@ -57,7 +57,7 @@
 
             <p class="fw-bold text-dark border-start border-primary border-4 ps-2 mb-3">Personal Details</p>
 
-            <div class="row g-3">
+            <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <div class="row align-items-center">
                         <label class="col-sm-4 col-form-label small fw-bold">Applicant Type :</label>
@@ -74,7 +74,9 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <div class="row align-items-center">
                         <label class="col-sm-4 col-form-label small fw-bold">Title :</label>
@@ -91,7 +93,9 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <div class="row align-items-center">
                         <label class="col-sm-4 col-form-label small fw-bold">Middle Name :</label>
@@ -108,7 +112,9 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <div class="row align-items-center">
                         <label class="col-sm-4 col-form-label small fw-bold">Nature of Employment :</label>
@@ -128,7 +134,9 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div class="row g-3">
                 <div class="col-md-6">
                     <div class="row align-items-center">
                         <label class="col-sm-4 col-form-label small fw-bold">Date of Birth :</label>
@@ -152,25 +160,35 @@
         </div>
     </div>
 
-    <hr class="my-4 text-muted" />
-    <partial name="_LoanDetailsPartial" model="Model" />
+    <div class="mt-4">
+        <partial name="_LoanDetailsPartial" model="Model" />
+    </div>
 </div>
 
 <style>
+    /* Ensure the sticky header doesn't hide content when jumping to hash links */
+    :target:before {
+        content: "";
+        display: block;
+        height: 120px;
+        margin: -120px 0 0;
+    }
+
     .nav-tabs .nav-link {
         color: #6c757d;
         border: none;
         padding: 10px 20px;
+        transition: all 0.2s ease-in-out;
     }
 
         .nav-tabs .nav-link.active {
-            background-color: #f8f9fa;
+            background-color: transparent;
             color: #0d6efd;
             border-bottom: 3px solid #0d6efd;
         }
 
     .form-control-sm, .form-select-sm {
-        border-radius: 2px;
+        border-radius: 4px;
         border: 1px solid #ced4da;
     }
 
