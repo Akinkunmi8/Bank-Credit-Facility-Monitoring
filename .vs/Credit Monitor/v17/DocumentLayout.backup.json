@@ -1,41 +1,45 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\dell\\c#\\Credit Monitor\\",
+  "WorkspaceRootPath": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\dell\\c#\\credit monitor\\credit monitor\\data\\inmemoryloans.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\data\\inmemoryloans.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\dell\\c#\\credit monitor\\credit monitor\\views\\dashboard\\_loandetailspartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\views\\dashboard\\_loandetailspartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\dell\\c#\\credit monitor\\credit monitor\\views\\dashboard\\customerdetails.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\views\\dashboard\\customerdetails.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\dell\\c#\\credit monitor\\credit monitor\\credit monitor.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\credit monitor.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\dell\\c#\\credit monitor\\credit monitor\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\akinkunmi.olawale\\source\\repos\\bankloanmonetrysolufrontened\\credit monitor\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\dell\\c#\\credit monitor\\credit monitor\\services\\loanservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\akinkunmi.olawale\\source\\repos\\bankloanmonetrysolufrontened\\credit monitor\\credit monitor.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\credit monitor.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\akinkunmi.olawale\\source\\repos\\bankloanmonetrysolufrontened\\credit monitor\\data\\inmemorycat.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\data\\inmemorycat.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\akinkunmi.olawale\\source\\repos\\bankloanmonetrysolufrontened\\credit monitor\\data\\inmemoryloans.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\data\\inmemoryloans.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\akinkunmi.olawale\\source\\repos\\bankloanmonetrysolufrontened\\credit monitor\\views\\dashboard\\_loandetailspartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\views\\dashboard\\_loandetailspartial.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\akinkunmi.olawale\\source\\repos\\bankloanmonetrysolufrontened\\credit monitor\\views\\dashboard\\customerdetails.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\views\\dashboard\\customerdetails.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\akinkunmi.olawale\\source\\repos\\bankloanmonetrysolufrontened\\credit monitor\\services\\loanservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\services\\loanservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\dell\\c#\\credit monitor\\credit monitor\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\akinkunmi.olawale\\source\\repos\\bankloanmonetrysolufrontened\\credit monitor\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\dell\\c#\\credit monitor\\credit monitor\\interfaces\\iloanservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\akinkunmi.olawale\\source\\repos\\bankloanmonetrysolufrontened\\credit monitor\\interfaces\\iloanservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\interfaces\\iloanservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\dell\\c#\\credit monitor\\credit monitor\\viewmodel\\pendingconfirmedloanviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|c:\\users\\akinkunmi.olawale\\source\\repos\\bankloanmonetrysolufrontened\\credit monitor\\viewmodel\\pendingconfirmedloanviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{DDF0E362-0A43-48B9-A90C-117BA305B10A}|Credit Monitor\\Credit Monitor.csproj|solutionrelative:credit monitor\\viewmodel\\pendingconfirmedloanviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -46,44 +50,59 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 11,
           "Children": [
             {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "InMemoryLoans.cs",
-              "DocumentMoniker": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Data\\InMemoryLoans.cs",
-              "RelativeDocumentMoniker": "Credit Monitor\\Data\\InMemoryLoans.cs",
-              "ToolTip": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Data\\InMemoryLoans.cs",
-              "RelativeToolTip": "Credit Monitor\\Data\\InMemoryLoans.cs",
-              "ViewState": "AgIAAMgAAAAAAAAAAAAQwMgAAAAjAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-07T11:04:46.735Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
             },
             {
               "$type": "Bookmark",
-              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
             },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "InMemoryCAT.cs",
+              "DocumentMoniker": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Data\\InMemoryCAT.cs",
+              "RelativeDocumentMoniker": "Credit Monitor\\Data\\InMemoryCAT.cs",
+              "ToolTip": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Data\\InMemoryCAT.cs",
+              "RelativeToolTip": "Credit Monitor\\Data\\InMemoryCAT.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAwAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-07T11:45:12.769Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "InMemoryLoans.cs",
+              "DocumentMoniker": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Data\\InMemoryLoans.cs",
+              "RelativeDocumentMoniker": "Credit Monitor\\Data\\InMemoryLoans.cs",
+              "ToolTip": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Data\\InMemoryLoans.cs",
+              "RelativeToolTip": "Credit Monitor\\Data\\InMemoryLoans.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-07T11:04:46.735Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "Credit Monitor.csproj",
-              "DocumentMoniker": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Credit Monitor.csproj",
+              "DocumentMoniker": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Credit Monitor.csproj",
               "RelativeDocumentMoniker": "Credit Monitor\\Credit Monitor.csproj",
-              "ToolTip": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Credit Monitor.csproj",
+              "ToolTip": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Credit Monitor.csproj",
               "RelativeToolTip": "Credit Monitor\\Credit Monitor.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
@@ -92,37 +111,35 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 5,
               "Title": "CustomerDetails.cshtml",
-              "DocumentMoniker": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Views\\Dashboard\\CustomerDetails.cshtml",
+              "DocumentMoniker": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Views\\Dashboard\\CustomerDetails.cshtml",
               "RelativeDocumentMoniker": "Credit Monitor\\Views\\Dashboard\\CustomerDetails.cshtml",
-              "ToolTip": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Views\\Dashboard\\CustomerDetails.cshtml",
+              "ToolTip": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Views\\Dashboard\\CustomerDetails.cshtml",
               "RelativeToolTip": "Credit Monitor\\Views\\Dashboard\\CustomerDetails.cshtml",
               "ViewState": "AgIAACEAAAAAAAAAAAAgwDcAAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-01-07T10:47:06.675Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-07T10:47:06.675Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "_LoanDetailsPartial.cshtml",
-              "DocumentMoniker": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Views\\Dashboard\\_LoanDetailsPartial.cshtml",
+              "DocumentMoniker": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Views\\Dashboard\\_LoanDetailsPartial.cshtml",
               "RelativeDocumentMoniker": "Credit Monitor\\Views\\Dashboard\\_LoanDetailsPartial.cshtml",
-              "ToolTip": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Views\\Dashboard\\_LoanDetailsPartial.cshtml",
+              "ToolTip": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Views\\Dashboard\\_LoanDetailsPartial.cshtml",
               "RelativeToolTip": "Credit Monitor\\Views\\Dashboard\\_LoanDetailsPartial.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAABcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-01-07T10:45:45.567Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-07T10:45:45.567Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "ILoanService.cs",
-              "DocumentMoniker": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Interfaces\\ILoanService.cs",
+              "DocumentMoniker": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Interfaces\\ILoanService.cs",
               "RelativeDocumentMoniker": "Credit Monitor\\Interfaces\\ILoanService.cs",
-              "ToolTip": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Interfaces\\ILoanService.cs",
+              "ToolTip": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Interfaces\\ILoanService.cs",
               "RelativeToolTip": "Credit Monitor\\Interfaces\\ILoanService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -130,24 +147,24 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Program.cs",
+              "DocumentMoniker": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Program.cs",
               "RelativeDocumentMoniker": "Credit Monitor\\Program.cs",
-              "ToolTip": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Program.cs",
+              "ToolTip": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Program.cs",
               "RelativeToolTip": "Credit Monitor\\Program.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAkAAAA4AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAA4AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-07T09:54:24.805Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "LoanService.cs",
-              "DocumentMoniker": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Services\\LoanService.cs",
+              "DocumentMoniker": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Services\\LoanService.cs",
               "RelativeDocumentMoniker": "Credit Monitor\\Services\\LoanService.cs",
-              "ToolTip": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Services\\LoanService.cs",
+              "ToolTip": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Services\\LoanService.cs",
               "RelativeToolTip": "Credit Monitor\\Services\\LoanService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -155,11 +172,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "PendingConfirmedLoanViewModel.cs",
-              "DocumentMoniker": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\ViewModel\\PendingConfirmedLoanViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\ViewModel\\PendingConfirmedLoanViewModel.cs",
               "RelativeDocumentMoniker": "Credit Monitor\\ViewModel\\PendingConfirmedLoanViewModel.cs",
-              "ToolTip": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\ViewModel\\PendingConfirmedLoanViewModel.cs",
+              "ToolTip": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\ViewModel\\PendingConfirmedLoanViewModel.cs",
               "RelativeToolTip": "Credit Monitor\\ViewModel\\PendingConfirmedLoanViewModel.cs",
               "ViewState": "AgIAAFoAAAAAAAAAAAAIwG4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -167,11 +184,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "DashboardController.cs",
-              "DocumentMoniker": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Controllers\\DashboardController.cs",
+              "DocumentMoniker": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Controllers\\DashboardController.cs",
               "RelativeDocumentMoniker": "Credit Monitor\\Controllers\\DashboardController.cs",
-              "ToolTip": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Controllers\\DashboardController.cs",
+              "ToolTip": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Controllers\\DashboardController.cs",
               "RelativeToolTip": "Credit Monitor\\Controllers\\DashboardController.cs",
               "ViewState": "AgIAABgAAAAAAAAAAAAYwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",

@@ -676,23 +676,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\dell\\.nuget\\packages\\": {},
+    "C:\\Users\\akinkunmi.olawale\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Credit Monitor.csproj",
+      "projectUniqueName": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Credit Monitor.csproj",
       "projectName": "Credit Monitor",
-      "projectPath": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\Credit Monitor.csproj",
-      "packagesPath": "C:\\Users\\dell\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\dell\\c#\\Credit Monitor\\Credit Monitor\\obj\\",
+      "projectPath": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\Credit Monitor.csproj",
+      "packagesPath": "C:\\Users\\akinkunmi.olawale\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\akinkunmi.olawale\\source\\repos\\BankLoanMonetrySoluFrontened\\Credit Monitor\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\dell\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\akinkunmi.olawale\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -701,6 +701,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {

@@ -1,96 +1,184 @@
 ﻿@{
     ViewData["Title"] = "Home";
-    var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
-    var userRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
-    var region = User.FindFirst("Region")?.Value ?? "N/A";
+
+    bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    string userRole = User.Claims
+        .FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value ?? "Guest";
+    string region = User.FindFirst("Region")?.Value ?? "N/A";
 }
 
-<div class="container py-5">
-    <div class="row align-items-center mb-5">
-        <div class="col-lg-7">
-            <h1 class="display-3 fw-bold text-primary mb-3">Credit Monitor <span class="text-dark">v1.0</span></h1>
-            <p class="lead text-muted fs-4">
-                The centralized portal for managing loan confirmations, credit assessments, and regional portfolio performance.
-            </p>
+<div class="home-hero">
+    <div class="container py-5">
 
-            @if (isAuthenticated)
-            {
-                <div class="d-flex align-items-center mt-4 p-3 bg-light rounded-3 border-start border-primary border-4 shadow-sm">
-                    <div class="flex-shrink-0">
+        <!-- HERO SECTION -->
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-7">
+                <h1 class="display-4 fw-bold text-primary mb-3">
+                    Credit Monitor <span class="text-dark fs-3">v1.0</span>
+                </h1>
+
+                <p class="lead text-muted fs-5">
+                    Centralized platform for loan confirmations, credit assessment,
+                    and regional portfolio monitoring.
+                </p>
+
+                @if (isAuthenticated)
+                {
+                    <div class="welcome-box mt-4">
                         <i class="bi bi-person-badge fs-1 text-primary"></i>
+                        <div class="ms-3">
+                            <h6 class="mb-1">Welcome back, @User.Identity!.Name</h6>
+                            <small class="text-muted">
+                                Role: <strong>@userRole</strong> | Region: <strong>@region</strong>
+                            </small>
+                        </div>
                     </div>
-                    <div class="ms-3">
-                        <h5 class="mb-0">Welcome back, @User.Identity.Name!</h5>
-                        <p class="mb-0 text-muted">Signed in as <strong>@userRole</strong> | Region: <strong>@region</strong></p>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="mt-4">
-                    <a asp-controller="Home" asp-action="Login" class="btn btn-primary btn-lg px-5 shadow-sm">
+                }
+                else
+                {
+                    <a asp-controller="Home"
+                       asp-action="Login"
+                       class="btn btn-primary btn-lg mt-4 px-5 shadow-sm">
                         <i class="bi bi-box-arrow-in-right me-2"></i> Access Portal
                     </a>
-                </div>
-            }
-        </div>
-        <div class="col-lg-5 d-none d-lg-block">
-            <div class="p-5 bg-primary bg-gradient rounded-circle opacity-10 shadow-lg position-relative" style="width: 400px; height: 400px;">
-                <i class="bi bi-graph-up-arrow position-absolute top-50 start-50 translate-middle text-primary" style="font-size: 150px;"></i>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mt-2">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm transition-hover">
-                <div class="card-body p-4">
-                    <div class="feature-icon bg-primary bg-gradient text-white rounded-3 mb-3 d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                        <i class="bi bi-speedometer2 fs-4"></i>
-                    </div>
-                    <h4 class="fw-bold">Go to Dashboard</h4>
-                    <p class="text-muted">Access your personalized workspace to manage pending and confirmed loans for your region.</p>
-                    <a asp-controller="Dashboard" asp-action="@(userRole == "Supervisor" ? "Supervisor" : "Staff")" class="stretched-link text-primary fw-bold text-decoration-none">Open Dashboard <i class="bi bi-arrow-right"></i></a>
-                </div>
+                }
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm transition-hover">
-                <div class="card-body p-4">
-                    <div class="feature-icon bg-success bg-gradient text-white rounded-3 mb-3 d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                        <i class="bi bi-file-earmark-check fs-4"></i>
+        <!-- FEATURE CARDS -->
+        <div class="row g-4 mt-4">
+
+            <!-- DASHBOARD -->
+            <div class="col-md-4">
+                <div class="feature-card dashboard-card">
+                    <div class="card-body">
+                        <h4>Dashboard</h4>
+                        <p>Manage pending and confirmed loans by region.</p>
+                        <a asp-controller="Dashboard"
+                           asp-action="@(userRole == "Supervisor" ? "Supervisor" : "Staff")"
+                           class="stretched-link">
+                            Open Dashboard <i class="bi bi-arrow-right"></i>
+                        </a>
                     </div>
-                    <h4 class="fw-bold">CAT Portal</h4>
-                    <p class="text-muted">Perform detailed Credit Assessment Tool (CAT) reviews and updates for new loan applications.</p>
-                    <a href="#" class="stretched-link text-success fw-bold text-decoration-none">Launch CAT <i class="bi bi-arrow-right"></i></a>
                 </div>
             </div>
+
+            <!-- CAT -->
+            <div class="col-md-4">
+                <div class="feature-card cat-card">
+                    <div class="card-body">
+                        <h4>CAT Portal</h4>
+                        <p>Run Credit Assessment Tool (CAT) reviews.</p>
+                        <a href="#" class="stretched-link">
+                            Launch CAT <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFILE -->
+            <div class="col-md-4">
+                <div class="feature-card profile-card">
+                    <div class="card-body">
+                        <h4>User Profile</h4>
+                        <p>Manage credentials and security settings.</p>
+                        <a href="#" class="stretched-link">
+                            Manage Account <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm transition-hover">
-                <div class="card-body p-4">
-                    <div class="feature-icon bg-dark bg-gradient text-white rounded-3 mb-3 d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                        <i class="bi bi-shield-lock fs-4"></i>
-                    </div>
-                    <h4 class="fw-bold">User Profile</h4>
-                    <p class="text-muted">Manage your security credentials, update your profile settings, or view system logs.</p>
-                    <a href="#" class="stretched-link text-dark fw-bold text-decoration-none">Manage Account <i class="bi bi-arrow-right"></i></a>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
-<style>
-    .transition-hover:hover {
-        transform: translateY(-10px);
-        transition: transform 0.3s ease;
-        box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
-    }
+@section Styles {
+    <style>
+        /* ================= HERO BACKGROUND ================= */
+        .home-hero {
+            min-height: 100vh;
+            background: linear-gradient(rgba(255,255,255,.92), rgba(255,255,255,.92)), url('/images/index.jpg') center/cover no-repeat;
+        }
 
-    .bg-gradient {
-        background: linear-gradient(45deg, rgba(255,255,255,.15), rgba(255,255,255,0));
-    }
-</style>
+        /* ================= WELCOME BOX ================= */
+        .welcome-box {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border-left: 5px solid #0d6efd;
+            padding: 1rem 1.25rem;
+            border-radius: .75rem;
+            box-shadow: 0 .25rem .75rem rgba(0,0,0,.08);
+        }
+
+        /* ================= FEATURE CARDS ================= */
+        .feature-card {
+            height: 100%;
+            border-radius: 18px;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            color: #212529;
+            transition: all .35s ease;
+            box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.12);
+        }
+
+            /* FAINT OVERLAY (MATCH HERO STYLE) */
+            .feature-card::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient( rgba(255,255,255,.88), rgba(255,255,255,.88) );
+                transition: background .35s ease;
+            }
+
+            /* CARD CONTENT */
+            .feature-card .card-body {
+                position: relative;
+                z-index: 2;
+                padding: 2.2rem;
+            }
+
+            .feature-card h4 {
+                font-weight: 700;
+                color: #0d6efd;
+            }
+
+            .feature-card p {
+                color: #495057;
+            }
+
+            .feature-card a {
+                color: #0d6efd;
+                font-weight: 600;
+                text-decoration: none;
+            }
+
+            /* HOVER EFFECT */
+            .feature-card:hover {
+                transform: translateY(-12px);
+                box-shadow: 0 1.5rem 3rem rgba(0,0,0,.2);
+            }
+
+                /* IMAGE REVEAL ON HOVER */
+                .feature-card:hover::before {
+                    background: linear-gradient( rgba(255,255,255,.65), rgba(255,255,255,.65) );
+                }
+
+        /* ================= CARD IMAGES ================= */
+        .dashboard-card {
+            background-image: url('/images/card.jpg');
+        }
+
+        .cat-card {
+            background-image: url('/images/card2.jpg');
+        }
+
+        .profile-card {
+            background-image: url('/images/card3.jpg');
+        }
+    </style>
+}
