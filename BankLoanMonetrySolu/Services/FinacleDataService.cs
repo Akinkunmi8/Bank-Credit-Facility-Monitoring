@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace BankLoanMonetrySolu.Services
 {
-    public class FinacleData : IFinacleData
+    public class FinacleDataService : IFinacleData
     {
         private readonly DALContext _context;
         private readonly IMapper _mapper;
 
-        public FinacleData(DALContext context, IMapper mapper)
+        public FinacleDataService(DALContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
