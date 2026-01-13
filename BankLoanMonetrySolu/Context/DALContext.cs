@@ -12,7 +12,6 @@ namespace BankLoanMonetrySolu.Context
         {
         }
 
-        // Your existing tables
         public DbSet<FinacleData> finacleDatas { get; set; }
         public DbSet<CreditAvailmentTicket> cat { get; set; }
         public DbSet<CustomerDetails> customerDetails { get; set; }
@@ -22,18 +21,29 @@ namespace BankLoanMonetrySolu.Context
             // 1️⃣ MUST call base for Identity
             base.OnModelCreating(modelBuilder);
 
-            // 2️⃣ Configure your existing relationships
+            // 2️⃣ FIX FOR DECIMAL WARNINGS
+            // Automatically sets all decimal properties to (18,2) to avoid truncation warnings
+            foreach (var property in modelBuilder.Model.GetEntityTypes()
+                .SelectMany(t => t.GetProperties())
+                .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
+            {
+                property.SetColumnType("decimal(18,2)");
+            }
+
+            // 3️⃣ Relationships
             modelBuilder.Entity<CustomerDetails>()
                 .HasOne(c => c.loanDetails)
                 .WithOne(f => f.Customer)
                 .HasForeignKey<FinacleData>(f => f.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 3️⃣ Seed your existing data
+            // 4️⃣ Seed Data for Testing Validation
+            var customerId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
             modelBuilder.Entity<CustomerDetails>().HasData(
                 new CustomerDetails
                 {
-                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    Id = customerId,
                     Tittle = "Mr",
                     Firstname = "John",
                     Lastname = "Doe",
@@ -41,67 +51,45 @@ namespace BankLoanMonetrySolu.Context
                     phoneNum = "08030000001",
                     DOB = "21-05-1989",
                     MaritalStatus = "Married",
-                    NumbOfDependant = "2",
                     gender = "Male",
                     ResidentStatus = "Resident",
-                    NameOfEmployer = "UBa",
-                    Nationallity = "Nigerian",
-                    ApplicantType = "Individual"
-                },
-                new CustomerDetails
-                {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                    Tittle = "Mrs",
-                    Firstname = "Mary",
-                    Lastname = "Johnson",
-                    Email = "mary.j@test.com",
-                    phoneNum = "08030000002",
-                    DOB = "05-07-1999",
-                    MaritalStatus = "Married",
-                    NumbOfDependant = "2",
-                    gender = "Female",
-                    ResidentStatus = "Resident",
-                    NameOfEmployer = "Wema",
-                    Nationallity = "Nigerian",
-                    ApplicantType = "Individual"
-                },
-                new CustomerDetails
-                {
-                    Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-                    Tittle = "Mr",
-                    Firstname = "Ahmed",
-                    Lastname = "Sule",
-                    Email = "ahmed.s@test.com",
-                    phoneNum = "08030000003",
-                    DOB = "12-05-1994",
-                    MaritalStatus = "Married",
-                    NumbOfDependant = "3",
-                    gender = "Male",
-                    ResidentStatus = "Resident",
-                    NameOfEmployer = "Unilag",
-                    Nationallity = "Nigerian",
-                    ApplicantType = "Individual"
-                },
-                new CustomerDetails
-                {
-                    Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
-                    Tittle = "Ms",
-                    Firstname = "Blessing",
-                    Lastname = "Okoro",
-                    Email = "blessing.o@test.com",
-                    phoneNum = "08030000004",
-                    DOB = "11-09-2000",
-                    MaritalStatus = "Single",
-                    NumbOfDependant = "2",
-                    gender = "Female",
-                    ResidentStatus = "Resident",
-                    NameOfEmployer = "Unilever",
+                    NameOfEmployer = "UBA",
                     Nationallity = "Nigerian",
                     ApplicantType = "Individual"
                 }
             );
 
-            // 4️⃣ Rename Identity tables to your preferred names
+            // Seed Finacle (Core Banking Side)
+            modelBuilder.Entity<FinacleData>().HasData(
+                new FinacleData
+                {
+                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    ACCOUNT_NUMBER = "1234567890",
+                    ACCOUNT_NAME = "John Doe",
+                    SANCTION_LIMIT = 5000000m,
+                    INT_RATE = 15.5m,
+                    EXPIRY_DATE = new DateTime(2027, 12, 31),
+                    CustomerId = customerId,
+                    SBU_NAME = "RETAIL BANKING",
+                    FACILITY_TYPE = "Personal Loan"
+                }
+            );
+
+            // Seed CAT (Internal Application Side)
+            modelBuilder.Entity<CreditAvailmentTicket>().HasData(
+                new CreditAvailmentTicket
+                {
+                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    AccNum = "1234567890",
+                    CustomerName = "John Doe", // Match
+                    ApprovalLimit = 4500000m,  // DISCREPANCY: 5.0M vs 4.5M
+                    interest = "15.5",         // Match
+                    MaturityOrExpiry = new DateTime(2027, 12, 31), // Match
+                    Directorate = "RETAIL BANKING"
+                }
+            );
+
+            // 5️⃣ Rename Identity tables
             modelBuilder.Entity<AppUsers>().ToTable("Users");
             modelBuilder.Entity<IdentityRole>().ToTable("Roles");
             modelBuilder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
@@ -109,10 +97,6 @@ namespace BankLoanMonetrySolu.Context
             modelBuilder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins");
             modelBuilder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims");
             modelBuilder.Entity<IdentityUserToken<string>>().ToTable("UserTokens");
-
-            // Optional: configure indexes, max lengths, etc. here
         }
     }
 }
-
-

@@ -50,7 +50,7 @@ namespace BankLoanMonetrySolu.Services
             try
             {
                 var data = await _context.finacleDatas
-                    .Where(f => f.REGION == region && f.RECONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == false)
+                    .Where(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == false)
                     .ToListAsync();
                 var dto = _mapper.Map<List<FinacleDataDto>>(data);
                 return new FinacleResponseDto
@@ -132,7 +132,7 @@ namespace BankLoanMonetrySolu.Services
             try
             {
                 var data = await _context.finacleDatas
-                    .Where(f => f.REGION == region && f.CONFIRMED == true  && f.RECONFIRMED == false && f.APPROVED == false ) // Example filter
+                    .Where(f => f.REGION == region && f.CONFIRMED == true  && f.RECONFIRMED == true && f.APPROVED == false ) // Example filter
                     .ToListAsync();
                 var dto = _mapper.Map<List<FinacleDataDto>>(data);
                 return new FinacleResponseDto

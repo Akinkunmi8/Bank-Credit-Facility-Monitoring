@@ -56,7 +56,7 @@ namespace BankLoanMonetrySolu.Logic
                 if (!string.IsNullOrEmpty(name))
                     columnMap[name] = i;
             }
-
+            var counter = 1;
             // 2️⃣ Read data rows
             while (reader.Read())
             {
@@ -136,6 +136,8 @@ namespace BankLoanMonetrySolu.Logic
                     BRANCH_NAME = GetString(reader, columnMap, "BRANCH_NAME"),
                     BANK_NAME = GetString(reader, columnMap, "BANK_NAME"),
                     REGION_NAME = GetString(reader, columnMap, "REGION_NAME"),
+                    BRANCH = GetString(reader, columnMap, "BRANCH"),
+                    REGION = GetString(reader, columnMap, "REGION"),
                     BM_STAFF_NAME = GetString(reader, columnMap, "BM_STAFF_NAME"),
                     BOM_STAFF_NAME = GetString(reader, columnMap, "BOM_STAFF_NAME"),
                     ACCOUNT_OFFICER = GetString(reader, columnMap, "ACCOUNT_OFFICER"),
@@ -147,10 +149,16 @@ namespace BankLoanMonetrySolu.Logic
                     RISKRATING = GetString(reader, columnMap, "RISKRATING"),
                     PERFORMANCE_CLASS = GetString(reader, columnMap, "PERFORMANCE_CLASS"),
                     PERFORMANCE_CLASS_DESC = GetString(reader, columnMap, "PERFORMANCE_CLASS_DESC"),
-                    ROWNUMBER_ORDERBY = GetString(reader, columnMap, "ROWNUMBER_ORDERBY")
+                    ROWNUMBER_ORDERBY = GetString(reader, columnMap, "ROWNUMBER_ORDERBY"),
+                    APPROVED = true,                             
+                    CONFIRMED = false,  
+                    CustomerId = Guid.Parse("11111111-1111-1111-1111-11111111111" + counter),
+                    RECONFIRMED = false,                          
+                    PROCESSEDATE = DateTime.Now,                  
                 };
 
                 finacleList.Add(data);
+                counter++;
             }
 
             // 3️⃣ Bulk insert
@@ -168,6 +176,7 @@ namespace BankLoanMonetrySolu.Logic
         private int? GetInt(IExcelDataReader r, Dictionary<string, int> map, string c)
             => map.ContainsKey(c) && int.TryParse(r.GetValue(map[c])?.ToString(), out var i) ? i : null;
 
+        
         private DateTime? GetDate(IExcelDataReader r, Dictionary<string, int> map, string c)
         {
             if (!map.ContainsKey(c)) return null;
@@ -176,20 +185,67 @@ namespace BankLoanMonetrySolu.Logic
             return DateTime.TryParse(v?.ToString(), out var d) ? d : null;
         }
 
+        //private async Task BulkInsertAsync(List<FinacleData> list)
+        //{
+        //    if (list.Count == 0) return;
+
+        //    var connStr = _config.GetConnectionString("DbConn");
+
+        //    using var table = new DataTable();
+
+        //    // Dynamically create DataTable schema from FinacleData properties
+        //    var props = typeof(FinacleData).GetProperties();
+        //    foreach (var prop in props)
+        //        table.Columns.Add(prop.Name, Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType);
+
+        //    // Populate rows
+        //    foreach (var item in list)
+        //    {
+        //        var row = table.NewRow();
+        //        foreach (var prop in props)
+        //        {
+        //            row[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
+        //        }
+        //        table.Rows.Add(row);
+        //    }
+
+        //    // Bulk copy
+        //    using var conn = new SqlConnection(connStr);
+        //    await conn.OpenAsync();
+
+        //    using var bulk = new SqlBulkCopy(conn)
+        //    {
+        //        DestinationTableName = "finacleDatas",
+        //        BatchSize = 5000
+        //    };
+
+        //    foreach (DataColumn column in table.Columns)
+        //    {
+        //        bulk.ColumnMappings.Add(column.ColumnName, column.ColumnName);
+        //    }
+
+        //    await bulk.WriteToServerAsync(table);
+        //}
         private async Task BulkInsertAsync(List<FinacleData> list)
         {
-            if (list.Count == 0) return;
+            if (list == null || list.Count == 0) return;
 
             var connStr = _config.GetConnectionString("DbConn");
-
             using var table = new DataTable();
 
-            // Dynamically create DataTable schema from FinacleData properties
-            var props = typeof(FinacleData).GetProperties();
-            foreach (var prop in props)
-                table.Columns.Add(prop.Name, Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType);
+            // 1. Filter properties: Only take simple types (strings, decimals, ints, etc.)
+            // This ignores navigation properties like 'Customer' which cause the error.
+            var props = typeof(FinacleData).GetProperties()
+                .Where(p => p.PropertyType.IsValueType || p.PropertyType == typeof(string))
+                .ToList();
 
-            // Populate rows
+            foreach (var prop in props)
+            {
+                var propType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                table.Columns.Add(prop.Name, propType);
+            }
+
+            // 2. Populate rows safely
             foreach (var item in list)
             {
                 var row = table.NewRow();
@@ -200,22 +256,32 @@ namespace BankLoanMonetrySolu.Logic
                 table.Rows.Add(row);
             }
 
-            // Bulk copy
             using var conn = new SqlConnection(connStr);
             await conn.OpenAsync();
 
             using var bulk = new SqlBulkCopy(conn)
             {
                 DestinationTableName = "finacleDatas",
-                BatchSize = 5000
+                BatchSize = 5000,
+                // Optional: Adding this helps if your table has an Identity column
+                // Options = SqlBulkCopyOptions.Default 
             };
 
+            // 3. Map only the columns we actually added to the DataTable
             foreach (DataColumn column in table.Columns)
             {
                 bulk.ColumnMappings.Add(column.ColumnName, column.ColumnName);
             }
 
-            await bulk.WriteToServerAsync(table);
+            try
+            {
+                await bulk.WriteToServerAsync(table);
+            }
+            catch (Exception ex)
+            {
+                // This log will help you identify if a specific column is missing in the DB
+                throw new Exception($"Bulk Insert failed. Check if SQL table 'finacleDatas' has all the properties defined in FinacleData. Error: {ex.Message}");
+            }
         }
     }
 }

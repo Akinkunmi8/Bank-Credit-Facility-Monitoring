@@ -19,7 +19,7 @@ namespace BankLoanMonetrySolu.Services
         public async Task<TATResponseDto> GetWithinTAT()
         {
             var count = await _context.finacleDatas
-                .Where(x => x.PROCESSEDATE >= DateTime.Now.AddHours(-2))
+                .Where(x => x.PROCESSEDATE >= DateTime.UtcNow.AddHours(-2))
                 .CountAsync();
 
             return new TATResponseDto
@@ -32,7 +32,7 @@ namespace BankLoanMonetrySolu.Services
         public async Task<TATResponseDto> GetBeyondTAT()
         {
             var count = await _context.finacleDatas
-                .Where(x => x.PROCESSEDATE < DateTime.Now.AddHours(-2))
+                .Where(x => x.PROCESSEDATE < DateTime.UtcNow.AddHours(-2) && x.CONFIRMED == false)
                 .CountAsync();
 
             return new TATResponseDto
