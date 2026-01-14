@@ -16,10 +16,10 @@ namespace BankLoanMonetrySolu.Services
             _context = context;
         }
 
-        public async Task<TATResponseDto> GetWithinTAT()
+        public async Task<TATResponseDto> GetWithinTAT(string region)
         {
             var count = await _context.finacleDatas
-                .Where(x => x.PROCESSEDATE >= DateTime.UtcNow.AddHours(-2))
+                .Where(x => x.PROCESSEDATE >= DateTime.UtcNow.AddHours(-2) && x.REGION == region)
                 .CountAsync();
 
             return new TATResponseDto
@@ -29,10 +29,10 @@ namespace BankLoanMonetrySolu.Services
             };
         }
 
-        public async Task<TATResponseDto> GetBeyondTAT()
+        public async Task<TATResponseDto> GetBeyondTAT(string region)
         {
             var count = await _context.finacleDatas
-                .Where(x => x.PROCESSEDATE < DateTime.UtcNow.AddHours(-2) && x.CONFIRMED == false)
+                .Where(x => x.PROCESSEDATE < DateTime.UtcNow.AddHours(-2) && x.CONFIRMED == false && x.REGION == region)
                 .CountAsync();
 
             return new TATResponseDto

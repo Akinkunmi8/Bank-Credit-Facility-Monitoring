@@ -164,7 +164,7 @@ namespace BankLoanMonetrySolu.Services
             try
             {
                 var data = await _context.finacleDatas
-                    .Where(f => f.REGION_NAME == region && f.CONFIRMED == false  && f.RECONFIRMED == false && f.APPROVED == false)
+                    .Where(f => f.REGION == region && f.CONFIRMED == false  && f.RECONFIRMED == false && f.APPROVED == false)
                     .ToListAsync();
                 var dto = _mapper.Map<List<FinacleDataDto>>(data); ;
                 return new FinacleResponseDto
@@ -191,7 +191,8 @@ namespace BankLoanMonetrySolu.Services
                 .CountAsync(f =>
                     f.REGION == region &&
                     f.CONFIRMED == false &&
-                    f.APPROVED == false
+                    f.APPROVED == false &&
+                    f.RECONFIRMED == false
                 );
         }
 

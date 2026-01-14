@@ -19,45 +19,45 @@ namespace BankLoanMonetrySolu.Controllers
             _finacleService = finacleService;
             _tatService = tatService;
         }
-        [HttpGet("finacle/all")]
-        public async Task<IActionResult> GetAllFinacleData()
+        [HttpGet("finacle/pending")]
+        public async Task<IActionResult> GetAllFinacleData(string region)
         {
-            var result = await _finacleService.GetALlFincaleData();
+            var result = await _finacleService.GetTotalPendingCount(region);
             return Ok(result);
         }
 
         [HttpGet("finacle/approved")]
         public async Task<IActionResult> GetApprovedLoans(string region)
         {
-            var result = await _finacleService.GetAllAprovedFinacleData(region);
+            var result = await _finacleService.GetTotalApproveCount(region);
             return Ok(result);
         }
 
         [HttpGet("finacle/confirmed")]
         public async Task<IActionResult> GetConfirmedLoans(string region)
         {
-            var result = await _finacleService.GetAllConfirmedFinacleData(region);
+            var result = await _finacleService.GetTotalConfirmedCount(region);
             return Ok(result);
         }
 
         [HttpGet("finacle/reconfirmed/{region}")]
         public async Task<IActionResult> GetReConfirmedByRegion(string region)
         {
-            var result = await _finacleService.GetAllReConfirmedFinacleDataByRegion(region);
+            var result = await _finacleService.GetTotalReConfirmedCount(region);
             return Ok(result);
         }
 
-        [HttpGet("tat/within")]
-        public async Task<IActionResult> GetWithinTAT()
+        [HttpGet("tat/within/{region}")]
+        public async Task<IActionResult> GetWithinTAT(string region)
         {
-            var result = await _tatService.GetWithinTAT();
+            var result = await _tatService.GetWithinTAT(region);
             return Ok(result);
         }
 
-        [HttpGet("tat/beyond")]
-        public async Task<IActionResult> GetBeyondTAT()
+        [HttpGet("tat/beyond/{region}")]
+        public async Task<IActionResult> GetBeyondTAT(string region)
         {
-            var result = await _tatService.GetBeyondTAT();
+            var result = await _tatService.GetBeyondTAT(region);
             return Ok(result);
         }
 
