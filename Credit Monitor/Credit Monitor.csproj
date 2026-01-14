@@ -8,13 +8,29 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="AutoMapper" Version="12.0.1" />
-	  <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.11" />
+    <Compile Remove="Content\**" />
+    <Compile Remove="NewFolder1\**" />
+    <Content Remove="Content\**" />
+    <Content Remove="NewFolder1\**" />
+    <EmbeddedResource Remove="Content\**" />
+    <EmbeddedResource Remove="NewFolder1\**" />
+    <None Remove="Content\**" />
+    <None Remove="NewFolder1\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Content\" />
+    <Compile Remove="Repository\DashboardRepositoy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="AutoMapper" Version="12.0.1" />
+	  <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.11" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 

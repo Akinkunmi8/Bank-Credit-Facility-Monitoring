@@ -56,6 +56,7 @@ namespace Credit_Monitor.Controllers
                 ModelState.AddModelError(string.Empty, "The authentication service is currently unavailable.");
                 return View(model);
             }
+            Console.WriteLine(authResult.Response.Status);
 
 
             if (authResult.Response.Status == "Success" && authResult.User != null)
@@ -78,7 +79,7 @@ namespace Credit_Monitor.Controllers
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     new ClaimsPrincipal(claimsIdentity),
                     authProperties);
-                if(authResult.User.Role == "Staff" && !string.IsNullOrEmpty(authResult.User.Region))
+                if(authResult.User.Role == "staff" && !string.IsNullOrEmpty(authResult.User.Region))
                 {
                     return RedirectToAction("Staff", "Dashboard");
                 }

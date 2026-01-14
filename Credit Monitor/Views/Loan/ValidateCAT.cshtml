@@ -52,9 +52,9 @@
 
                             @await Html.PartialAsync("_ValidationRow", new { Label = "Interest Rate", Fin = Model.FinacleData.inT_RATE + "%", Cat = Model.CatData.interest + "%", Result = Model.Discrepancies.Interest })
 
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Value Date", Fin = Model.FinacleData.datE_GRANTED?.ToString("dd-MMM-yyyy"), Cat = Model.CatData.valuedate?.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.ValueDate })
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Value Date", Fin = Model.FinacleData.datE_GRANTED.ToString("dd-MMM-yyyy"), Cat = Model.CatData.valuedate?.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.ValueDate })
 
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Maturity Date", Fin = Model.FinacleData.expirY_DATE?.ToString("dd-MMM-yyyy"), Cat = Model.CatData.maturityOrExpiry?.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.MaturityDate })
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Maturity Date", Fin = Model.FinacleData.expirY_DATE.ToString("dd-MMM-yyyy"), Cat = Model.CatData.maturityOrExpiry?.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.MaturityDate })
                         </tbody>
                     </table>
                 </div>

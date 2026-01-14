@@ -93,7 +93,7 @@
         <div class="col-md-4">
             <div class="row align-items-center">
                 <label class="col-sm-5 col-form-label small fw-bold">Overdue Amount:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm @(Model.overduE_AMT > 0 ? "is-invalid text-danger" : "")" value="@Model.overduE_AMT.ToString("N2")"></div>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm @(Model.overduE_AMT > 0 ? "is-invalid text-danger" : "")" value="@Model.overduE_AMT?.ToString("N2")"></div>
             </div>
         </div>
         <div class="col-md-4">
@@ -121,19 +121,19 @@
         <div class="col-md-4">
             <div class="row align-items-center">
                 <label class="col-sm-5 col-form-label small fw-bold">Total Paid (Cum):</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm text-success" value="@Model.cuM_REPAYMENT_AMOUNT_PAID.ToString("N2")"></div>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm text-success" value="@Model.cuM_REPAYMENT_AMOUNT_PAID?.ToString("N2")"></div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
                 <label class="col-sm-5 col-form-label small fw-bold">Principal Paid:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.cuM_PRINCIPAL_REPAYMENT_AMOUNT_PAID.ToString("N2")"></div>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.cuM_PRINCIPAL_REPAYMENT_AMOUNT_PAID?.ToString("N2")"></div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
                 <label class="col-sm-5 col-form-label small fw-bold">Interest Paid:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.cuM_INTEREST_REPAYMENT_AMOUNT_PAID.ToString("N2")"></div>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.cuM_INTEREST_REPAYMENT_AMOUNT_PAID?.ToString("N2")"></div>
             </div>
         </div>
         <div class="col-md-4">
@@ -151,19 +151,19 @@
         <div class="col-md-4">
             <div class="row align-items-center">
                 <label class="col-sm-5 col-form-label small fw-bold">Collection (3M):</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.totaL_COLLECTION_3M.ToString("N2")"></div>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.totaL_COLLECTION_3M?.ToString("N2")"></div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
                 <label class="col-sm-5 col-form-label small fw-bold">Collection (6M):</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.totaL_COLLECTION_6M.ToString("N2")"></div>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.totaL_COLLECTION_6M?.ToString("N2")"></div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
                 <label class="col-sm-5 col-form-label small fw-bold">Collection (12M):</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.totaL_COLLECTION_12M.ToString("N2")"></div>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.totaL_COLLECTION_12M?.ToString("N2")"></div>
             </div>
         </div>
     </div>
@@ -173,19 +173,19 @@
         <div class="col-md-4">
             <div class="row align-items-center">
                 <label class="col-sm-5 col-form-label small fw-bold">Date Granted:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.datE_GRANTED?.ToString("dd MMM yyyy")"></div>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.datE_GRANTED.ToString("dd MMM yyyy")"></div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
                 <label class="col-sm-5 col-form-label small fw-bold">Expiry Date:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.expirY_DATE?.ToString("dd MMM yyyy")"></div>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.expirY_DATE.ToString("dd MMM yyyy")"></div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
                 <label class="col-sm-5 col-form-label small fw-bold">Next Demand Date:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-warning bg-opacity-10" value="@Model.nexT_DMD_DATE?.ToString("dd MMM yyyy")"></div>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-warning bg-opacity-10" value="@Model.nexT_DMD_DATE.ToString("dd MMM yyyy")"></div>
             </div>
         </div>
         <div class="col-md-4">

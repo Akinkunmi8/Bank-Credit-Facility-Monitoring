@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
 using Credit_Monitor.Interfaces;
-using Credit_Monitor.Models;
 using Credit_Monitor.ViewModel;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Credit_Monitor.Services
 {
@@ -10,10 +8,12 @@ namespace Credit_Monitor.Services
     {
         private readonly ILoanRepository _loanRepository;
         private readonly IMapper _mapper;
-        public LoanService(ILoanRepository loanRepository, IMapper mapper)
+        private readonly ILoanAPIService _loanAPIservice;
+        public LoanService(ILoanRepository loanRepository, IMapper mapper, ILoanAPIService loanAPIservice)
         {
             _loanRepository = loanRepository;
             _mapper = mapper;
+            _loanAPIservice = loanAPIservice;
         }
         public async Task<PendingConfirmedLoanViewModel?> GetPendingConfirmedLoanByIdAsync(string id)
         {
@@ -24,7 +24,11 @@ namespace Credit_Monitor.Services
 
         public async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetPendingConfirmedLoansByRegion(string region)
         {
-            var loans = await _loanRepository.GetPendingConfirmedLoansByRegionAsync(region);
+            var loans = await _loanAPIservice.GetPendingLoansByRegion(region);
+            if (loans == null)
+            {
+                return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+            }
             return _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
         }
 
