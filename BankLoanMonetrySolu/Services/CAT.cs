@@ -38,7 +38,7 @@ namespace BankLoanMonetrySolu.Services
                     DisbursementRequired = catDto.DisbursementRequired,
                     OutstandingAfterDisbursement = catDto.OutstandingAfterDisbursement,
                     ApprovalLimit = catDto.ApprovalLimit,
-                    interest = catDto.interest,
+                    Interest = catDto.interest,
                     Fees = catDto.Fees,
                     ApprovalLevel = catDto.ApprovalLevel,
                     TypeOfApproval = catDto.TypeOfApproval,
@@ -135,7 +135,7 @@ namespace BankLoanMonetrySolu.Services
                         ProductPaperType = c.ProductPaperType,
                         DisbursementRequired = c.DisbursementRequired,
                         ApprovalLimit = c.ApprovalLimit,
-                        interest = c.interest,
+                        interest = c.Interest,
                         Fees = c.Fees,
                         Valuedate = c.Valuedate,
                         MaturityOrExpiry = c.MaturityOrExpiry

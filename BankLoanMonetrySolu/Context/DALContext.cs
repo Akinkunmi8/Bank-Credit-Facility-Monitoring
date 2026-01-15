@@ -35,7 +35,7 @@ namespace BankLoanMonetrySolu.Context
                 .HasOne(c => c.loanDetails)
                 .WithOne(f => f.Customer)
                 .HasForeignKey<FinacleData>(f => f.CustomerId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // 4️⃣ Seed Data for Testing Validation
             var customerId = Guid.Parse("11111111-1111-1111-1111-111111111111");
@@ -83,7 +83,7 @@ namespace BankLoanMonetrySolu.Context
                     AccNum = "1234567890",
                     CustomerName = "John Doe", // Match
                     ApprovalLimit = 4500000m,  // DISCREPANCY: 5.0M vs 4.5M
-                    interest = "15.5",         // Match
+                    Interest = 15.5m,         // Match
                     MaturityOrExpiry = new DateTime(2027, 12, 31), // Match
                     Directorate = "RETAIL BANKING"
                 }

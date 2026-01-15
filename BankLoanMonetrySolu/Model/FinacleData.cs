@@ -26,7 +26,7 @@ namespace BankLoanMonetrySolu.Model
         public decimal? INT_RATE { get; set; }
         public decimal? OVERDUE_AMT { get; set; }
         public DateTime? DATE_PAST_DUE { get; set; }
-        public DateTime? DAYS_PAST_DUE { get; set; }
+        public int DAYS_PAST_DUE { get; set; }
         public DateTime? DATE_GRANTED {  get; set; }
         public DateTime? TRANSACTION_DATE { get; set; }
         public DateTime? EXPIRY_DATE { get; set; }

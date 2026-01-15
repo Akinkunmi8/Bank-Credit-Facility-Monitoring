@@ -14,8 +14,8 @@
         public decimal? DisbursementRequired { get; set; }
         public decimal? OutstandingAfterDisbursement { get; set; }
         public decimal? ApprovalLimit { get; set; }
-        public string? interest {  get; set; }
-        public string? Fees { get; set; }
+        public decimal? Interest {  get; set; }
+        public decimal? Fees { get; set; }
         public string? ApprovalLevel { get; set; }
         public string? TypeOfApproval {  get; set; }
         public string? FacilityType { get; set; }

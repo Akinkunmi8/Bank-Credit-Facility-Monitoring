@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankLoanMonetrySolu.Migrations
 {
     [DbContext(typeof(DALContext))]
-    [Migration("20260112093019_SetDecimalPrecision")]
-    partial class SetDecimalPrecision
+    [Migration("20260115070222_CascadingAndDataModelRefactor")]
+    partial class CascadingAndDataModelRefactor
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -132,8 +132,11 @@ namespace BankLoanMonetrySolu.Migrations
                     b.Property<string>("FacilityType")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Fees")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal?>("Fees")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("Interest")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("MaturityOrExpiry")
                         .HasColumnType("datetime2");
@@ -156,9 +159,6 @@ namespace BankLoanMonetrySolu.Migrations
                     b.Property<decimal?>("currentOutstanding")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("interest")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.ToTable("cat");
@@ -171,9 +171,9 @@ namespace BankLoanMonetrySolu.Migrations
                             ApprovalLimit = 4500000m,
                             CustomerName = "John Doe",
                             Directorate = "RETAIL BANKING",
+                            Interest = 15.5m,
                             MaturityOrExpiry = new DateTime(2027, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Valuedate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            interest = "15.5"
+                            Valuedate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
                 });
 
@@ -353,8 +353,8 @@ namespace BankLoanMonetrySolu.Migrations
                     b.Property<DateTime?>("DATE_PAST_DUE")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DAYS_PAST_DUE")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("DAYS_PAST_DUE")
+                        .HasColumnType("int");
 
                     b.Property<string>("DETAILS_OF_SECURITIES_OTHERS")
                         .HasColumnType("nvarchar(max)");
@@ -541,6 +541,7 @@ namespace BankLoanMonetrySolu.Migrations
                             APPROVED = false,
                             CONFIRMED = false,
                             CustomerId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            DAYS_PAST_DUE = 0,
                             EXPIRY_DATE = new DateTime(2027, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FACILITY_TYPE = "Personal Loan",
                             FX_RATE = 0,
@@ -690,7 +691,7 @@ namespace BankLoanMonetrySolu.Migrations
                     b.HasOne("BankLoanMonetrySolu.Model.CustomerDetails", "Customer")
                         .WithOne("loanDetails")
                         .HasForeignKey("BankLoanMonetrySolu.Model.FinacleData", "CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Customer");
                 });

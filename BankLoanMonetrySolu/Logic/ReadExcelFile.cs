@@ -87,7 +87,7 @@ namespace BankLoanMonetrySolu.Logic
                     INT_RATE = GetDecimal(reader, columnMap, "INT_RATE"),
                     OVERDUE_AMT = GetDecimal(reader, columnMap, "OVERDUE_AMT"),
                     DATE_PAST_DUE = GetDate(reader, columnMap, "DATE_PAST_DUE"),
-                    DAYS_PAST_DUE = GetDate(reader, columnMap, "DAYS_PAST_DUE"),
+                    DAYS_PAST_DUE = GetInt(reader, columnMap, "DAYS_PAST_DUE") ?? 0,
                     DATE_GRANTED = GetDate(reader, columnMap, "DATE_GRANTED"),
                     TRANSACTION_DATE = GetDate(reader, columnMap, "TRANSACTION_DATE"),
                     EXPIRY_DATE = GetDate(reader, columnMap, "EXPIRY_DATE"),
