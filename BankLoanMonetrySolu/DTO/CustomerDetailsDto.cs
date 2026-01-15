@@ -5,7 +5,7 @@ namespace BankLoanMonetrySolu.DTO
     public class CustomerDetailsDto
     {
         public Guid Id { get; set; }
-        public string? Tittle { get; set; }
+        public string? Title { get; set; }
         public string? Firstname { get; set; }
         public string? Lastname { get; set; }
         public string? Middlename { get; set; }

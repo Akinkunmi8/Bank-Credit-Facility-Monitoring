@@ -76,7 +76,7 @@ namespace BankLoanMonetrySolu.Controllers
             });
         }
 
-        [HttpGet("View-LoanAndCustomrDetailt")]
+        [HttpGet("View-LoanAndCustomerDetails")]
         public async Task<IActionResult> ViewDetails(string appId)
         {
             var result = await _finacleService.GetCustormerAndLoanDetailsByAppId(appId);

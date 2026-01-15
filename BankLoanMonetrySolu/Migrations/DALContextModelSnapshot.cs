@@ -158,7 +158,7 @@ namespace BankLoanMonetrySolu.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("cat");
+                    b.ToTable("cat", (string)null);
 
                     b.HasData(
                         new
@@ -227,7 +227,7 @@ namespace BankLoanMonetrySolu.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("customerDetails");
+                    b.ToTable("customerDetails", (string)null);
 
                     b.HasData(
                         new
@@ -527,7 +527,7 @@ namespace BankLoanMonetrySolu.Migrations
                         .IsUnique()
                         .HasFilter("[CustomerId] IS NOT NULL");
 
-                    b.ToTable("finacleDatas");
+                    b.ToTable("finacleDatas", (string)null);
 
                     b.HasData(
                         new
