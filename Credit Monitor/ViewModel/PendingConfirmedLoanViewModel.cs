@@ -15,7 +15,7 @@ public class PendingConfirmedLoanViewModel
     public string? contracT_ACID { get; set; }
     public string? grouP_ID { get; set; }
     public string? customeR_ID { get; set; }
-    public string? accounT_NAME { get; set; }
+    public string accounT_NAME { get; set; }
     public string? facilitY_TYPE { get; set; }
     public string? accounT_CURRENCY { get; set; }
 

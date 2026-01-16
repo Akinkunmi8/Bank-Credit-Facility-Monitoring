@@ -22,31 +22,37 @@
                 <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
                     <i class="bi bi-bank2 me-2"></i>CREDIT MONITOR
                 </a>
-
-                <div class="d-flex align-items-center">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <div class="text-white me-3 d-none d-md-block">
-                            <small class="opacity-75">Logged in as:</small>
-                            <div class="fw-bold">
-                                @User.Identity.Name
-                                <span class="badge rounded-pill bg-white text-primary ms-1" style="font-size: 0.7rem;">
-                                    @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
-                                </span>
+                    <div class="d-flex align-items-center">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <div class="text-white me-3 d-none d-md-block text-end">
+                                <small class="opacity-75 d-block" style="line-height: 1;">Logged in as:</small>
+                                <div class="fw-bold">
+                                    @User.Identity.Name
+                                    <span class="badge rounded-pill bg-white text-primary ms-1" style="font-size: 0.7rem;">
+                                        @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                        <form asp-controller="Home" asp-action="Logout" method="post" class="m-0">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-sm btn-light text-danger fw-bold">
-                                <i class="bi bi-box-arrow-right"></i> Logout
-                            </button>
-                        </form>
-                    }
-                    else
-                    {
-                        <a class="btn btn-sm btn-light" asp-controller="Home" asp-action="Login">Login</a>
-                    }
-                </div>
+                            <form asp-controller="Home" asp-action="Logout" method="post" class="m-0">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-light text-danger fw-bold shadow-sm">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <div class="btn-group shadow-sm">
+                                <a class="btn btn-sm btn-light fw-bold" asp-controller="Home" asp-action="Login">
+                                    <i class="bi bi-person-fill me-1"></i>Login
+                                </a>
+                                <a class="btn btn-sm btn-outline-light fw-bold" asp-controller="Home" asp-action="Register">
+                                    <i class="bi bi-person-plus-fill me-1"></i>Register
+                                </a>
+                            </div>
+                        }
+                    </div>
             </div>
         </nav>
 
@@ -118,6 +124,21 @@
             </div>
         </div>
     </footer>
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div id="successToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        }
+    </div>
+
+    
 
     <style>
         /* Prevent the footer from overlapping the bottom of your table */
@@ -135,6 +156,15 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var toastEl = document.getElementById('successToast');
+            if (toastEl) {
+                var toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+                toast.show();
+            }
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -89,95 +89,67 @@
                         <span class="input-group-text bg-transparent border-end-0">
                             <i class="bi bi-search text-muted"></i>
                         </span>
-                        <input type="text" class="form-control border-start-0" placeholder="Quick Search by Application No or Client Name...">
+                        <input type="text" id="searchInput" class="form-control border-start-0"
+                               placeholder="Quick Search by Application No or Client Name...">
                     </div>
                 </div>
                 <div class="col-md-6 text-end">
-                    <span class="small text-muted me-2">Export To:</span>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-file-earmark-pdf text-danger"></i> PDF
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-file-earmark-spreadsheet text-success"></i> CSV
-                        </button>
-                        <button type="button" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-arrow-clockwise"></i> Refresh
-                        </button>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-file-earmark-pdf"></i> PDF</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</button>
+                        <button type="button" onclick="loadTable('', 1)" class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="ps-3">Application No.</th>
-                        <th>Client Name</th>
-                        <th>Product</th>
-                        <th>Sub Product</th>
-                        <th>Stage</th>
-                        <th>Since Day</th>
-                        <th>Location</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @* Added a check to ensure Model.loans is not null before calling Any() *@
-                    @if (Model?.loans != null && Model.loans.Any())
-                    {
-                        foreach (var loan in Model.loans)
-                        {
-                            <tr>
-                                <td class="ps-3">
-                                    <a asp-action="CustomerDetails" asp-route-id="@loan.id" class="fw-bold text-decoration-none">
-                                        @loan.id
-                                    </a>
-                                </td>
-                                <td>@loan.accounT_NAME</td>
-                                <td><small>@loan.facilitY_TYPE</small></td>
-                                <td>@loan.regioN_NAME</td>
-                                <td>
-                                    @if (loan.dayS_PAST_DUE > 0)
-                                    {
-                                        <span class="badge bg-danger">Past Due (@loan.dayS_PAST_DUE)</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success">Current</span>
-                                    }
-                                </td>
-                                <td>One week ago</td>
-                                <td>@loan.brancH_NAME</td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            @* Ensure colspan matches your table width (you have 7 <td> in the loop) *@
-                            <td colspan="7" class="text-center py-5 text-muted">
-                                No pending loans found for region: <strong>@User.FindFirst("Region")?.Value</strong>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <div class="card-footer bg-white border-top-0 py-2">
-            <div class="row align-items-center">
-                <div class="col-sm-6">
-                    <p class="mb-0 small text-muted">Total Records: <strong>99</strong> | Current Rows: <strong>99</strong></p>
+
+        <div id="tableContainer">
+            <div class="table-loader">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
-                <div class="col-sm-6">
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination pagination-sm justify-content-end mb-0">
-                            <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
-                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                        </ul>
-                    </nav>
-                </div>
+                <strong class="ms-2 text-primary">Updating records...</strong>
             </div>
+
+            <partial name="_LoanTablePartial" model="Model" />
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let timeout = null;
+
+            $('#searchInput').on('keyup', function () {
+                clearTimeout(timeout);
+                let searchTerm = $(this).val();
+
+                timeout = setTimeout(function () {
+                    loadTable(searchTerm, 1);
+                }, 500);
+            });
+        });
+
+                function loadTable(search, page) {
+            // 1. Show the loader
+            $(".table-loader").css("display", "flex");
+            $("#tableContainer table").css("opacity", "0.3"); // Dim the old data
+
+            $.ajax({
+                url: '@Url.Action("FilterLoans", "Dashboard")',
+                type: 'GET',
+                data: { searchTerm: search, page: page },
+                success: function (result) {
+                    // 2. Replace HTML and hide loader
+                    $('#tableContainer').html(result);
+                },
+                error: function () {
+                    alert("Connection error. Please try again.");
+                    $(".table-loader").hide();
+                    $("#tableContainer table").css("opacity", "1");
+                }
+            });
+        }
+    </script>
+}

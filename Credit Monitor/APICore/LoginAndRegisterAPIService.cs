@@ -18,7 +18,13 @@ namespace Credit_Monitor.APICore
         {
             var endpoint = "/api/account/login";
             var result = await _apiService.PostAsync<LoginResponseDto>(loginData, endpoint);
-            Console.WriteLine(result);
+            return result;
+        }
+
+        public async Task<RegisterResponseDto> RegisterAsync(RegisterRequestDto registerData)
+        {
+            var endpoint = "/api/account/register";
+            var result = await _apiService.PostAsync<RegisterResponseDto>(registerData, endpoint);
             return result;
         }
     }

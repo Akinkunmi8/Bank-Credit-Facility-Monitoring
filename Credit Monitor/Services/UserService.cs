@@ -1,20 +1,23 @@
-﻿using Credit_Monitor.Interfaces;
-using Credit_Monitor.Models;
-using Credit_Monitor.Data;
-using Credit_Monitor.ViewModel;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Runtime.CompilerServices;
+using AutoMapper;
 using Credit_Monitor.APIDto;
+using Credit_Monitor.Data;
+using Credit_Monitor.Interfaces;
+using Credit_Monitor.Models;
+using Credit_Monitor.ViewModel;
 
 namespace Credit_Monitor.Services
 {
     public class UserService : IUserService
     {
         private readonly ILoginAndRegisterAPIService _loginAndRegisterAPIService;
+        private readonly IMapper _mapper;
 
-        public UserService(ILoginAndRegisterAPIService loginAndRegisterAPIService)
+        public UserService(ILoginAndRegisterAPIService loginAndRegisterAPIService, IMapper mapper)
         {
             _loginAndRegisterAPIService = loginAndRegisterAPIService;
+            _mapper = mapper;
         }
         public async Task<LoginResponseViewModel> Authenticate(string username, string password)
         {
@@ -56,5 +59,11 @@ namespace Credit_Monitor.Services
             };
         }
 
+        public Task<RegisterResponseDto> RegisterUserAsync(RegisterViewModel model)
+        {
+            var registerRequest = _mapper.Map<RegisterRequestDto>(model);
+            var registerResponse = _loginAndRegisterAPIService.RegisterAsync(registerRequest);
+            return registerResponse;
+        }
     }
 }
