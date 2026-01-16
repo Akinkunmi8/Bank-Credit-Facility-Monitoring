@@ -2,14 +2,6 @@
 
 namespace BankLoanMonetrySolu.DTO
 {
-    //public class UploadFilesDto
-    //{
-    //    public string AppId { get; set; }
-
-    //    // List of files
-    //    public List<IFormFile> Files { get; set; }
-    //    public LoanDocumentType FileTypes { get; set; }
-    //}
 
 
     public enum LoanDocumentType
@@ -35,6 +27,14 @@ namespace BankLoanMonetrySolu.DTO
         [FromForm]
         public IFormFile File { get; set; }
         public LoanDocumentType DocType { get; set; }
+    }
+
+    public class FileViewDto
+    {
+        public Guid? FileId { get; set; }
+        public string? FileName { get; set; }
+        public string? DocType { get; set; }
+        public string? ContentType  { get; set; }
     }
 
 }

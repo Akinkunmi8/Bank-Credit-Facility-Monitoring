@@ -107,6 +107,19 @@ namespace BankLoanMonetrySolu.Controllers
             }
         }
 
+        [HttpGet("GetAllFilesInfo")]
+        public async Task<IActionResult> GetBatchFiles(Guid batchId)
+        {
+            if (batchId == Guid.Empty) return BadRequest("Invalid Batch ID");
+
+            var files = await _finacleData.GetAllFilesByBatchIdAsync(batchId);
+
+            if (files == null || !files.Any())
+                return NotFound("No files found for this batch.");
+
+            return Ok(files);
+        }
+
 
 
     }

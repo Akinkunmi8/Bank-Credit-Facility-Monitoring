@@ -471,6 +471,37 @@ namespace BankLoanMonetrySolu.Services
             }
         }
 
+        public async Task<List<FileViewDto>> GetAllFilesByBatchIdAsync(Guid batchId)
+        {
+            var files = await _context.LoanFileItem
+                .Where(f => f.FileBatchId == batchId)
+                .ToListAsync();
+
+            return files.Select(f => new FileViewDto
+            {
+                FileId = f.Id,
+                FileName = f.FileName,
+                DocType = f.DocumentType.ToString(),
+                // Map the ContentType based on extension
+                ContentType = GetMimeType(f.FileFormat),
+            }).ToList();
+        }
+
+        private string GetMimeType(string extension)
+        {
+            return extension.ToLower() switch
+            {
+                "pdf" => "application/pdf",
+                "jpg" or "jpeg" => "image/jpeg",
+                "png" => "image/png",
+                "txt" => "text/plain",
+                "csv" => "text/csv",
+                "xls" => "application/vnd.ms-excel",
+                "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                _ => "application/octet-stream"
+            };
+        }
+
 
     }
 }
