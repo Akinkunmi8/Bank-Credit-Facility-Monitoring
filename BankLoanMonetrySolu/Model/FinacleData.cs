@@ -95,6 +95,9 @@ namespace BankLoanMonetrySolu.Model
         public DateTime? PROCESSEDATE { get; set; }
         public Guid? CustomerId { get; set; }
         public CustomerDetails? Customer { get; set; }
+        public Guid? LoanFileBatchId { get; set; }
+        public LoanFileBatch? LoanFileBatch { get; set; }
+
 
     }
 }

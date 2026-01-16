@@ -17,6 +17,8 @@ namespace BankLoanMonetrySolu.IServices
         Task<FinacleResponseDto> GetALLLoans();
         Task<FinacleResponseDto> GetCustormerAndLoanDetailsByAppId(string appId);
         Task<FincaleCompareDataDto> GetFinacleCompareData(string acctNum);
+        //Task<Guid>SaveFilesAsync(string appId, List<IFormFile> files, LoanDocumentType fileType);
+        Task<Guid> SaveFilesAsync(UploadFilesDto dto);
 
 
     }

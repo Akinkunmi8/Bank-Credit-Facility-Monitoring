@@ -93,6 +93,7 @@ namespace BankLoanMonetrySolu.DTO
         public bool RECONFIRMED { get; set; }
         public bool APPROVED { get; set; }
         public DateTime? PROCESSEDATE { get; set; }
+        public Guid? LoanFileBatchId { get; set; }
         public Guid? CustomerId { get; set; }
         public CustomerDetailsDto? Customer { get; set; }
     }

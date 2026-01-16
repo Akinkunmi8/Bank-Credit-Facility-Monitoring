@@ -15,6 +15,8 @@ namespace BankLoanMonetrySolu.Context
         public DbSet<FinacleData> finacleDatas { get; set; }
         public DbSet<CreditAvailmentTicket> cat { get; set; }
         public DbSet<CustomerDetails> customerDetails { get; set; }
+        public DbSet<LoanFileBatch> LoanFileBatch { get; set; }
+        public DbSet<LoanFileItem> LoanFileItem { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,64 +32,85 @@ namespace BankLoanMonetrySolu.Context
                 property.SetColumnType("decimal(18,2)");
             }
 
-            // 3️⃣ Relationships
+            // Customer ↔ FinacleData (1–1)
             modelBuilder.Entity<CustomerDetails>()
                 .HasOne(c => c.loanDetails)
                 .WithOne(f => f.Customer)
                 .HasForeignKey<FinacleData>(f => f.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // 4️⃣ Seed Data for Testing Validation
-            var customerId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            // LoanFileBatch uniqueness per AppId
+            modelBuilder.Entity<LoanFileBatch>()
+                .HasIndex(x => x.AppId)
+                .IsUnique();
 
-            modelBuilder.Entity<CustomerDetails>().HasData(
-                new CustomerDetails
-                {
-                    Id = customerId,
-                    Tittle = "Mr",
-                    Firstname = "John",
-                    Lastname = "Doe",
-                    Email = "john.doe@test.com",
-                    phoneNum = "08030000001",
-                    DOB = "21-05-1989",
-                    MaritalStatus = "Married",
-                    gender = "Male",
-                    ResidentStatus = "Resident",
-                    NameOfEmployer = "UBA",
-                    Nationallity = "Nigerian",
-                    ApplicantType = "Individual"
-                }
-            );
+            // LoanFileBatch ↔ LoanFileItem (1–Many)
+            modelBuilder.Entity<LoanFileItem>()
+                .HasOne(x => x.FileBatch)
+                .WithMany(x => x.Files)
+                .HasForeignKey(x => x.FileBatchId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Seed Finacle (Core Banking Side)
-            modelBuilder.Entity<FinacleData>().HasData(
-                new FinacleData
-                {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                    ACCOUNT_NUMBER = "1234567890",
-                    ACCOUNT_NAME = "John Doe",
-                    SANCTION_LIMIT = 5000000m,
-                    INT_RATE = 15.5m,
-                    EXPIRY_DATE = new DateTime(2027, 12, 31),
-                    CustomerId = customerId,
-                    SBU_NAME = "RETAIL BANKING",
-                    FACILITY_TYPE = "Personal Loan"
-                }
-            );
+            // FinacleData ↔ LoanFileBatch
+            modelBuilder.Entity<FinacleData>()
+                .HasOne(f => f.LoanFileBatch)
+                .WithMany()
+                .HasForeignKey(f => f.LoanFileBatchId)
+                .OnDelete(DeleteBehavior.SetNull);
 
-            // Seed CAT (Internal Application Side)
-            modelBuilder.Entity<CreditAvailmentTicket>().HasData(
-                new CreditAvailmentTicket
-                {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                    AccNum = "1234567890",
-                    CustomerName = "John Doe", // Match
-                    ApprovalLimit = 4500000m,  // DISCREPANCY: 5.0M vs 4.5M
-                    Interest = 15.5m,         // Match
-                    MaturityOrExpiry = new DateTime(2027, 12, 31), // Match
-                    Directorate = "RETAIL BANKING"
-                }
-            );
+
+
+            //// 4️⃣ Seed Data for Testing Validation
+            //var customerId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+            //modelBuilder.Entity<CustomerDetails>().HasData(
+            //    new CustomerDetails
+            //    {
+            //        Id = customerId,
+            //        Tittle = "Mr",
+            //        Firstname = "John",
+            //        Lastname = "Doe",
+            //        Email = "john.doe@test.com",
+            //        phoneNum = "08030000001",
+            //        DOB = "21-05-1989",
+            //        MaritalStatus = "Married",
+            //        gender = "Male",
+            //        ResidentStatus = "Resident",
+            //        NameOfEmployer = "UBA",
+            //        Nationallity = "Nigerian",
+            //        ApplicantType = "Individual"
+            //    }
+            //);
+
+            //// Seed Finacle (Core Banking Side)
+            //modelBuilder.Entity<FinacleData>().HasData(
+            //    new FinacleData
+            //    {
+            //        Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            //        ACCOUNT_NUMBER = "1234567890",
+            //        ACCOUNT_NAME = "John Doe",
+            //        SANCTION_LIMIT = 5000000m,
+            //        INT_RATE = 15.5m,
+            //        EXPIRY_DATE = new DateTime(2027, 12, 31),
+            //        CustomerId = customerId,
+            //        SBU_NAME = "RETAIL BANKING",
+            //        FACILITY_TYPE = "Personal Loan"
+            //    }
+            //);
+
+            //// Seed CAT (Internal Application Side)
+            //modelBuilder.Entity<CreditAvailmentTicket>().HasData(
+            //    new CreditAvailmentTicket
+            //    {
+            //        Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            //        AccNum = "1234567890",
+            //        CustomerName = "John Doe", // Match
+            //        ApprovalLimit = 4500000m,  // DISCREPANCY: 5.0M vs 4.5M
+            //        Interest = 15.5m,         // Match
+            //        MaturityOrExpiry = new DateTime(2027, 12, 31), // Match
+            //        Directorate = "RETAIL BANKING"
+            //    }
+            //);
 
             // 5️⃣ Rename Identity tables
             modelBuilder.Entity<AppUsers>().ToTable("Users");

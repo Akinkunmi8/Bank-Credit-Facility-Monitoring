@@ -158,20 +158,7 @@ namespace BankLoanMonetrySolu.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("cat", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            AccNum = "1234567890",
-                            ApprovalLimit = 4500000m,
-                            CustomerName = "John Doe",
-                            Directorate = "RETAIL BANKING",
-                            Interest = 15.5m,
-                            MaturityOrExpiry = new DateTime(2027, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Valuedate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        });
+                    b.ToTable("cat");
                 });
 
             modelBuilder.Entity("BankLoanMonetrySolu.Model.CustomerDetails", b =>
@@ -227,25 +214,7 @@ namespace BankLoanMonetrySolu.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("customerDetails", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            ApplicantType = "Individual",
-                            DOB = "21-05-1989",
-                            Email = "john.doe@test.com",
-                            Firstname = "John",
-                            Lastname = "Doe",
-                            MaritalStatus = "Married",
-                            NameOfEmployer = "UBA",
-                            Nationallity = "Nigerian",
-                            ResidentStatus = "Resident",
-                            Tittle = "Mr",
-                            gender = "Male",
-                            phoneNum = "08030000001"
-                        });
+                    b.ToTable("customerDetails");
                 });
 
             modelBuilder.Entity("BankLoanMonetrySolu.Model.FinacleData", b =>
@@ -413,6 +382,9 @@ namespace BankLoanMonetrySolu.Migrations
                     b.Property<decimal?>("LOAN_BALANCE_LCY")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<Guid?>("LoanFileBatchId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal?>("NEWCUM_REPAYMENT_AMOUNT_DUE")
                         .HasColumnType("decimal(18,2)");
 
@@ -527,27 +499,60 @@ namespace BankLoanMonetrySolu.Migrations
                         .IsUnique()
                         .HasFilter("[CustomerId] IS NOT NULL");
 
-                    b.ToTable("finacleDatas", (string)null);
+                    b.HasIndex("LoanFileBatchId");
 
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            ACCOUNT_NAME = "John Doe",
-                            ACCOUNT_NUMBER = "1234567890",
-                            APPROVED = false,
-                            CONFIRMED = false,
-                            CustomerId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            DAYS_PAST_DUE = 0,
-                            EXPIRY_DATE = new DateTime(2027, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FACILITY_TYPE = "Personal Loan",
-                            FX_RATE = 0,
-                            INT_RATE = 15.5m,
-                            RECONFIRMED = false,
-                            SANCTION_LIMIT = 5000000m,
-                            SBU_NAME = "RETAIL BANKING",
-                            TOD_LIMIT = 0
-                        });
+                    b.ToTable("finacleDatas");
+                });
+
+            modelBuilder.Entity("BankLoanMonetrySolu.Model.LoanFileBatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AppId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppId")
+                        .IsUnique();
+
+                    b.ToTable("LoanFileBatch");
+                });
+
+            modelBuilder.Entity("BankLoanMonetrySolu.Model.LoanFileItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DocumentType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("FileBatchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FileFormat")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileBatchId");
+
+                    b.ToTable("LoanFileItem");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -690,7 +695,25 @@ namespace BankLoanMonetrySolu.Migrations
                         .HasForeignKey("BankLoanMonetrySolu.Model.FinacleData", "CustomerId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("BankLoanMonetrySolu.Model.LoanFileBatch", "LoanFileBatch")
+                        .WithMany()
+                        .HasForeignKey("LoanFileBatchId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Customer");
+
+                    b.Navigation("LoanFileBatch");
+                });
+
+            modelBuilder.Entity("BankLoanMonetrySolu.Model.LoanFileItem", b =>
+                {
+                    b.HasOne("BankLoanMonetrySolu.Model.LoanFileBatch", "FileBatch")
+                        .WithMany("Files")
+                        .HasForeignKey("FileBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FileBatch");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -747,6 +770,11 @@ namespace BankLoanMonetrySolu.Migrations
             modelBuilder.Entity("BankLoanMonetrySolu.Model.CustomerDetails", b =>
                 {
                     b.Navigation("loanDetails");
+                });
+
+            modelBuilder.Entity("BankLoanMonetrySolu.Model.LoanFileBatch", b =>
+                {
+                    b.Navigation("Files");
                 });
 #pragma warning restore 612, 618
         }

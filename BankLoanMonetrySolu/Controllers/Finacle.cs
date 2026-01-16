@@ -1,4 +1,5 @@
-﻿using BankLoanMonetrySolu.IServices;
+﻿using BankLoanMonetrySolu.DTO;
+using BankLoanMonetrySolu.IServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -72,6 +73,42 @@ namespace BankLoanMonetrySolu.Controllers
             var response = await _finacleData.GetFinacleCompareData(acctNum);
             return Ok(response);
         }
+
+        [Consumes("multipart/form-data")]
+        [HttpPost("upload-loan-files")]
+        public async Task<IActionResult> UploadLoanFiles([FromForm] UploadFilesDto request)
+        {
+            // Simplified validation: The DTO now contains the list of File + Type pairs
+            if (request == null || string.IsNullOrWhiteSpace(request.AppId))
+                return BadRequest("AppId is required");
+
+            if (request.FileItems == null || !request.FileItems.Any())
+                return BadRequest("No files or document types provided");
+
+            try
+            {
+                // Pass the whole DTO to the service
+                var batchId = await _finacleData.SaveFilesAsync(request);
+
+                return Ok(new
+                {
+                    isSuccess = true,
+                    appId = request.AppId,
+                    loanFileId = batchId
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    isSuccess = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+
+
     }
 }
 
