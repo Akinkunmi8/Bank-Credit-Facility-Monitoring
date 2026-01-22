@@ -2,6 +2,7 @@
 using BankLoanMonetrySolu.DTO;
 using BankLoanMonetrySolu.IServices;
 using BankLoanMonetrySolu.Model;
+using BankLoanMonetrySolu.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -22,13 +23,14 @@ namespace BankLoanMonetrySolu.Services
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly JwtSettings _jwtSettings;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AccountService(
             DALContext context,
             UserManager<AppUsers> userManager,
             SignInManager<AppUsers> signInManager,
             IConfiguration configuration, IOptions<JwtSettings> jwtOptions,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _userManager = userManager;
@@ -36,15 +38,16 @@ namespace BankLoanMonetrySolu.Services
             _configuration = configuration;
             _jwtSettings = jwtOptions.Value;
             _roleManager = roleManager;
+            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<AccUserResDto> RegisterUser(AccRegDto user)
         {
-            // Check if user already exists
+            // 1️⃣ Check if user already exists
             var existingUser = await _userManager.FindByEmailAsync(user.Email);
             if (existingUser != null)
                 return new AccUserResDto { IsSuccess = false, ResponseMessage = "User already exists" };
 
-            // Create new user
+            // 2️⃣ Create new user
             var newUser = new AppUsers
             {
                 UserName = user.Email,
@@ -54,7 +57,7 @@ namespace BankLoanMonetrySolu.Services
                 IsActive = true
             };
 
-            // Create user with password
+            // 3️⃣ Create user with password
             var result = await _userManager.CreateAsync(newUser, user.Password);
             if (!result.Succeeded)
                 return new AccUserResDto
@@ -63,26 +66,41 @@ namespace BankLoanMonetrySolu.Services
                     ResponseMessage = string.Join(", ", result.Errors.Select(e => e.Description))
                 };
 
-            // Assign role submitted during registration
+            // 4️⃣ Assign role submitted during registration
             if (!string.IsNullOrWhiteSpace(user.Role))
             {
-                // Check if role exists, if not create it
                 var roleExists = await _roleManager.RoleExistsAsync(user.Role);
                 if (!roleExists)
                 {
                     await _roleManager.CreateAsync(new IdentityRole(user.Role));
                 }
 
-                // Assign role to user
                 await _userManager.AddToRoleAsync(newUser, user.Role);
             }
 
+            // 5️⃣ Populate Audit table for user registration
+            var ipAddress = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "Unknown";
+
+            var audit = new Audit
+            {
+                Id = Guid.NewGuid(),
+                UserId = newUser.Id,           // Newly created user ID
+                Action = AuditAction.CreateUser,
+                IpAddress = ipAddress,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.audits.Add(audit);
+            await _context.SaveChangesAsync();
+
+            // 6️⃣ Return response
             return new AccUserResDto
             {
                 IsSuccess = true,
                 ResponseMessage = "User registered successfully"
             };
         }
+
 
 
         // 2️⃣ Login User
@@ -117,11 +135,6 @@ namespace BankLoanMonetrySolu.Services
                 Token = token.Result,
                 User = new AccUserDto
                 {
-                    //UserId = Guid.Parse(user.Id),
-                    //Fullname = user.Fullname,
-                    //Email = user.Email,
-                    //Region = user.Region,
-                    //Role = roles.FirstOrDefault(),
                     IsActive = user.IsActive
                 }
             };

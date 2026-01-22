@@ -3,8 +3,12 @@ using BankLoanMonetrySolu.Context;
 using BankLoanMonetrySolu.DTO;
 using BankLoanMonetrySolu.IServices;
 using BankLoanMonetrySolu.Model;
+using BankLoanMonetrySolu.Models;
+using Contracts.Dto;
+using Contracts.Publishing;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace BankLoanMonetrySolu.Services
@@ -13,11 +17,16 @@ namespace BankLoanMonetrySolu.Services
     {
         private readonly DALContext _context;
         private readonly IMapper _mapper;
+        private readonly IEventPublisher _eventPublisher;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public FinacleDataService(DALContext context, IMapper mapper)
+        public FinacleDataService(DALContext context, IMapper mapper, IEventPublisher eventPublisher,
+            IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _mapper = mapper;
+            _eventPublisher = eventPublisher;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<FinacleResponseDto> GetAllAprovedFinacleData( string region)
@@ -239,52 +248,61 @@ namespace BankLoanMonetrySolu.Services
 
         public async Task<bool> UpdateFinacleStatus(FinacleStatusUpdateDto dto)
         {
-            // 1️⃣ Convert string ApplicationId to Guid
-            if (!Guid.TryParse(dto.ApplicationId, out Guid appGuid))
-                return false; // invalid ApplicationId
+            var httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext == null || !httpContext.User.Identity.IsAuthenticated)
+                throw new UnauthorizedAccessException("User not logged in");
 
-            // 2️⃣ Fetch the record
-            var record = await _context.finacleDatas
-                .FirstOrDefaultAsync(x => x.Id == appGuid);
+            var userId = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
 
-            if (record == null)
-                return false; // record not found
+            // Use these for audit
+            var audit = new Audit
+            {
+                Id = Guid.NewGuid(),
+                AppId = Guid.TryParse(dto.ApplicationId, out var appGuid) ? appGuid : Guid.Empty,
+                UserId = userId,
+                IpAddress = ipAddress,
+                CreatedAt = DateTime.UtcNow,
+            };
 
-            // 3️⃣ Current timestamp for TAT
-            var actionTime = DateTime.Now;
+            // Parse string action into enum
+            if (!Enum.TryParse<AuditAction>(dto.Action, true, out var actionEnum))
+            {
+                throw new ArgumentException($"Invalid action: {dto.Action}");
+            }
 
-            // 4️⃣ Update based on action
+            audit.Action = actionEnum;
+
+            _context.audits.Add(audit);
+
+            // Existing status update logic
+            var record = await _context.finacleDatas.FirstOrDefaultAsync(x => x.Id == audit.AppId);
+            if (record == null) return false;
+
+            var actionTime = DateTime.UtcNow;
             switch (dto.Action?.ToLower())
             {
                 case "confirm":
                     record.CONFIRMED = true;
-                    record.PROCESSEDATE = actionTime; // timestamp for TAT
-                    break;
-
-                case "reconfirm":
-                    record.RECONFIRMED = true;
                     record.PROCESSEDATE = actionTime;
                     break;
-
                 case "approve":
                     record.APPROVED = true;
                     record.PROCESSEDATE = actionTime;
                     break;
-
                 case "reject":
-                    record.RECONFIRMED = true; // or a REJECTED flag if you have one
+                    record.RECONFIRMED = true;
                     record.PROCESSEDATE = actionTime;
                     break;
-
                 default:
                     throw new ArgumentException($"Invalid action: {dto.Action}");
             }
 
-            // 5️⃣ Save changes
             await _context.SaveChangesAsync();
-
             return true;
         }
+
+
 
 
         public async Task<FinacleResponseDto> GetCustormerAndLoanDetailsByAppId(string appId)

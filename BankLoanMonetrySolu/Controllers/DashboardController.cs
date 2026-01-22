@@ -1,5 +1,6 @@
 ﻿using BankLoanMonetrySolu.DTO;
 using BankLoanMonetrySolu.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -60,7 +61,7 @@ namespace BankLoanMonetrySolu.Controllers
             var result = await _tatService.GetBeyondTAT(region);
             return Ok(result);
         }
-
+        [Authorize]
         [HttpPost("update-status")]
         public async Task<IActionResult> UpdateStatus([FromBody] FinacleStatusUpdateDto dto)
         {

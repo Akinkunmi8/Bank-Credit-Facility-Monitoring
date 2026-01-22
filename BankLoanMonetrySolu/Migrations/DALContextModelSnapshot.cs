@@ -555,6 +555,37 @@ namespace BankLoanMonetrySolu.Migrations
                     b.ToTable("LoanFileItem");
                 });
 
+            modelBuilder.Entity("BankLoanMonetrySolu.Models.Audit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Action")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("AppId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("audits");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -714,6 +745,24 @@ namespace BankLoanMonetrySolu.Migrations
                         .IsRequired();
 
                     b.Navigation("FileBatch");
+                });
+
+            modelBuilder.Entity("BankLoanMonetrySolu.Models.Audit", b =>
+                {
+                    b.HasOne("BankLoanMonetrySolu.Model.FinacleData", "FinacleData")
+                        .WithMany()
+                        .HasForeignKey("AppId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("BankLoanMonetrySolu.Model.AppUsers", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FinacleData");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

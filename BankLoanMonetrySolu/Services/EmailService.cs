@@ -1,10 +1,10 @@
-﻿using BankLoanMonetrySolu.IServices;
+﻿using Contracts.Notifications;
 using System.Net;
 using System.Net.Mail;
 
 namespace BankLoanMonetrySolu.Services
 {
-    public class EmailService : IEmailService
+    public class EmailService : IEmailServices
     {
         private readonly IConfiguration _config;
 
@@ -13,26 +13,26 @@ namespace BankLoanMonetrySolu.Services
             _config = config;
         }
 
-        public async Task SendEmailAsync(string to, string subject, string body)
+        public async Task SendEmailAsync(string receiver, string subject, string body)
         {
             var mail = new MailMessage
             {
-                From = new MailAddress(_config["Email:From"]),
+                From = new MailAddress(_config["EmailSettings:SenderEmail"]),
                 Subject = subject,
                 Body = body,
                 IsBodyHtml = true
             };
 
-            mail.To.Add(to);
+            mail.To.Add(receiver);
 
             using var smtp = new SmtpClient(
-                _config["Email:Host"],
-                int.Parse(_config["Email:Port"])
+                _config["EmailSettings:SmtpServer"],
+                int.Parse(_config["EmailSettings:Port"])
             )
             {
                 Credentials = new NetworkCredential(
-                    _config["Email:Username"],
-                    _config["Email:Password"]
+                    _config["EmailSettings:Username"],
+                    _config["EmailSettings:Password"]
                 ),
                 EnableSsl = true
             };

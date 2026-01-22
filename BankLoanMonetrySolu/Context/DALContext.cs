@@ -1,4 +1,5 @@
 ﻿using BankLoanMonetrySolu.Model;
+using BankLoanMonetrySolu.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ namespace BankLoanMonetrySolu.Context
         public DbSet<CustomerDetails> customerDetails { get; set; }
         public DbSet<LoanFileBatch> LoanFileBatch { get; set; }
         public DbSet<LoanFileItem> LoanFileItem { get; set; }
+        public DbSet<Audit> audits { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -57,6 +59,20 @@ namespace BankLoanMonetrySolu.Context
                 .WithMany()
                 .HasForeignKey(f => f.LoanFileBatchId)
                 .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Audit>(entity =>
+            {
+                entity.HasKey(x => x.Id);
+
+                entity.HasOne(x => x.FinacleData)
+                      .WithMany()
+                      .HasForeignKey(x => x.AppId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.User)
+                      .WithMany()
+                      .HasForeignKey(x => x.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
 
 
 

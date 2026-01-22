@@ -41,6 +41,17 @@ namespace BankLoanMonetrySolu.Services
                 TATCount = count.ToString()
             };
         }
+        public async Task<List<Guid>> GetBeyondTATAppIds(string region)
+        {
+            return await _context.finacleDatas
+                .Where(x =>
+                    x.PROCESSEDATE < DateTime.UtcNow.AddHours(-2) &&
+                    x.CONFIRMED == false &&
+                    x.REGION == region)
+                .Select(x => x.Id)
+                .ToListAsync();
+        }
+
     }
 
 
