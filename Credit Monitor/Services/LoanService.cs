@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
 using Credit_Monitor.Interfaces;
-using Credit_Monitor.Models;
 using Credit_Monitor.ViewModel;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Credit_Monitor.Services
 {
@@ -10,66 +8,80 @@ namespace Credit_Monitor.Services
     {
         private readonly ILoanRepository _loanRepository;
         private readonly IMapper _mapper;
-        public LoanService(ILoanRepository loanRepository, IMapper mapper)
+        private readonly ILoanAPIService _loanAPIservice;
+        private readonly ICatAPIService _catAPIservice;
+        public LoanService(ILoanRepository loanRepository, IMapper mapper, ILoanAPIService loanAPIservice, ICatAPIService catAPIservice)
         {
             _loanRepository = loanRepository;
             _mapper = mapper;
+            _loanAPIservice = loanAPIservice;
+            _catAPIservice = catAPIservice;
         }
-        public async Task<PendingConfirmedLoanViewModel?> GetPendingConfirmedLoanByIdAsync(string id)
+        public async Task<PendingLoanWithCustomerDetailsViewModel?> GetPendingConfirmedLoanByIdAsync(string id)
         {
-            var loan = await _loanRepository.GetPendingConfirmedLoanByIdAsync(id);
+            var loan = await _loanAPIservice.GetPendingLoanById(id);
             if (loan == null) return null;
-            return _mapper.Map<PendingConfirmedLoanViewModel>(loan);
+            var loanVM = _mapper.Map<PendingConfirmedLoanViewModel>(loan);
+            var customerDetails = _mapper.Map<CustomerDetailsViewModel>(loan.customer);
+            return new PendingLoanWithCustomerDetailsViewModel
+            {
+                loan = loanVM,
+                customer = customerDetails
+            };
         }
 
         public async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetPendingConfirmedLoansByRegion(string region)
         {
-            var loans = await _loanRepository.GetPendingConfirmedLoansByRegionAsync(region);
+            var loans = await _loanAPIservice.GetPendingLoansByRegion(region);
+            if (loans == null)
+            {
+                return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+            }
             return _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
         }
 
-        public async Task<PendingConfirmedLoanViewModel?> GetPendingConfirmedLoanByAccNumAsync(string AccNum)
+        public async Task<FinacleDataViewModel?> GetPendingConfirmedLoanByAccNumAsync(string AccNum)
         {
-            var loan = await _loanRepository.GetPendingConfirmedLoanByAccNumAsync(AccNum);
-            return _mapper.Map<PendingConfirmedLoanViewModel>(loan);
+            var loan = await _loanAPIservice.GetPendingLoanByAccountNumber(AccNum);
+            return _mapper.Map<FinacleDataViewModel>(loan);
         }
 
         public async Task<CATViewModel> GetCustomerLoanDetailsfromCATAsync(string AccNum)
         {
-            var data = await _loanRepository.GetCustomerLoanDetailsfromCAT(AccNum);
+            var data = await _catAPIservice.GetCustomerLoanDetailsfromCAT(AccNum);
             return _mapper.Map<CATViewModel>(data);   
         }
 
         public async Task<DiscrepanciesViewModel> ValidateLoanDiscrepancies(string AccNum)
         {
-            var finnacle = await _loanRepository.GetPendingConfirmedLoanByAccNumAsync(AccNum);
-            var cat = await _loanRepository.GetCustomerLoanDetailsfromCAT(AccNum);
+            var finnacle = await _loanAPIservice.GetPendingLoanByAccountNumber(AccNum);
+            var cat = await _catAPIservice.GetCustomerLoanDetailsfromCAT(AccNum);
 
             var result = new DiscrepanciesViewModel { AccNum = AccNum };
 
             if (finnacle == null || cat == null) return result;
 
-            result.CustomerName = CompareStrings(finnacle.accounT_NAME, cat.customerName, "Customer Name");
+            result.CustomerName = CompareStrings(finnacle.AccountName, cat.CustomerName, "Customer Name");
 
-            result.Directorate = CompareStrings(finnacle.sbU_NAME, cat.directorate, "Directorate/SBU");
+            result.Directorate = CompareStrings(finnacle.SbuName, cat.Directorate, "Directorate/SBU");
 
-            result.FacilityType = CompareStrings(finnacle.facilitY_TYPE, cat.facilityType, "Facility Type");
+            result.FacilityType = CompareStrings(finnacle.FacilityType, cat.FacilityType, "Facility Type");
 
-            result.Fee = CompareDecimals(finnacle.fX_RATE, cat.fees, "Fee");
+            result.Fee = CompareDecimals(finnacle.FxRate, cat.Fees, "Fee");
            
-            result.ApprovalLimit = CompareDecimals(finnacle.sanctioN_LIMIT, cat.approvalLimit, "Limit");
+            result.ApprovalLimit = CompareDecimals(finnacle.SanctionLimit, cat.ApprovalLimit, "Limit");
 
-            decimal FinnacleTotalBalance = finnacle.totaL_BALANCE_LCY != 0
-                                           ? finnacle.totaL_BALANCE_LCY
-                                           : finnacle.totaL_BALANCE_FCY;
+            decimal FinnacleTotalBalance = finnacle.TotalBalanceLcy != 0
+                                           ? finnacle.TotalBalanceLcy
+                                           : finnacle.TotalBalanceFcy;
 
-            result.DisbursmentRequired = CompareDecimals(FinnacleTotalBalance, cat.disbursementRequired, "Disbursed Amount");
+            result.DisbursmentRequired = CompareDecimals(FinnacleTotalBalance, cat.DisbursementRequired, "Disbursed Amount");
 
-            result.Interest = CompareDecimals(finnacle.inT_RATE, cat.interest, "Interest Rate", isPercentage: true);
+            result.Interest = CompareDecimals(finnacle.IntRate, cat.Interest, "Interest Rate", isPercentage: true);
 
-            result.MaturityDate = CompareDates(finnacle.expirY_DATE, cat.maturityOrExpiry, "Maturity Date");
+            result.MaturityDate = CompareDates(finnacle.ExpiryDate, cat.MaturityOrExpiry, "Maturity Date");
 
-            result.ValueDate = CompareDates(finnacle.datE_GRANTED, cat.valuedate, "Value Date");
+            result.ValueDate = CompareDates(finnacle.DateGranted, cat.ValueDate, "Value Date");
 
 
 

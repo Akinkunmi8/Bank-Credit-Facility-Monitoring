@@ -7,7 +7,7 @@
 </div>
 
 <div class="mt-4">
-    <p class="fw-bold text-dark border-start border-primary border-4 ps-2 mb-3">Account Identifiers</p>
+    <p class="fw-bold text-dark border-start border-primary border-4 ps-2 mb-3">Account & Sector Identifiers</p>
     <div class="row g-3 mb-4">
         <div class="col-md-4">
             <div class="row align-items-center">
@@ -17,32 +17,57 @@
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Contract ID:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-light" value="@Model.contracT_ID" readonly></div>
+                <label class="col-sm-5 col-form-label small fw-bold">Contract ID / ACID:</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control bg-light" value="@Model.contracT_ID" readonly>
+                        <input type="text" class="form-control bg-light" value="@Model.contracT_ACID" readonly>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Customer ID:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-light" value="@Model.customeR_ID" readonly></div>
+                <label class="col-sm-5 col-form-label small fw-bold">Customer / Group ID:</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control bg-light" value="@Model.customeR_ID" readonly title="Customer ID">
+                        <input type="text" class="form-control bg-light" value="@Model.grouP_ID" readonly title="Group ID">
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Contract ACID:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-light" value="@Model.contracT_ACID" readonly></div>
+                <label class="col-sm-5 col-form-label small fw-bold">Scheme / GL Asset:</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control bg-light text-primary fw-bold" value="@Model.schM_CODE" readonly title="Scheme Code">
+                        <input type="text" class="form-control bg-light" value="@Model.gL_ASSET" readonly title="GL Asset">
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Facility Type:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-light" value="@Model.facilitY_TYPE" readonly title="@Model.facilitY_TYPE"></div>
+                <label class="col-sm-5 col-form-label small fw-bold">Sector (Desc/Code):</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control bg-light" value="@Model.cusT_SECTOR_DESC" readonly>
+                        <input type="text" class="form-control bg-light" value="@Model.cusT_SECTOR" readonly style="max-width: 60px;">
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Scheme Code:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-light" value="@Model.schM_CODE" readonly></div>
+                <label class="col-sm-5 col-form-label small fw-bold">Sub-Sector:</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control bg-light" value="@Model.cusT_SUB_SECTOR_DESC" readonly>
+                        <input type="text" class="form-control bg-light" value="@Model.cusT_SUB_SECTOR" readonly style="max-width: 60px;">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -51,208 +76,287 @@
     <div class="row g-3 mb-4">
         <div class="col-md-4">
             <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Sanction Limit:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.sanctioN_LIMIT.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Loan Balance (LCY):</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm text-danger fw-bold" value="@Model.loaN_BALANCE_LCY.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Total Balance (LCY):</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.totaL_BALANCE_LCY.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Operative Balance:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.operativE_ACCT_BALANCE_LCY.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Interest Rate:</label>
+                <label class="col-sm-5 col-form-label small fw-bold">Sanction / TOD Limit:</label>
                 <div class="col-sm-7">
                     <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" value="@Model.inT_RATE">
+                        <input type="text" class="form-control fw-bold" value="@Model.sanctioN_LIMIT.ToString("N2")" title="Sanction">
+                        <input type="text" class="form-control" value="@Model.toD_LIMIT.ToString("N2")" title="TOD">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Loan Bal (LCY/FCY):</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control text-danger fw-bold" value="@Model.loaN_BALANCE_LCY.ToString("N2")">
+                        <input type="text" class="form-control" value="@Model.loaN_BALANCE_FCY.ToString("N2")">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Total Bal (LCY/FCY):</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" value="@Model.totaL_BALANCE_LCY.ToString("N2")">
+                        <input type="text" class="form-control" value="@Model.totaL_BALANCE_FCY.ToString("N2")">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Operative Bal LCY:</label>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm text-success fw-bold" value="@Model.operativE_ACCT_BALANCE_LCY.ToString("N2")"></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Operative Bal FCY:</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" value="@Model.operativE_ACCT_BALANCE_FCY?.ToString("N2")">
+                        <span class="input-group-text bg-light small">@Model.operativE_ACCOUNT_CURRENCY</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Int / FX Rate:</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" value="@Model.inT_RATE" title="Interest Rate">
                         <span class="input-group-text">%</span>
+                        <input type="text" class="form-control" value="@Model.fX_RATE" title="FX Rate">
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">FX Rate:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-light" value="@Model.fX_RATE" readonly></div>
+                <label class="col-sm-5 col-form-label small fw-bold">IENC / PIENC:</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" value="@Model.ienc.ToString("N2")" title="IENC">
+                        <input type="text" class="form-control" value="@Model.pienc.ToString("N2")" title="PIENC">
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-8">
             <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Overdue Amount:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm @(Model.overduE_AMT > 0 ? "is-invalid text-danger" : "")" value="@Model.overduE_AMT.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">IENC:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.ienc.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">GL Asset Code:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-light" value="@Model.gL_ASSET" readonly></div>
+                <label class="col-sm-2 col-form-label small fw-bold">Overdue / Collect BACID:</label>
+                <div class="col-sm-10">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control @(Model.overduE_AMT > 0 ? "is-invalid text-danger fw-bold" : "")" value="@Model.overduE_AMT?.ToString("N2")" title="Overdue Amount">
+                        <span class="input-group-text">BACID</span>
+                        <input type="text" class="form-control bg-light" value="@Model.inT_COLL_BACID" readonly title="Interest Collection BACID">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <p class="fw-bold text-dark border-start border-warning border-4 ps-2 mb-3">Repayment Analysis</p>
+    <p class="fw-bold text-dark border-start border-warning border-4 ps-2 mb-3">Repayment & Collection Analysis</p>
     <div class="row g-3 mb-4">
         <div class="col-md-4">
             <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Monthly Instalment:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm fw-bold border-primary" value="@Model.instalment.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Total Paid (Cum):</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm text-success" value="@Model.cuM_REPAYMENT_AMOUNT_PAID.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Principal Paid:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.cuM_PRINCIPAL_REPAYMENT_AMOUNT_PAID.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Interest Paid:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.cuM_INTEREST_REPAYMENT_AMOUNT_PAID.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Next Principal:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.nexT_PRINCIPAL_AMOUNT.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Next Interest:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.nexT_INTEREST_AMOUNT.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Collection (3M):</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.totaL_COLLECTION_3M.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Collection (6M):</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.totaL_COLLECTION_6M.ToString("N2")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Collection (12M):</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.totaL_COLLECTION_12M.ToString("N2")"></div>
-            </div>
-        </div>
-    </div>
-
-    <p class="fw-bold text-dark border-start border-info border-4 ps-2 mb-3">Timeline & Performance</p>
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Date Granted:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.datE_GRANTED?.ToString("dd MMM yyyy")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Expiry Date:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm" value="@Model.expirY_DATE?.ToString("dd MMM yyyy")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Next Demand Date:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-warning bg-opacity-10" value="@Model.nexT_DMD_DATE?.ToString("dd MMM yyyy")"></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Tenor (Months/Days):</label>
+                <label class="col-sm-5 col-form-label small fw-bold">Instalment (New/Old):</label>
                 <div class="col-sm-7">
                     <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" value="@Model.tenoR_MONTH">
-                        <input type="text" class="form-control" value="@Model.tenoR_DAYS">
+                        <input type="text" class="form-control fw-bold border-primary" value="@Model.instalment.ToString("N2")" title="Current Instalment">
+                        <input type="text" class="form-control" value="@Model.newcuM_REPAYMENT_AMOUNT_DUE.ToString("N2")" title="New Amount Due">
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Risk Rating:</label>
-                <div class="col-sm-7">
-                    <span class="badge @(Model.riskrating == "HIGH" ? "bg-danger" : "bg-success") w-100 py-2">
-                        @Model.riskrating
-                    </span>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Performance Class:</label>
-                <div class="col-sm-7">
-                    <input type="text" class="form-control form-control-sm fw-bold text-primary" value="@Model.performancE_CLASS_DESC" readonly>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <p class="fw-bold text-dark border-start border-secondary border-4 ps-2 mb-3">Branch & Regional Data</p>
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Bank / Region:</label>
+                <label class="col-sm-5 col-form-label small fw-bold">Cum. Paid (Prin/Int):</label>
                 <div class="col-sm-7">
                     <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" value="@Model.banK_NAME" readonly>
-                        <input type="text" class="form-control" value="@Model.regioN_NAME" readonly>
+                        <input type="text" class="form-control text-success" value="@Model.cuM_PRINCIPAL_REPAYMENT_AMOUNT_PAID?.ToString("N2")" title="Principal Paid">
+                        <input type="text" class="form-control text-success" value="@Model.cuM_INTEREST_REPAYMENT_AMOUNT_PAID?.ToString("N2")" title="Interest Paid">
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">Branch Name:</label>
-                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-light" value="@Model.brancH_NAME" readonly></div>
+                <label class="col-sm-5 col-form-label small fw-bold">Due Not Paid (Prin/Int):</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control text-danger" value="@Model.cuM_PRINCIPAL_DUE_NOT_YET_PAID?.ToString("N2")" title="Principal Due">
+                        <input type="text" class="form-control text-danger" value="@Model.cuM_INTEREST_DUE_NOT_YET_PAID?.ToString("N2")" title="Interest Due">
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="row align-items-center">
-                <label class="col-sm-5 col-form-label small fw-bold">SBU Type / ID:</label>
+                <label class="col-sm-5 col-form-label small fw-bold">Last Credit (Date/Amt):</label>
                 <div class="col-sm-7">
                     <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" value="@Model.sbU_TYPE" readonly>
-                        <input type="text" class="form-control" value="@Model.soL_ID" readonly>
+                        <input type="text" class="form-control small" value="@Model.lasT_CREDIT_DATE?.ToString("dd/MM/yy")">
+                        <input type="text" class="form-control" value="@Model.lasT_CREDIT_AMT?.ToString("N2")">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Next Demand (Prin/Int):</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" value="@Model.nexT_PRINCIPAL_AMOUNT.ToString("N2")">
+                        <input type="text" class="form-control" value="@Model.nexT_INTEREST_AMOUNT.ToString("N2")">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Repayment Freq (P/I):</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control bg-light small" value="@Model.priN_REPAYMENT_FREQUENCY" readonly title="Principal Freq">
+                        <input type="text" class="form-control bg-light small" value="@Model.inT_REPAYMENT_FREQUENCY" readonly title="Interest Freq">
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-12">
             <div class="row align-items-center">
-                <label class="col-sm-1 col-form-label small fw-bold">SBU Name:</label>
-                <div class="col-sm-11"><input type="text" class="form-control form-control-sm bg-light" value="@Model.sbU_NAME" readonly></div>
+                <label class="col-sm-2 col-form-label small fw-bold">Collection History (3M/6M/12M):</label>
+                <div class="col-sm-10">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light">3M</span>
+                        <input type="text" class="form-control" value="@Model.totaL_COLLECTION_3M?.ToString("N2")">
+                        <span class="input-group-text bg-light">6M</span>
+                        <input type="text" class="form-control" value="@Model.totaL_COLLECTION_6M?.ToString("N2")">
+                        <span class="input-group-text bg-light">12M</span>
+                        <input type="text" class="form-control" value="@Model.totaL_COLLECTION_12M?.ToString("N2")">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="fw-bold text-dark border-start border-info border-4 ps-2 mb-3">Timeline, Performance & Security</p>
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Granted / Flow Date:</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" value="@Model.datE_GRANTED.ToString("dd MMM yyyy")">
+                        <input type="text" class="form-control" value="@Model.floW_START_DATE.ToString("dd/MM/yy")">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Expiry / Next Int Date:</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" value="@Model.expirY_DATE.ToString("dd MMM yyyy")">
+                        <input type="text" class="form-control" value="@Model.nexT_REP_INT_DATE.ToString("dd/MM/yy")">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Past Due (Date/Days):</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" value="@Model.datE_PAST_DUE?.ToString("dd/MM/yy")">
+                        <input type="text" class="form-control" value="@Model.dayS_PAST_DUE">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Risk / Performance:</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <span class="badge @(Model.riskrating?.Contains("A") == true ? "bg-success" : "bg-danger") pt-2" style="flex:1">@Model.riskrating</span>
+                        <input type="text" class="form-control fw-bold text-primary" value="@Model.performancE_CLASS_DESC" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="row align-items-center">
+                <label class="col-sm-2 col-form-label small fw-bold">Security / Collateral:</label>
+                <div class="col-sm-10">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control bg-light" value="@Model.collateraL_DESCRIPTION" readonly title="Description">
+                        <span class="input-group-text">Value</span>
+                        <input type="text" class="form-control" value="@Model.collateraL_VALUE">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="fw-bold text-dark border-start border-secondary border-4 ps-2 mb-3">Branch, Regional & Staff Data</p>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Region / SOL ID:</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control bg-light" value="@Model.regioN_NAME" readonly>
+                        <input type="text" class="form-control bg-light" value="@Model.soL_ID" readonly style="max-width: 70px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Branch:</label>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-light" value="@Model.brancH_NAME" readonly></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">SBU (Name/Type):</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control bg-light" value="@Model.sbU_NAME" readonly>
+                        <input type="text" class="form-control bg-light" value="@Model.sbU_TYPE" readonly style="max-width: 80px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Account Officer:</label>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-light" value="@Model.accounT_OFFICER" readonly></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">BM / BOM Name:</label>
+                <div class="col-sm-7">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control bg-light small" value="@Model.bM_STAFF_NAME" readonly title="BM">
+                        <input type="text" class="form-control bg-light small" value="@Model.boM_STAFF_NAME" readonly title="BOM">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="row align-items-center">
+                <label class="col-sm-5 col-form-label small fw-bold">Directorate:</label>
+                <div class="col-sm-7"><input type="text" class="form-control form-control-sm bg-light" value="@Model.directoratE_NAME" readonly></div>
             </div>
         </div>
     </div>

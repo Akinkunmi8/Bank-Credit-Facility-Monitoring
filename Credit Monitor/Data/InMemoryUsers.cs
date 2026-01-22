@@ -12,7 +12,7 @@ namespace Credit_Monitor.Data
                 Username = "staff_sw",
                 Password = "123",
                 Role = UserRole.Staff,
-                Region = "Ondo"
+                Region = "L2NG010145"
             },
             new User
             {

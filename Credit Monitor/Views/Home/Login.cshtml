@@ -16,26 +16,40 @@
             align-items: center;
             justify-content: center;
         }
+
+        /* Added a slight hover effect for the register link */
+        .register-link {
+            color: #0d6efd;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+            .register-link:hover {
+                text-decoration: underline;
+            }
     </style>
 }
-
 
 <div class="login-overlay">
     <div class="row justify-content-center align-items-center w-100">
         <div class="col-md-5 col-lg-4">
             <div class="card shadow-lg border-0">
-                <div class="card-header bg-primary text-white text-center py-3">
-                    <h4 class="mb-0">Credit Monitor</h4>
-                    <small>Please sign in to continue</small>
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h4 class="mb-0 fw-bold">Credit Monitor</h4>
+                    <p class="mb-0 opacity-75 small">Secure Portal Access</p>
                 </div>
 
                 <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <p class="text-muted small">Enter your credentials to manage and validate CAT records.</p>
+                    </div>
+
                     <form asp-action="Login" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
                         <div class="mb-3">
-                            <label asp-for="Username" class="form-label fw-bold"></label>
-                            <input asp-for="Username" class="form-control" placeholder="e.g. jdoe123" />
+                            <label asp-for="Username" class="form-label fw-bold">Email</label>
+                            <input asp-for="Username" class="form-control" placeholder="e.g. user@gmail.com" />
                             <span asp-validation-for="Username" class="text-danger small"></span>
                         </div>
 
@@ -51,16 +65,19 @@
                     </form>
                 </div>
 
-                <div class="card-footer text-center py-3">
-                    <p class="mb-0 small">
-                        Forgot password? <a href="#">Contact Support</a>
+                <div class="card-footer bg-light text-center py-3">
+                    <p class="mb-1 small text-dark">
+                        Don't have an account?
+                        <a asp-controller="Home" asp-action="Register" class="register-link">Create an account</a>
+                    </p>
+                    <p class="mb-0 x-small">
+                        <a href="#" class="text-muted text-decoration-none">Forgot password? Contact Support</a>
                     </p>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

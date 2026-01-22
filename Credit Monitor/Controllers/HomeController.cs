@@ -29,6 +29,11 @@ namespace Credit_Monitor.Controllers
             return View();
         }
 
+        public IActionResult Register()
+        {
+            return View();
+        }
+
         [AllowAnonymous]
         public IActionResult AccessDenied()
         {
@@ -56,6 +61,7 @@ namespace Credit_Monitor.Controllers
                 ModelState.AddModelError(string.Empty, "The authentication service is currently unavailable.");
                 return View(model);
             }
+            Console.WriteLine(authResult.Response.Status);
 
 
             if (authResult.Response.Status == "Success" && authResult.User != null)
@@ -78,7 +84,7 @@ namespace Credit_Monitor.Controllers
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     new ClaimsPrincipal(claimsIdentity),
                     authProperties);
-                if(authResult.User.Role == "Staff" && !string.IsNullOrEmpty(authResult.User.Region))
+                if(authResult.User.Role == "staff" && !string.IsNullOrEmpty(authResult.User.Region))
                 {
                     return RedirectToAction("Staff", "Dashboard");
                 }
@@ -89,6 +95,26 @@ namespace Credit_Monitor.Controllers
             }
 
             ModelState.AddModelError(string.Empty, errorMessage: authResult.Response.Message);
+            return View(model);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var result = await _userservice.RegisterUserAsync(model);
+
+            if (result.IsSuccess)
+            {
+                TempData["SuccessMessage"] = result.ResponseMessage;
+                return RedirectToAction("Login");
+            }
+
+            ModelState.AddModelError(string.Empty, result.ResponseMessage);
             return View(model);
         }
 

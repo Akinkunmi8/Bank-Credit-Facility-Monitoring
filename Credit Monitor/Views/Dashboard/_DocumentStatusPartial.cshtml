@@ -1,0 +1,42 @@
+﻿@model Guid
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+    <h6 class="text-primary fw-bold mb-0"><i class="bi bi-file-earmark-check me-2"></i>Verification Progress</h6>
+    <span class="badge bg-success">Overall Progress: 75%</span>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-sm table-hover border">
+        <thead class="table-light">
+            <tr>
+                <th>Document Name</th>
+                <th>Requirement</th>
+                <th>Status</th>
+                <th>Uploaded Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Proof of Address</td>
+                <td><span class="badge bg-secondary">Mandatory</span></td>
+                <td><span class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Verified</span></td>
+                <td>12 Jan 2026</td>
+                <td><button class="btn btn-link btn-sm p-0">View</button></td>
+            </tr>
+            <tr>
+                <td>Employment Letter</td>
+                <td><span class="badge bg-secondary">Mandatory</span></td>
+                <td><span class="text-warning fw-bold"><i class="bi bi-clock-history"></i> Pending Review</span></td>
+                <td>14 Jan 2026</td>
+                <td><button class="btn btn-link btn-sm p-0">View</button></td>
+            </tr>
+            <tr>
+                <td>Bank Statement</td>
+                <td><span class="badge bg-secondary">Mandatory</span></td>
+                <td><span class="text-danger fw-bold"><i class="bi bi-x-circle-fill"></i> Rejected</span></td>
+                <td>--</td>
+                <td><button class="btn btn-primary btn-sm px-2 py-0" style="font-size: 0.7rem;">Upload</button></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

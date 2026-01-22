@@ -1,48 +1,24 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Credit_Monitor.ViewModel
+﻿namespace Credit_Monitor.ViewModel
 {
     public class CATViewModel
     {
-        [Key]
-        public int Id { get; set; } // Added for database primary key support
-
-        public string? customerName { get; set; }
-
-        public string? accNum { get; set; }
-
-        public DateTime? creditDate { get; set; }
-
-        public string? directorate { get; set; }
-
-        public string? schemeCode { get; set; }
-
-        public string? accountOfficer { get; set; }
-
-        public string? productPaperType { get; set; }
-
-        // Financials - Using decimal for high-precision currency values
-        public decimal currentOutstanding { get; set; }
-
-        public decimal disbursementRequired { get; set; }
-
-        public decimal outstandingAfterDisbursement { get; set; }
-
-        public decimal approvalLimit { get; set; }
-
-        // Stored as strings to preserve the '%' symbol from your JSON
-        public decimal interest { get; set; }
-
-        public decimal fees { get; set; }
-
-        public string? approvalLevel { get; set; }
-
-        public string? typeOfApproval { get; set; }
-
-        public string? facilityType { get; set; }
-
-        public DateTime? valuedate { get; set; }
-
-        public DateTime? maturityOrExpiry { get; set; }
+        public string? CustomerName { get; set; }
+        public string? AccNum { get; set; }
+        public DateTime CreditDate { get; set; }
+        public string? Directorate { get; set; }
+        public string? SchemeCode { get; set; }
+        public string? AccountOfficer { get; set; }
+        public string? ProductPaperType { get; set; }
+        public decimal CurrentOutstanding { get; set; }
+        public decimal DisbursementRequired { get; set; }
+        public decimal OutstandingAfterDisbursement { get; set; }
+        public decimal ApprovalLimit { get; set; }
+        public decimal Interest { get; set; }
+        public decimal Fees { get; set; }
+        public string? ApprovalLevel { get; set; }
+        public string? TypeOfApproval { get; set; }
+        public string? FacilityType { get; set; }
+        public DateTime ValueDate { get; set; }
+        public DateTime MaturityOrExpiry { get; set; }
     }
 }

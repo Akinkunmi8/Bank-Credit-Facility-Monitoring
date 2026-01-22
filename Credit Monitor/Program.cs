@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+using Credit_Monitor.APICore;
 using Credit_Monitor.Interfaces;
 using Credit_Monitor.Repository;
 using Credit_Monitor.Services;
@@ -10,6 +12,26 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<ILoanRepository, LoanRepository>();
+builder.Services.AddScoped<IBackendAPIService, BackendAPIService>();
+builder.Services.AddScoped<IDashboardAPI, DashboardAPI>();
+builder.Services.AddScoped<ILoginAndRegisterAPIService, LoginAndRegisterAPIService>();
+builder.Services.AddScoped<ILoanAPIService, LoanAPIService>();
+builder.Services.AddScoped<ICatAPIService, CatAPIService>();
+builder.Services.AddHttpClient<IBackendAPIService, BackendAPIService>(client =>
+{
+    // Set the Base URL from your appsettings.json
+    client.BaseAddress = new Uri(builder.Configuration["BackendAPI:BaseUrl"]);
+})
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    // This handles the SSL bypass we discussed earlier
+    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+});
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    options.SerializerOptions.PropertyNameCaseInsensitive = true;
+});
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -17,7 +39,8 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options => { 
+    .AddCookie(options =>
+    {
         options.LoginPath = "/Home/Login";
         options.AccessDeniedPath = "/Home/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromHours(1);

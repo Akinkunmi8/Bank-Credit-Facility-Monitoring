@@ -34,27 +34,27 @@
                         </thead>
                         <tbody>
                         <tbody>
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Customer Name", Fin = Model.FinacleData.accounT_NAME, Cat = Model.CatData.customerName, Result = Model.Discrepancies.CustomerName })
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Customer Name", Fin = Model.FinacleData.AccountName, Cat = Model.CatData.CustomerName, Result = Model.Discrepancies.CustomerName })
 
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Directorate/SBU", Fin = Model.FinacleData.sbU_NAME, Cat = Model.CatData.directorate, Result = Model.Discrepancies.Directorate })
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Directorate/SBU", Fin = Model.FinacleData.SbuName, Cat = Model.CatData.Directorate, Result = Model.Discrepancies.Directorate })
 
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Facility Type", Fin = Model.FinacleData.facilitY_TYPE, Cat = Model.CatData.facilityType, Result = Model.Discrepancies.FacilityType })
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Facility Type", Fin = Model.FinacleData.FacilityType, Cat = Model.CatData.FacilityType, Result = Model.Discrepancies.FacilityType })
 
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Approval Limit", Fin = Model.FinacleData.sanctioN_LIMIT.ToString("N2"), Cat = Model.CatData.approvalLimit.ToString("N2"), Result = Model.Discrepancies.ApprovalLimit })
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Approval Limit", Fin = Model.FinacleData.SanctionLimit.ToString("N2"), Cat = Model.CatData.ApprovalLimit.ToString("N2"), Result = Model.Discrepancies.ApprovalLimit })
 
                             @{
                                 // Logic for Total Balance as defined in your method
-                                decimal finBalance = Model.FinacleData.totaL_BALANCE_LCY == 0 ? Model.FinacleData.totaL_BALANCE_FCY : Model.FinacleData.totaL_BALANCE_LCY;
+                                decimal finBalance = Model.FinacleData.TotalBalanceLcy == 0 ? Model.FinacleData.TotalBalanceFcy : Model.FinacleData.TotalBalanceLcy;
                             }
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Disbursed Amount", Fin = finBalance.ToString("N2"), Cat = Model.CatData.disbursementRequired.ToString("N2"), Result = Model.Discrepancies.DisbursmentRequired })
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Disbursed Amount", Fin = finBalance.ToString("N2"), Cat = Model.CatData.DisbursementRequired.ToString("N2"), Result = Model.Discrepancies.DisbursmentRequired })
 
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Fees", Fin = Model.FinacleData.fX_RATE.ToString("N2"), Cat = Model.CatData.fees.ToString("N2"), Result = Model.Discrepancies.Fee })
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Fees", Fin = Model.FinacleData.FxRate.ToString("N2"), Cat = Model.CatData.Fees.ToString("N2"), Result = Model.Discrepancies.Fee })
 
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Interest Rate", Fin = Model.FinacleData.inT_RATE + "%", Cat = Model.CatData.interest + "%", Result = Model.Discrepancies.Interest })
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Interest Rate", Fin = Model.FinacleData.IntRateDisplay + "%", Cat = Model.CatData.Interest + "%", Result = Model.Discrepancies.Interest })
 
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Value Date", Fin = Model.FinacleData.datE_GRANTED?.ToString("dd-MMM-yyyy"), Cat = Model.CatData.valuedate?.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.ValueDate })
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Value Date", Fin = Model.FinacleData.DateGranted.ToString("dd-MMM-yyyy"), Cat = Model.CatData.ValueDate.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.ValueDate })
 
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Maturity Date", Fin = Model.FinacleData.expirY_DATE?.ToString("dd-MMM-yyyy"), Cat = Model.CatData.maturityOrExpiry?.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.MaturityDate })
+                            @await Html.PartialAsync("_ValidationRow", new { Label = "Maturity Date", Fin = Model.FinacleData.ExpiryDate.ToString("dd-MMM-yyyy"), Cat = Model.CatData.MaturityOrExpiry.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.MaturityDate })
                         </tbody>
                     </table>
                 </div>
