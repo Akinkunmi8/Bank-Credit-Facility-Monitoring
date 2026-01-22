@@ -10,5 +10,10 @@ namespace Credit_Monitor.Interfaces
         Task<CATViewModel> GetCustomerLoanDetailsfromCATAsync(string AccNum);
         Task<DiscrepanciesViewModel> ValidateLoanDiscrepancies(string AccNum);
         Task<FinacleDataViewModel?> GetPendingConfirmedLoanByAccNumAsync(string AccNum);
+        Task<(bool isSuccess, string message)> ProcessStatusUpdate(Guid appId, string actionType);
+        Task<IEnumerable<PendingConfirmedLoanViewModel>> GetConfirmedLoanByRegion(string region);
+        Task<IEnumerable<PendingConfirmedLoanViewModel>> GetApprovedLoanByRegion(string region);
+        Task<IEnumerable<PendingConfirmedLoanViewModel>> GetRejectedLoanByRegion(string region);
+
     }
 }

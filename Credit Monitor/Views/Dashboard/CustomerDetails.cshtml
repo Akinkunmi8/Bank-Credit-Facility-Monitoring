@@ -1,11 +1,12 @@
 ﻿@model Credit_Monitor.ViewModel.PendingLoanWithCustomerDetailsViewModel
-
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Customer Details";
     var loan = Model.loan;
     var customer = Model.customer;
-    
+    var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
 }
+
 
 <div class="sticky-top bg-white shadow-sm border-bottom pb-2 mb-3 pt-3" style="top: 0; z-index: 1020;">
     <div class="container-fluid">
@@ -25,12 +26,23 @@
             </div>
             <div class="col-md-6 text-end">
                 <div class="d-flex justify-content-end gap-2">
-                    <a asp-action="ValidateCAT" asp-controller="Loan" asp-route-AccNum="@loan?.accounT_NUMBER" class="btn btn-warning btn-sm px-3 fw-bold">
-                        <i class="bi bi-shield-check me-1"></i>Validate with CAT
-                    </a>
+                    @if (userRole == "supervisor")
+                    {
+                        @* Supervisor View: Approve Button *@
+                        <a asp-action="ApproveLoan" asp-controller="Loan" asp-route-AccNum="@loan?.accounT_NUMBER" class="btn btn-success btn-sm px-3 fw-bold">
+                            <i class="bi bi-check-circle-fill me-1"></i> Approve Loan Details
+                        </a>
+                    }
+                    else
+                    {
+                        @* Staff View: Validate Button *@
+                        <a asp-action="ValidateCAT" asp-controller="Loan" asp-route-AccNum="@loan?.accounT_NUMBER" class="btn btn-warning btn-sm px-3 fw-bold">
+                            <i class="bi bi-shield-check me-1"></i> Validate with CAT
+                        </a>
+                    }
 
                     <button onclick="history.back()" class="btn btn-secondary btn-sm px-4">
-                        <i class="bi bi-arrow-left me-1"></i>Back
+                        <i class="bi bi-arrow-left me-1"></i> Back
                     </button>
                 </div>
             </div>
@@ -43,22 +55,33 @@
         <li class="nav-item">
             <button class="nav-link active fw-bold small text-uppercase" data-bs-toggle="tab" data-bs-target="#basicInfo">Basic Info</button>
         </li>
-        <li class="nav-item">
+        @* <li class="nav-item">
             <button class="nav-link fw-bold small text-uppercase" data-bs-toggle="tab" data-bs-target="#docStatus">Document Status</button>
-        </li>
+        </li> *@
         <li class="nav-item">
-            <button class="nav-link fw-bold small text-uppercase" data-bs-toggle="tab" data-bs-target="#checklist">Document Check List</button>
+            <button class="nav-link fw-bold small text-uppercase"
+                    id="doc-status-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#docStatus"
+                    type="button"
+                    onclick="loadDocuments('@Model.loan?.LoanFileBatchId')">
+                Document Status
+            </button>
         </li>
+
     </ul>
 
     <div class="tab-content border rounded p-4 bg-white shadow-sm">
-         <div class="tab-pane fade" id="docStatus" role="tabpanel">
-            <partial name="_DocumentStatusPartial" model="Model.loan?.id" />
+        <div class="tab-pane fade" id="docStatus" role="tabpanel">
+            <div id="docStatusContainer">
+                <div class="text-center py-5 doc-loader">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Fetching document metadata...</p>
+                </div>
+            </div>
         </div>
 
-        <div class="tab-pane fade" id="checklist" role="tabpanel">
-            <h6 class="text-muted text-center py-5">Checklist modules will be loaded here.</h6>
-        </div>
+
         <div class="tab-pane fade show active" id="basicInfo">
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
                 <h6 class="text-primary fw-bold mb-0">
@@ -165,6 +188,36 @@
     </div>
 
 </div>
+<script>
+            function loadDocuments(batchId) {
+                if (!batchId || batchId === '00000000-0000-0000-0000-000000000000') {
+        console.error("Invalid Batch ID");
+        return;
+    }
+        const container = $('#docStatusContainer');
+        const tabPane = $('#docStatus');
+
+        if (tabPane.data('loaded') === true || !batchId) return;
+
+        $.ajax({
+            url: '@Url.Action("GetDocumentStatus", "Dashboard")',
+            type: 'GET',
+            data: { batchId: batchId },
+            beforeSend: function() {
+                // Optional: confirm the function is actually firing
+                console.log("Fetching docs for batch:", batchId);
+            },
+            success: function (result) {
+                container.html(result);
+                tabPane.data('loaded', true);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+                container.html('<div class="alert alert-danger">Error: ' + error + '</div>');
+            }
+        });
+    }
+</script>
 
 <style>
     /* Ensure the sticky header doesn't hide content when jumping to hash links */

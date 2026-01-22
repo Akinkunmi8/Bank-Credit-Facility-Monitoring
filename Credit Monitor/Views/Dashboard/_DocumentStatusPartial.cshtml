@@ -1,42 +1,41 @@
-﻿@model Guid
+﻿@model IEnumerable<Credit_Monitor.ViewModel.DocumentDetailsViewModel>
+
 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
-    <h6 class="text-primary fw-bold mb-0"><i class="bi bi-file-earmark-check me-2"></i>Verification Progress</h6>
-    <span class="badge bg-success">Overall Progress: 75%</span>
+    <h6 class="text-primary fw-bold mb-0">
+        <i class="bi bi-folder-check me-2"></i>BATCH FILES
+    </h6>
+    <span class="badge bg-info">Total Files: @Model.Count()</span>
 </div>
 
 <div class="table-responsive">
-    <table class="table table-sm table-hover border">
+    <table class="table table-sm table-hover border align-middle">
         <thead class="table-light">
             <tr>
-                <th>Document Name</th>
-                <th>Requirement</th>
-                <th>Status</th>
-                <th>Uploaded Date</th>
-                <th>Action</th>
+                <th>File Name</th>
+                <th>Category</th>
+                <th>Format</th>
+                <th class="text-center">Action</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>Proof of Address</td>
-                <td><span class="badge bg-secondary">Mandatory</span></td>
-                <td><span class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Verified</span></td>
-                <td>12 Jan 2026</td>
-                <td><button class="btn btn-link btn-sm p-0">View</button></td>
-            </tr>
-            <tr>
-                <td>Employment Letter</td>
-                <td><span class="badge bg-secondary">Mandatory</span></td>
-                <td><span class="text-warning fw-bold"><i class="bi bi-clock-history"></i> Pending Review</span></td>
-                <td>14 Jan 2026</td>
-                <td><button class="btn btn-link btn-sm p-0">View</button></td>
-            </tr>
-            <tr>
-                <td>Bank Statement</td>
-                <td><span class="badge bg-secondary">Mandatory</span></td>
-                <td><span class="text-danger fw-bold"><i class="bi bi-x-circle-fill"></i> Rejected</span></td>
-                <td>--</td>
-                <td><button class="btn btn-primary btn-sm px-2 py-0" style="font-size: 0.7rem;">Upload</button></td>
-            </tr>
+            @foreach (var doc in Model)
+            {
+                <tr>
+                    <td>
+                        <i class="bi @doc.DisplayIcon me-2"></i>
+                        <span class="fw-semibold text-dark">@doc.FileName</span>
+                    </td>
+                    <td><span class="badge bg-secondary-subtle text-secondary border">@doc.DocType</span></td>
+                    <td class="text-uppercase small">@doc.Extension</td>
+                    <td class="text-center">
+                        <a href="@Url.Action("ViewDocument", "Dashboard", new { batchId = doc.BatchId, category = doc.DocType, ext = doc.Extension })"
+                           target="_blank"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 </div>

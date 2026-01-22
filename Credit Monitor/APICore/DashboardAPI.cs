@@ -35,7 +35,13 @@ namespace Credit_Monitor.APICore
             var result = await _apiService.GetAsync<int>(urlPath);
             return result;
         }
-        // /api/Dashboard/tat/within
+       
+        public async Task<int> GetTotalApproved(string region)
+        {
+            var urlPath = $"api/Dashboard/finacle/approved?region={region}";
+            var result = await _apiService.GetAsync<int>(urlPath);
+            return result;
+        }
         public async Task<int> GetWithinTAT(string region)
         {
             var urlPath = $"/api/Dashboard/tat/within/{region}";
@@ -58,6 +64,8 @@ namespace Credit_Monitor.APICore
             return Int32.Parse(result.tatCount);
 
         }
+        
+        
         
         
     }

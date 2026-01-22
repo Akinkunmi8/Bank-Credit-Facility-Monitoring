@@ -7,5 +7,6 @@ namespace Credit_Monitor.Interfaces
     {
         public Task<LoginResponseDto> LoginAsync(LoginRequestDto loginData);
         public Task<RegisterResponseDto> RegisterAsync(RegisterRequestDto registerData);
+        public Task<bool> ConfirmGmail(string gmail);
     }
 }

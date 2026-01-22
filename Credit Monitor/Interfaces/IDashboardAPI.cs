@@ -7,6 +7,7 @@ namespace Credit_Monitor.Interfaces
         public Task<int> GetTotalPending(string region);
         public Task<int> GetTotalConfirmed(string region);
         public Task<int> GetTotalRejected(string region);
+        public Task<int> GetTotalApproved(string region);
         public Task<int> GetWithinTAT(string region);
         public Task<int> GetBeyondTAT(string region);
 

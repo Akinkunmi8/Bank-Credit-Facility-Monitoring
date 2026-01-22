@@ -22,7 +22,42 @@ namespace Credit_Monitor.APICore
             }
             return result.dataList ?? [];
         }
-       
+
+        public async Task<List<FinacleRecord>?> GetConfirmedLoansByRegion(string region)
+        { 
+            var urlPath = $"api/Finacle/confirmed?region={region}";
+            var result = await _apiService.GetAsync<FinacleResponseWrapper>(urlPath);
+            if (result == null || !result.isSuccess)
+            {
+                return null;
+            }
+            return result.dataList ?? [];
+        }
+
+        public async Task<List<FinacleRecord>?> GetApprovedLoansByRegion(string region)
+        {
+            var urlPath = $"api/Finacle/approved?region={region}";
+            var result = await _apiService.GetAsync<FinacleResponseWrapper>(urlPath);
+            if (result == null || !result.isSuccess)
+            {
+                return null;
+            }
+            return result.dataList ?? [];
+        }
+
+        public async Task<List<FinacleRecord>?> GetRejectedLoansByRegion(string region)
+        {
+            var urlPath = $"api/Finacle/reconfirmed/by-region/{region}";
+            var result = await _apiService.GetAsync<FinacleResponseWrapper>(urlPath);
+            if (result == null || !result.isSuccess)
+            {
+                return null;
+            }
+            return result.dataList ?? [];
+        }
+
+
+
         public async Task<FinacleLoanAndCustomerDto?> GetPendingLoanById(string id)
         {
             var urlPath = $"api/Dashboard/View-LoanAndCustomerDetails?appId={id}";
@@ -45,5 +80,12 @@ namespace Credit_Monitor.APICore
             }
             return result;
         }
+
+        public async Task<StatusUpdateResponseDto> UpdateLoanStatusAsync(StatusUpdateRequestDto request)
+        {
+            var urlPath = "/api/Dashboard/update-status";
+            return await _apiService.PostAsync<StatusUpdateResponseDto>(request, urlPath);
+        }
+        
     }
 }

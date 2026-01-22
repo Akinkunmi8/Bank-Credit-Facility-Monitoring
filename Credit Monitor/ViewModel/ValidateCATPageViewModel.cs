@@ -10,7 +10,7 @@ namespace Credit_Monitor.ViewModel
     }
     public class FinacleDataViewModel
     {
-        public string? Id { get; set; }
+        public Guid? Id { get; set; }
         public string? AccountName { get; set; }
         public string? AccountNumber { get; set; }
         public string? FacilityType { get; set; }

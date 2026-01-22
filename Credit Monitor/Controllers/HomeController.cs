@@ -29,6 +29,11 @@ namespace Credit_Monitor.Controllers
             return View();
         }
 
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
         public IActionResult Register()
         {
             return View();
@@ -88,7 +93,7 @@ namespace Credit_Monitor.Controllers
                 {
                     return RedirectToAction("Staff", "Dashboard");
                 }
-                if (authResult.User.Role == "Supervisor" && !string.IsNullOrEmpty(authResult.User.Region))
+                if (authResult.User.Role == "supervisor" && !string.IsNullOrEmpty(authResult.User.Region))
                 {
                     return RedirectToAction("Supervisor", "Dashboard");
                 }
@@ -116,6 +121,22 @@ namespace Credit_Monitor.Controllers
 
             ModelState.AddModelError(string.Empty, result.ResponseMessage);
             return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPasswordApi([FromBody] ForgotPasswordViewModel model)
+        {
+            var successful = await _userservice.ForgotPassword(model.Email);
+
+            var result = new
+            {
+                isSuccess = true,
+                responseMessage = "Password reset link has been sent to your email",
+                token = (string)null,
+                user = (object)null
+            };
+
+            return Json(result); // This will include the $id via Newtonsoft settings
         }
 
         [HttpPost]

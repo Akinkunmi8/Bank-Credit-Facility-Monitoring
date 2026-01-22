@@ -71,22 +71,30 @@
                     <div class="text-center mb-3">
                         <h1 class="display-6 fw-bold">@Model.Discrepancies.ErrorCount</h1>
                         <p class="text-muted small">Discrepancies Found</p>
+                        <p>Application ID: @Model.FinacleData.Id</p>
                     </div>
 
-                    @if (Model.Discrepancies.ErrorCount > 0)
-                    {
-                        <div class="alert alert-soft-danger border-danger small mb-3">
-                            <strong>Attention Required!</strong> Data mismatch must be resolved before confirmation.
-                        </div>
-                        <button class="btn btn-danger w-100 mb-2 py-2 fw-bold">Reject & Flag</button>
-                    }
-                    else
-                    {
-                        <div class="alert alert-soft-success border-success small mb-3">
-                            <strong>Ready!</strong> All data points match. You can proceed with confirmation.
-                        </div>
-                        <button class="btn btn-success w-100 mb-2 py-2 fw-bold">Confirm & Validate</button>
-                    }
+                    <form asp-action="UpdateStatus" asp-controller="Dashboard" method="post">
+                        <input type="hidden" name="applicationId" value="@Model.FinacleData.Id" />
+
+                        @if (Model.Discrepancies.ErrorCount > 0)
+                        {
+                            <div class="alert alert-soft-danger border-danger small mb-3">
+                                <strong>Attention!</strong> Mismatch found.
+                            </div>
+                            <input type="hidden" name="actionType" value="reject" />
+                            <button type="submit" class="btn btn-danger w-100 mb-2 py-2 fw-bold">Reject & Flag</button>
+                        }
+                        else
+                        {
+                            <div class="alert alert-soft-success border-success small mb-3">
+                                <strong>Ready!</strong> No discrepancies.
+                            </div>
+                            <input type="hidden" name="actionType" value="confirm" />
+                            <button type="submit" class="btn btn-success w-100 mb-2 py-2 fw-bold">Confirm & Validate</button>
+                        }
+                    </form>
+
                     <button onclick="history.back()" class="btn btn-outline-secondary w-100 py-2">Go Back</button>
                 </div>
             </div>

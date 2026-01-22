@@ -1,4 +1,7 @@
-﻿using AutoMapper;
+﻿using System.Threading.Tasks;
+using AutoMapper;
+using Credit_Monitor.APICore;
+using Credit_Monitor.APIDto;
 using Credit_Monitor.Interfaces;
 using Credit_Monitor.ViewModel;
 
@@ -39,12 +42,43 @@ namespace Credit_Monitor.Services
             }
             return _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
         }
+        public async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetConfirmedLoanByRegion(string region)
+        {
+            var loans = await _loanAPIservice.GetConfirmedLoansByRegion(region);
+            if (loans == null)
+            {
+                return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+            }
+            return _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+        }
+
+        public async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetApprovedLoanByRegion(string region)
+        {
+            var loans = await _loanAPIservice.GetApprovedLoansByRegion(region);
+            if (loans == null)
+            {
+                return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+            }
+            return _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+        }
+
+        public async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetRejectedLoanByRegion(string region)
+        {
+            var loans = await _loanAPIservice.GetRejectedLoansByRegion(region);
+            if (loans == null)
+            {
+                return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+            }
+            return _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+        }
 
         public async Task<FinacleDataViewModel?> GetPendingConfirmedLoanByAccNumAsync(string AccNum)
         {
             var loan = await _loanAPIservice.GetPendingLoanByAccountNumber(AccNum);
             return _mapper.Map<FinacleDataViewModel>(loan);
         }
+
+
 
         public async Task<CATViewModel> GetCustomerLoanDetailsfromCATAsync(string AccNum)
         {
@@ -101,6 +135,24 @@ namespace Credit_Monitor.Services
             result.TotalFields = allResults.Length;
 
             return result;
+        }
+
+        public async Task<(bool isSuccess, string message)> ProcessStatusUpdate(Guid appId, string actionType)
+        {
+            var request = new StatusUpdateRequestDto
+            {
+                ApplicationId = appId.ToString(),
+                Action = actionType
+            };
+
+            var response = await _loanAPIservice.UpdateLoanStatusAsync(request);
+
+            if (response != null && response.Success)
+            {
+                return (true, response.Message);
+            }
+
+            return (false, response?.Message ?? "Failed to update status via API");
         }
 
         private ValidationResult CompareStrings(string fin, string cat, string fieldName)

@@ -17,6 +17,9 @@ builder.Services.AddScoped<IDashboardAPI, DashboardAPI>();
 builder.Services.AddScoped<ILoginAndRegisterAPIService, LoginAndRegisterAPIService>();
 builder.Services.AddScoped<ILoanAPIService, LoanAPIService>();
 builder.Services.AddScoped<ICatAPIService, CatAPIService>();
+builder.Services.AddScoped<IFileAPIService, FileAPIService>();
+builder.Services.AddScoped<IFileService, FileService>();
+
 builder.Services.AddHttpClient<IBackendAPIService, BackendAPIService>(client =>
 {
     // Set the Base URL from your appsettings.json

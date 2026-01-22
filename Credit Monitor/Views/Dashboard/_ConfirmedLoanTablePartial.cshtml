@@ -1,0 +1,79 @@
+﻿@model Credit_Monitor.ViewModel.SupervisorDashboardViewModel
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+            <tr>
+                <th class="ps-3">Application No.</th>
+                <th>Client Name</th>
+                <th>Product</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Since Day</th>
+                <th>Branch</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model?.Confirmedloans != null && Model.Confirmedloans.Any())
+            {
+                foreach (var loan in Model.Confirmedloans)
+                {
+                    <tr>
+                        <td class="ps-3">
+                            <a asp-action="CustomerDetails" asp-route-id="@loan.id" class="fw-bold text-decoration-none">@loan.id</a>
+                        </td>
+                        <td>@loan.accounT_NAME</td>
+                        <td><small>@loan.facilitY_TYPE</small></td>
+                        <td>@loan.regioN_NAME</td>
+                        <td>
+                            <span class="badge @(loan.dayS_PAST_DUE > 0 ? "bg-danger" : "bg-success")">
+                                @(loan.dayS_PAST_DUE > 0 ? $"Past Due ({loan.dayS_PAST_DUE})" : "Current")
+                            </span>
+                        </td>
+                        <td>One week ago</td>
+                        <td>@loan.brancH_NAME</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                @*                 <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">No records matching your search.</td>
+                </tr> *@
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div class="d-flex flex-column align-items-center">
+                            <i class="bi bi-search text-muted mb-2" style="font-size: 3rem; opacity: 0.3;"></i>
+                            <h5 class="text-muted fw-light">No matching records found</h5>
+                            <p class="text-muted small">Try adjusting your search criteria or clear the search to see all records.</p>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="$('#searchInput').val(''); loadTable('', 1);">
+                                Clear Search
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="card-footer bg-white border-top-0 py-2">
+    <div class="row align-items-center">
+        <div class="col-sm-6">
+            <p class="mb-0 small text-muted">Total Records: <strong>@Model.TotalItems</strong></p>
+        </div>
+        <div class="col-sm-6">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-end mb-0">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="javascript:void(0)" onclick="loadTable($('#searchInput').val(), @i)">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+

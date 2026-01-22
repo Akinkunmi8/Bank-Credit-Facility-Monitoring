@@ -7,6 +7,7 @@ namespace Credit_Monitor.Interfaces
     {
         Task<LoginResponseViewModel> Authenticate(string username, string password);
         Task<RegisterResponseDto> RegisterUserAsync(RegisterViewModel model);
+        Task<bool> ForgotPassword(string gmail);
     }
 
 }

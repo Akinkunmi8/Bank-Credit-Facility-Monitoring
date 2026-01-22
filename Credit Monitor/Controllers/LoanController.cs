@@ -1,9 +1,11 @@
 ﻿using Credit_Monitor.Interfaces;
 using Credit_Monitor.ViewModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Credit_Monitor.Controllers
 {
+    [Authorize]
     public class LoanController : Controller
     {
         private readonly ILoanService _loanService;

@@ -6,8 +6,8 @@ namespace Credit_Monitor.APIDto
 
     public class FinacleDataResponseDto
     {
-        [JsonProperty("$id")]
-        public string? Id { get; set; }
+        [JsonProperty("id")]
+        public Guid? Id { get; set; }
 
         [JsonProperty("accounT_NAME")]
         public string? AccountName { get; set; }

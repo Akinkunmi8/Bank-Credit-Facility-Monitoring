@@ -109,6 +109,8 @@ namespace Credit_Monitor.APIDto
 
         // Nested Customer Object
         public CustomerDetailsDto customer { get; set; }
+
+        public Guid? LoanFileBatchId { get; set; }
     }
 }
 

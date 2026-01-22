@@ -14,6 +14,13 @@ namespace Credit_Monitor.APICore
             _apiService = apiService;
         }
 
+        public async Task<bool> ConfirmGmail(string gmail)
+        {
+            var endpoint = "api/account/forgot-password";
+            var result = await _apiService.PostAsync<ConfirmPasswordDtoResposne>(gmail, endpoint);
+            return result.IsSuccess;
+        }
+
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto loginData)
         {
             var endpoint = "/api/account/login";

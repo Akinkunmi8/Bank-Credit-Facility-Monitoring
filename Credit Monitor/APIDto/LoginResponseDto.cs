@@ -21,4 +21,13 @@
 
         public bool isActive { get; set; }
     }
+
+    public class ConfirmPasswordDtoResposne
+
+    {
+        public bool IsSuccess { get; set; }
+        public string ResponseMessage { get; set; }
+        public string? Token { get; set; }
+        public object? User { get; set; }
+    }
 }

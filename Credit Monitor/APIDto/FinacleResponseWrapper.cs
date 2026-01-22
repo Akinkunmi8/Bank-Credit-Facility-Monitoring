@@ -111,6 +111,42 @@ namespace Credit_Monitor.APIsDto
         public DateTime processedate { get; set; }
         public Guid customerId { get; set; }
         public CustomerDetails customer { get; set; }
+
+        public Guid? LoanFileBatchId { get; set; }
+        // public LoanFileBatch? LoanFileBatch { get; set; }
+    }
+
+    public class LoanFileBatch
+    {
+        public Guid Id { get; set; }
+        public string AppId { get; set; } = null!;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public ICollection<LoanFileItem> Files { get; set; } = new List<LoanFileItem>();
+    }
+
+    public class LoanFileItem
+    {
+        public Guid Id { get; set; }
+        public Guid FileBatchId { get; set; }
+
+        public string FileName { get; set; } = null!;
+        public string FileFormat { get; set; } = null!;
+        public LoanDocumentType DocumentType { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public LoanFileBatch FileBatch { get; set; } = null!;
+    }
+
+    public enum LoanDocumentType
+    {
+        CAT,
+        CACOM,
+        OfferLetter,
+        ApprovalMail,
+        InsuranceCert,
+        CashCollateral
     }
 
     public class CustomerDetails

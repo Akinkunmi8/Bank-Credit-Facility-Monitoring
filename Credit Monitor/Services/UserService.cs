@@ -65,5 +65,13 @@ namespace Credit_Monitor.Services
             var registerResponse = _loginAndRegisterAPIService.RegisterAsync(registerRequest);
             return registerResponse;
         }
+
+        public async Task<bool> ForgotPassword(string gmail)
+        {
+            var message = await _loginAndRegisterAPIService.ConfirmGmail(gmail);
+            return message;
+        }
     }
+
+        
 }
