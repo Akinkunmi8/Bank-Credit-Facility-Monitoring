@@ -226,7 +226,7 @@ namespace BankLoanMonetrySolu.Services
                 .AsNoTracking()
                 .CountAsync(f =>
                     f.REGION == region &&
-                    f.CONFIRMED == true &&
+                    f.CONFIRMED == false &&
                     f.RECONFIRMED == true &&
                     f.APPROVED == false
 
@@ -361,6 +361,7 @@ namespace BankLoanMonetrySolu.Services
                     .Where(c => c.ACCOUNT_NUMBER == acctNum)
                     .Select(c => new FinacleDataDto
                     {
+                        Id = c.Id,
                         ACCOUNT_NAME = c.ACCOUNT_NAME,
                         ACCOUNT_NUMBER = c.ACCOUNT_NUMBER,
                         SBU_NAME = c.SBU_NAME,
@@ -507,16 +508,25 @@ namespace BankLoanMonetrySolu.Services
 
         private string GetMimeType(string extension)
         {
-            return extension.ToLower() switch
+            if (string.IsNullOrWhiteSpace(extension)) return "application/octet-stream";
+
+            // Strip leading dot if present
+            extension = extension.TrimStart('.').ToLower();
+
+            return extension switch
             {
                 "pdf" => "application/pdf",
                 "jpg" or "jpeg" => "image/jpeg",
                 "png" => "image/png",
+                "tiff" or "tif" => "image/tiff",
                 "txt" => "text/plain",
                 "csv" => "text/csv",
                 "xls" => "application/vnd.ms-excel",
                 "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                _ => "application/octet-stream"
+                "doc" => "application/msword",
+                "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "zip" => "application/zip",
+                _ => "application/octet-stream" // Forces a download if type is unknown
             };
         }
 

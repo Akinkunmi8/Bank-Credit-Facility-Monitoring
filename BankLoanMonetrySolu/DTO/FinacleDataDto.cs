@@ -101,6 +101,7 @@ namespace BankLoanMonetrySolu.DTO
 
     public class FincaleCompareDataDto
     {
+        public Guid Id { get; set; }
         public string? ACCOUNT_NAME { get; set; }
         public string? ACCOUNT_NUMBER { get; set; }
         public string? FACILITY_TYPE { get; set; }
