@@ -15,30 +15,42 @@ namespace BankLoanMonetrySolu.Services
 
         public async Task SendEmailAsync(string receiver, string subject, string body)
         {
-            var mail = new MailMessage
+            try
             {
-                From = new MailAddress(_config["EmailSettings:SenderEmail"]),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            };
+                var mail = new MailMessage
+                {
+                    From = new MailAddress(_config["EmailSettings:SenderEmail"]),
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = true
+                };
 
-            mail.To.Add(receiver);
+                mail.To.Add(receiver);
 
-            using var smtp = new SmtpClient(
-                _config["EmailSettings:SmtpServer"],
-                int.Parse(_config["EmailSettings:Port"])
-            )
+                using var smtp = new SmtpClient(
+                    _config["EmailSettings:SmtpServer"],
+                    int.Parse(_config["EmailSettings:Port"])
+                )
+                {
+                    Credentials = new NetworkCredential(
+                        _config["EmailSettings:Username"],
+                        _config["EmailSettings:Password"]
+                    ),
+                    EnableSsl = true
+                };
+
+                await smtp.SendMailAsync(mail);
+            }
+            catch (SmtpException ex)
             {
-                Credentials = new NetworkCredential(
-                    _config["EmailSettings:Username"],
-                    _config["EmailSettings:Password"]
-                ),
-                EnableSsl = true
-            };
-
-            await smtp.SendMailAsync(mail);
+                // Gmail / SMTP-specific issues
+                throw new Exception($"SMTP Error: {ex.StatusCode} - {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                // General failures
+                throw new Exception($"Email sending failed: {ex.Message}", ex);
+            }
         }
     }
-
 }

@@ -3,6 +3,7 @@ using BankLoanMonetrySolu.DTO;
 using BankLoanMonetrySolu.IServices;
 using BankLoanMonetrySolu.Model;
 using BankLoanMonetrySolu.Models;
+using Contracts.Notifications;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -24,13 +25,15 @@ namespace BankLoanMonetrySolu.Services
         private readonly IConfiguration _configuration;
         private readonly JwtSettings _jwtSettings;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private IEmailServices _emailServices;
 
         public AccountService(
             DALContext context,
             UserManager<AppUsers> userManager,
             SignInManager<AppUsers> signInManager,
             IConfiguration configuration, IOptions<JwtSettings> jwtOptions,
-            RoleManager<IdentityRole> roleManager, IHttpContextAccessor httpContextAccessor)
+            RoleManager<IdentityRole> roleManager, IHttpContextAccessor httpContextAccessor,
+            IEmailServices emailServices)
         {
             _context = context;
             _userManager = userManager;
@@ -39,6 +42,7 @@ namespace BankLoanMonetrySolu.Services
             _jwtSettings = jwtOptions.Value;
             _roleManager = roleManager;
             _httpContextAccessor = httpContextAccessor;
+            _emailServices = emailServices;
         }
         public async Task<AccUserResDto> RegisterUser(AccRegDto user)
         {
@@ -155,20 +159,27 @@ namespace BankLoanMonetrySolu.Services
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var encodedToken = WebUtility.UrlEncode(token);
 
-            // Frontend reset password URL
             var resetUrl =
                 $"{_configuration["AppSettings:ResetPasswordUrl"]}" +
                 $"?email={user.Email}&token={encodedToken}";
 
-        //    await _emailService.SendEmailAsync(
-        //        user.Email,
-        //        "Reset Your Password",
-        //        $@"
-        //<p>Hello {user.UserName},</p>
-        //<p>Click the link below to reset your password:</p>
-        //<p><a href='{resetUrl}'>Reset Password</a></p>
-        //<p>This link expires soon.</p>"
-        //    );
+            try
+            {
+                await _emailServices.SendEmailAsync(
+                    user.Email,
+                    "Account Recovery",
+                    resetUrl
+                );
+            }
+            catch (Exception ex)
+            {
+                // log this properly (Serilog / ILogger)
+                return new AccUserResDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = $"Failed to send email: {ex.Message}"
+                };
+            }
 
             return new AccUserResDto
             {
@@ -176,6 +187,7 @@ namespace BankLoanMonetrySolu.Services
                 ResponseMessage = "Password reset link has been sent to your email"
             };
         }
+
 
         public async Task<AccUserResDto> ResetForgotPassword(string email, string token, string newPassword)
         {
