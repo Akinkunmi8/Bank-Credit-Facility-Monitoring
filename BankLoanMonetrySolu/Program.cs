@@ -6,6 +6,7 @@ using BankLoanMonetrySolu.Logic;
 using BankLoanMonetrySolu.Model;
 using BankLoanMonetrySolu.Services;
 using Contracts.Common;
+using Contracts.Dto;
 using Contracts.Events;
 using Contracts.Notifications;
 using Contracts.Publishing;
@@ -96,13 +97,19 @@ builder.Services.AddAuthorization();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // --------------------- Event Handlers ---------------------
-builder.Services.AddSingleton<IEventPublisher, EventPublisher>();
+//builder.Services.AddSingleton<IEventPublisher, EventPublisher>();
+builder.Services.AddScoped<IEventPublisher, EventPublisher>();
+builder.Services.AddScoped<IEventHandler<ApprovedEvents>, ApprovedEventHandler>();
+builder.Services.AddScoped<IEventHandler<ConfirmedEvent>, ConfirmedEventHandler>();
+builder.Services.AddScoped<IEventHandler<RejectedEvent>, RejectedEventHandler>();
+builder.Services.AddScoped<IEventHandler<OnbordEvent>, OnboardEventHandler>();
+builder.Services.AddScoped<IEventHandler<TATEvent>, TATEventHandler>();
 
-builder.Services.AddEventHandlers(typeof(ApprovedEventHandler).Assembly);
-builder.Services.AddEventHandlers(typeof(ConfirmedEventHandler).Assembly);
-builder.Services.AddEventHandlers(typeof(RejectedEventHandler).Assembly);
-builder.Services.AddEventHandlers(typeof(TATEventHandler).Assembly);
-builder.Services.AddEventHandlers(typeof(OnboardEventHandler).Assembly);
+//builder.Services.AddEventHandlers(typeof(ApprovedEventHandler).Assembly);
+//builder.Services.AddEventHandlers(typeof(ConfirmedEventHandler).Assembly);
+//builder.Services.AddEventHandlers(typeof(RejectedEventHandler).Assembly);
+//builder.Services.AddEventHandlers(typeof(TATEventHandler).Assembly);
+//builder.Services.AddEventHandlers(typeof(OnboardEventHandler).Assembly);
 builder.Services.AddHostedService<TATMonitorService>();
 
 // --------------------- Swagger ---------------------
@@ -137,11 +144,22 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+// 1. Read the Origins from appsettings.json
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
 
-// --------------------- Build App ---------------------
+// 2. Add the CORS service
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("StaffPortalPolicy", policy =>
+    {
+        policy.WithOrigins(allowedOrigins) // Tags the allowed origins from config
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // Essential if the Dashboard uses Cookies/Sessions
+    });
+});
 
 var app = builder.Build();
-
 // --------------------- Middleware ---------------------
 
 if (app.Environment.IsDevelopment())
@@ -149,14 +167,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "BankLoan API V1");
-       // c.RoutePrefix = string.Empty; // Swagger at root
+        // 2. Remove the leading '/' so it becomes relative to your current folder
+        c.SwaggerEndpoint("v1/swagger.json", "BankLoan API V1");
+
+        // Optional: if you want Swagger to load as the very first page
+        // c.RoutePrefix = string.Empty; 
     });
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication(); // MUST come before Authorization
+app.UseCors("StaffPortalPolicy");
 app.UseAuthorization();
 
 app.MapControllers();

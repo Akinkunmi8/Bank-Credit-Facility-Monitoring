@@ -64,6 +64,13 @@ namespace BankLoanMonetrySolu.Services
         {
             var email = await _auditLookup.GetUserEmailByAppIdAsync(appId);
 
+            if (string.IsNullOrEmpty(email))
+            {
+                // Log it and exit gracefully
+                //_logger.LogWarning("Skipping TAT email for App {AppId} because no email was found.", appId);
+                return;
+            }
+
             await _emailServices.SendEmailAsync(
                 email,
                 "TAT Escalation",
