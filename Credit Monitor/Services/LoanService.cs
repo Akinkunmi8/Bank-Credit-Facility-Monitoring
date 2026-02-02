@@ -13,146 +13,319 @@ namespace Credit_Monitor.Services
         private readonly IMapper _mapper;
         private readonly ILoanAPIService _loanAPIservice;
         private readonly ICatAPIService _catAPIservice;
-        public LoanService(ILoanRepository loanRepository, IMapper mapper, ILoanAPIService loanAPIservice, ICatAPIService catAPIservice)
+        private readonly ILogger<LoanService> _logger; // 1. Add logger field
+
+        public LoanService(
+            ILoanRepository loanRepository,
+            IMapper mapper,
+            ILoanAPIService loanAPIservice,
+            ICatAPIService catAPIservice,
+            ILogger<LoanService> logger) // 2. Inject logger
         {
             _loanRepository = loanRepository;
             _mapper = mapper;
             _loanAPIservice = loanAPIservice;
             _catAPIservice = catAPIservice;
+            _logger = logger;
         }
         public async Task<PendingLoanWithCustomerDetailsViewModel?> GetPendingConfirmedLoanByIdAsync(string id)
         {
-            var loan = await _loanAPIservice.GetPendingLoanById(id);
-            if (loan == null) return null;
-            var loanVM = _mapper.Map<PendingConfirmedLoanViewModel>(loan);
-            var customerDetails = _mapper.Map<CustomerDetailsViewModel>(loan.customer);
-            return new PendingLoanWithCustomerDetailsViewModel
-            {
-                loan = loanVM,
-                customer = customerDetails
-            };
-        }
+            _logger.LogInformation("Fetching pending confirmed loan details for ID: {LoanId}", id);
 
+            try
+            {
+                var loan = await _loanAPIservice.GetPendingLoanById(id);
+
+                if (loan == null)
+                {
+                    _logger.LogWarning("No pending loan found for ID: {LoanId}", id);
+                    return null;
+                }
+
+                var loanVM = _mapper.Map<PendingConfirmedLoanViewModel>(loan);
+                var customerDetails = _mapper.Map<CustomerDetailsViewModel>(loan.customer);
+
+                _logger.LogInformation("Successfully retrieved and mapped loan/customer details for ID: {LoanId}", id);
+
+                return new PendingLoanWithCustomerDetailsViewModel
+                {
+                    loan = loanVM,
+                    customer = customerDetails
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while retrieving pending loan ID: {LoanId}", id);
+                throw; 
+            }
+        }
         public async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetPendingConfirmedLoansByRegion(string region)
         {
-            var loans = await _loanAPIservice.GetPendingLoansByRegion(region);
-            if (loans == null)
+            _logger.LogInformation("Fetching pending confirmed loans for region: {Region}", region);
+
+            try
             {
-                return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+                var loans = await _loanAPIservice.GetPendingLoansByRegion(region);
+
+                if (loans == null)
+                {
+                    _logger.LogWarning("API returned null for pending loans in region: {Region}. Returning empty list.", region);
+                    return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+                }
+
+                var mappedLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+
+                _logger.LogInformation("Successfully retrieved {Count} pending confirmed loans for region: {Region}",
+                    mappedLoans.Count(), region);
+
+                return mappedLoans;
             }
-            return _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to retrieve pending confirmed loans for region: {Region}", region);
+                throw;
+            }
         }
         public async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetConfirmedLoanByRegion(string region)
         {
-            var loans = await _loanAPIservice.GetConfirmedLoansByRegion(region);
-            if (loans == null)
+            _logger.LogInformation("Requesting all CONFIRMED loans for region: {Region}", region);
+
+            try
             {
-                return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+                var loans = await _loanAPIservice.GetConfirmedLoansByRegion(region);
+
+                if (loans == null)
+                {
+                    _logger.LogWarning("No confirmed loan data returned from API for region: {Region}. Returning empty collection.", region);
+                    return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+                }
+
+                var mappedLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+
+                _logger.LogInformation("Successfully mapped {Count} confirmed loans for region: {Region}",
+                    mappedLoans.Count(), region);
+
+                return mappedLoans;
             }
-            return _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching confirmed loans for region: {Region}", region);
+                throw;
+            }
         }
 
         public async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetApprovedLoanByRegion(string region)
         {
-            var loans = await _loanAPIservice.GetApprovedLoansByRegion(region);
-            if (loans == null)
+            _logger.LogInformation("Requesting APPROVED loans for region: {Region}", region);
+
+            try
             {
-                return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+                var loans = await _loanAPIservice.GetApprovedLoansByRegion(region);
+
+                if (loans == null)
+                {
+                    _logger.LogWarning("No approved loans found in API response for region: {Region}", region);
+                    return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+                }
+
+                var mapped = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+                _logger.LogInformation("Retrieved {Count} approved loans for region: {Region}", mapped.Count(), region);
+
+                return mapped;
             }
-            return _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching approved loans for region: {Region}", region);
+                throw;
+            }
         }
 
         public async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetRejectedLoanByRegion(string region)
         {
-            var loans = await _loanAPIservice.GetRejectedLoansByRegion(region);
-            if (loans == null)
+            _logger.LogInformation("Requesting REJECTED loans for region: {Region}", region);
+
+            try
             {
-                return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+                var loans = await _loanAPIservice.GetRejectedLoansByRegion(region);
+
+                if (loans == null)
+                {
+                    _logger.LogWarning("No rejected loans found in API response for region: {Region}", region);
+                    return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+                }
+
+                var mapped = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+                _logger.LogInformation("Retrieved {Count} rejected loans for region: {Region}", mapped.Count(), region);
+
+                return mapped;
             }
-            return _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching rejected loans for region: {Region}", region);
+                throw;
+            }
         }
 
         public async Task<FinacleDataViewModel?> GetPendingConfirmedLoanByAccNumAsync(string AccNum)
         {
-            var loan = await _loanAPIservice.GetPendingLoanByAccountNumber(AccNum);
-            return _mapper.Map<FinacleDataViewModel>(loan);
+            _logger.LogInformation("Searching for pending loan by Account Number: {AccNum}", AccNum);
+
+            try
+            {
+                var loan = await _loanAPIservice.GetPendingLoanByAccountNumber(AccNum);
+
+                if (loan == null)
+                {
+                    _logger.LogWarning("Account Number {AccNum} not found in pending loans.", AccNum);
+                    return null;
+                }
+
+                var result = _mapper.Map<FinacleDataViewModel>(loan);
+                _logger.LogInformation("Successfully retrieved Finacle data for AccNum: {AccNum}", AccNum);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving pending loan for AccNum: {AccNum}", AccNum);
+                throw;
+            }
         }
-
-
 
         public async Task<CATViewModel> GetCustomerLoanDetailsfromCATAsync(string AccNum)
         {
-            var data = await _catAPIservice.GetCustomerLoanDetailsfromCAT(AccNum);
-            return _mapper.Map<CATViewModel>(data);   
+            _logger.LogInformation("Attempting to fetch Customer Loan Details from CAT API for Account: {AccNum}", AccNum);
+
+            try
+            {
+                var data = await _catAPIservice.GetCustomerLoanDetailsfromCAT(AccNum);
+
+                if (data == null)
+                {
+                    _logger.LogWarning("CAT API returned no data for Account: {AccNum}", AccNum);
+                    return new CATViewModel(); 
+                }
+
+                var mappedData = _mapper.Map<CATViewModel>(data);
+
+                _logger.LogInformation("Successfully retrieved and mapped CAT data for Account: {AccNum}", AccNum);
+
+                return mappedData;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while calling CAT API for Account: {AccNum}", AccNum);
+                throw;
+            }
         }
 
         public async Task<DiscrepanciesViewModel> ValidateLoanDiscrepancies(string AccNum)
         {
-            var finnacle = await _loanAPIservice.GetPendingLoanByAccountNumber(AccNum);
-            var cat = await _catAPIservice.GetCustomerLoanDetailsfromCAT(AccNum);
+            _logger.LogInformation("Starting Cross-System Validation for Account: {AccNum}", AccNum);
 
-            var result = new DiscrepanciesViewModel { AccNum = AccNum };
+            try
+            {
+                // 1. Fetch from both systems
+                var finnacle = await _loanAPIservice.GetPendingLoanByAccountNumber(AccNum);
+                var cat = await _catAPIservice.GetCustomerLoanDetailsfromCAT(AccNum);
 
-            if (finnacle == null || cat == null) return result;
+                var result = new DiscrepanciesViewModel { AccNum = AccNum };
 
-            result.CustomerName = CompareStrings(finnacle.AccountName, cat.CustomerName, "Customer Name");
+                // 2. Log if data is missing from one of the systems
+                if (finnacle == null || cat == null)
+                {
+                    _logger.LogWarning("Validation aborted for {AccNum}. Missing Data - Finacle: {FinacleStatus}, CAT: {CatStatus}",
+                        AccNum,
+                        finnacle == null ? "NOT FOUND" : "FOUND",
+                        cat == null ? "NOT FOUND" : "FOUND");
+                    return result;
+                }
 
-            result.Directorate = CompareStrings(finnacle.SbuName, cat.Directorate, "Directorate/SBU");
+                // 3. Perform Comparisons
+                result.CustomerName = CompareStrings(finnacle.AccountName, cat.CustomerName, "Customer Name");
+                result.Directorate = CompareStrings(finnacle.SbuName, cat.Directorate, "Directorate/SBU");
+                result.FacilityType = CompareStrings(finnacle.FacilityType, cat.FacilityType, "Facility Type");
+                result.Fee = CompareDecimals(finnacle.FxRate, cat.Fees, "Fee");
+                result.ApprovalLimit = CompareDecimals(finnacle.SanctionLimit, cat.ApprovalLimit, "Limit");
 
-            result.FacilityType = CompareStrings(finnacle.FacilityType, cat.FacilityType, "Facility Type");
+                decimal FinnacleTotalBalance = finnacle.TotalBalanceLcy != 0
+                                                ? finnacle.TotalBalanceLcy
+                                                : finnacle.TotalBalanceFcy;
 
-            result.Fee = CompareDecimals(finnacle.FxRate, cat.Fees, "Fee");
-           
-            result.ApprovalLimit = CompareDecimals(finnacle.SanctionLimit, cat.ApprovalLimit, "Limit");
+                result.DisbursmentRequired = CompareDecimals(FinnacleTotalBalance, cat.DisbursementRequired, "Disbursed Amount");
+                result.Interest = CompareDecimals(finnacle.IntRate, cat.Interest, "Interest Rate", isPercentage: true);
+                result.MaturityDate = CompareDates(finnacle.ExpiryDate, cat.MaturityOrExpiry, "Maturity Date");
+                result.ValueDate = CompareDates(finnacle.DateGranted, cat.ValueDate, "Value Date");
 
-            decimal FinnacleTotalBalance = finnacle.TotalBalanceLcy != 0
-                                           ? finnacle.TotalBalanceLcy
-                                           : finnacle.TotalBalanceFcy;
+                // 4. Summarize Results
+                var allResults = new[] {
+            result.CustomerName, result.ApprovalLimit, result.FacilityType,
+            result.Interest, result.MaturityDate, result.Directorate,
+            result.DisbursmentRequired, result.Fee, result.ValueDate
+        };
 
-            result.DisbursmentRequired = CompareDecimals(FinnacleTotalBalance, cat.DisbursementRequired, "Disbursed Amount");
+                result.ErrorCount = allResults.Count(x => !x.IsValid);
+                result.TotalFields = allResults.Length;
 
-            result.Interest = CompareDecimals(finnacle.IntRate, cat.Interest, "Interest Rate", isPercentage: true);
+                // 5. Final Audit Log
+                if (result.ErrorCount > 0)
+                {
+                    _logger.LogWarning("Validation Completed for {AccNum}: FOUND {ErrorCount} DISCREPANCIES out of {TotalCount} fields.",
+                        AccNum, result.ErrorCount, result.TotalFields);
+                }
+                else
+                {
+                    _logger.LogInformation("Validation Completed for {AccNum}: 100% Match across all systems.", AccNum);
+                }
 
-            result.MaturityDate = CompareDates(finnacle.ExpiryDate, cat.MaturityOrExpiry, "Maturity Date");
-
-            result.ValueDate = CompareDates(finnacle.DateGranted, cat.ValueDate, "Value Date");
-
-
-
-            // Calculate Totals for the Dashboard counter
-            var allResults = new[] { 
-                result.CustomerName,
-                result.ApprovalLimit,
-                result.FacilityType,
-                result.Interest, 
-                result.MaturityDate,
-                result.Directorate,
-                result.DisbursmentRequired,
-                result.Fee,
-                result.ValueDate
-            };
-            result.ErrorCount = allResults.Count(x => !x.IsValid);
-            result.TotalFields = allResults.Length;
-
-            return result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Critical failure during validation logic for Account: {AccNum}", AccNum);
+                throw;
+            }
         }
 
         public async Task<(bool isSuccess, string message)> ProcessStatusUpdate(Guid appId, string actionType)
         {
-            var request = new StatusUpdateRequestDto
-            {
-                ApplicationId = appId.ToString(),
-                Action = actionType
-            };
+            // 1. Log the intent with structured properties
+            _logger.LogInformation("Initiating status update. Action: {ActionType}, ApplicationId: {AppId}", actionType, appId);
 
-            var response = await _loanAPIservice.UpdateLoanStatusAsync(request);
-
-            if (response != null && response.Success)
+            try
             {
-                return (true, response.Message);
+                var request = new StatusUpdateRequestDto
+                {
+                    ApplicationId = appId.ToString(),
+                    Action = actionType
+                };
+
+                // 2. Call the API and capture the response
+                var response = await _loanAPIservice.UpdateLoanStatusAsync(request);
+
+                if (response != null && response.Success)
+                {
+                    // 3. Log the successful state change
+                    _logger.LogInformation("Successfully updated status to {ActionType} for ApplicationId: {AppId}. API Message: {Message}",
+                        actionType, appId, response.Message);
+
+                    return (true, response.Message);
+                }
+
+                // 4. Log a warning for business-level failures (e.g., "Insufficient permissions" or "Invalid state")
+                _logger.LogWarning("API rejected status update ({ActionType}) for ApplicationId: {AppId}. Reason: {Reason}",
+                    actionType, appId, response?.Message ?? "No message provided by API");
+
+                return (false, response?.Message ?? "Failed to update status via API");
             }
+            catch (Exception ex)
+            {
+                // 5. Critical error (e.g., API is down, network timeout)
+                _logger.LogError(ex, "Critical failure while attempting to update status ({ActionType}) for ApplicationId: {AppId}",
+                    actionType, appId);
 
-            return (false, response?.Message ?? "Failed to update status via API");
+                return (false, $"Internal system error: {ex.Message}");
+            }
         }
 
         private ValidationResult CompareStrings(string fin, string cat, string fieldName)

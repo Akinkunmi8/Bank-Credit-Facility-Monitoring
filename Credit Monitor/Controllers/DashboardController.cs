@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Credit_Monitor.Interfaces;
 using Credit_Monitor.Services;
 using Credit_Monitor.ViewModel;
+using Credit_Monitor.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -16,14 +17,20 @@ namespace Credit_Monitor.Controllers
         private readonly ILoanService _loanService;
         private readonly IDashboardAPI _dashboardapi;
         private readonly IFileService _fileService;
+        private readonly ICovenantTrackerService _covenantService;
 
         private readonly string _storagePath = @"C:\Users\dell\c#\Credit Monitor Backend\BankLoanMonetrySolu\UploadedFiles\";
-       
-        public DashboardController(ILoanService loanService, IDashboardAPI dashboardapi, IFileService fileService)
+
+        public DashboardController(
+            ILoanService loanService,
+            IDashboardAPI dashboardapi,
+            IFileService fileService,
+            ICovenantTrackerService covenantService) 
         {
             _loanService = loanService;
             _dashboardapi = dashboardapi;
             _fileService = fileService;
+            _covenantService = covenantService; 
         }
 
         [Authorize(Roles = "staff")]
@@ -46,6 +53,20 @@ namespace Credit_Monitor.Controllers
             }
             var documents = await _fileService.GetCustomerDocumentsAsync(batchId);
             return PartialView("_DocumentStatusPartial", documents);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCovenantStatus(Guid appId)
+        {
+            if (appId == Guid.Empty)
+            {
+                return PartialView("_CovenantStatusPartial", new CovenantViewModel());
+            }
+
+            var covenants = await _covenantService.GetCovenantDetailsAsync(appId);
+
+            // If no records found, return an empty ViewModel instead of null
+            return PartialView("_CovenantStatusPartial", covenants ?? new CovenantViewModel());
         }
 
         [HttpGet]

@@ -1,0 +1,67 @@
+﻿@model Credit_Monitor.ViewModels.CovenantViewModel
+
+<div class="covenant-container">
+    <h5 class="mb-3 text-primary"><i class="fas fa-file-invoice-dollar"></i> Financial Covenants</h5>
+    <div class="table-responsive mb-4">
+        <table class="table table-hover table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Target Value</th>
+                    <th>Frequency</th>
+                    <th>Data Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Financials != null && Model.Financials.Any())
+                {
+                    foreach (var item in Model.Financials)
+                    {
+                        <tr>
+                            <td><strong>@item.CovenantType</strong></td>
+                            <td>@item.Description</td>
+                            <td class="text-center">@item.TargetValue</td>
+                            <td><span class="badge bg-info text-dark">@item.Frequency</span></td>
+                            <td><small class="text-muted">@item.DataSource</small></td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="5" class="text-center text-muted">No financial covenants found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <h5 class="mb-3 text-success"><i class="fas fa-clipboard-check"></i> Non-Financial Covenants</h5>
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Compliance Type</th>
+                    <th>Requirements / Description</th>
+                    <th>Frequency</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.NonFinancials != null && Model.NonFinancials.Any())
+                {
+                    foreach (var item in Model.NonFinancials)
+                    {
+                        <tr>
+                            <td><strong>@item.CovenantType</strong></td>
+                            <td>@item.Description</td>
+                            <td><span class="badge bg-secondary">@item.Frequency</span></td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="3" class="text-center text-muted">No non-financial covenants found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

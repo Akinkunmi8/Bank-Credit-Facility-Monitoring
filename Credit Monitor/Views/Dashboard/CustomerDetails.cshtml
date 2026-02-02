@@ -7,7 +7,6 @@
     var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
 }
 
-
 <div class="sticky-top bg-white shadow-sm border-bottom pb-2 mb-3 pt-3" style="top: 0; z-index: 1020;">
     <div class="container-fluid">
         <div class="row align-items-center mb-2">
@@ -17,7 +16,6 @@
             <div class="col-md-4 text-center">
                 <h6 class="mb-0 fw-bold">Applicant Name : <span class="text-primary">@loan?.accounT_NAME</span></h6>
             </div>
-           
         </div>
 
         <div class="row align-items-center">
@@ -28,19 +26,16 @@
                 <div class="d-flex justify-content-end gap-2">
                     @if (userRole == "supervisor")
                     {
-                        @* Supervisor View: Approve Button *@
                         <a asp-action="ApproveLoan" asp-controller="Loan" asp-route-AccNum="@loan?.accounT_NUMBER" class="btn btn-success btn-sm px-3 fw-bold">
                             <i class="bi bi-check-circle-fill me-1"></i> Approve Loan Details
                         </a>
                     }
                     else
                     {
-                        @* Staff View: Validate Button *@
                         <a asp-action="ValidateCAT" asp-controller="Loan" asp-route-AccNum="@loan?.accounT_NUMBER" class="btn btn-warning btn-sm px-3 fw-bold">
                             <i class="bi bi-shield-check me-1"></i> Validate with CAT
                         </a>
                     }
-
                     <button onclick="history.back()" class="btn btn-secondary btn-sm px-4">
                         <i class="bi bi-arrow-left me-1"></i> Back
                     </button>
@@ -55,9 +50,6 @@
         <li class="nav-item">
             <button class="nav-link active fw-bold small text-uppercase" data-bs-toggle="tab" data-bs-target="#basicInfo">Basic Info</button>
         </li>
-        @* <li class="nav-item">
-            <button class="nav-link fw-bold small text-uppercase" data-bs-toggle="tab" data-bs-target="#docStatus">Document Status</button>
-        </li> *@
         <li class="nav-item">
             <button class="nav-link fw-bold small text-uppercase"
                     id="doc-status-tab"
@@ -68,20 +60,19 @@
                 Document Status
             </button>
         </li>
-
+        <li class="nav-item">
+            <button class="nav-link fw-bold small text-uppercase"
+                    id="covenant-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#covenantStatus"
+                    type="button"
+                    onclick="loadCovenants('@Model.loan?.id')">
+                Covenant Tracker
+            </button>
+        </li>
     </ul>
 
     <div class="tab-content border rounded p-4 bg-white shadow-sm">
-        <div class="tab-pane fade" id="docStatus" role="tabpanel">
-            <div id="docStatusContainer">
-                <div class="text-center py-5 doc-loader">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-2 text-muted">Fetching document metadata...</p>
-                </div>
-            </div>
-        </div>
-
-
         <div class="tab-pane fade show active" id="basicInfo">
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
                 <h6 class="text-primary fw-bold mb-0">
@@ -139,38 +130,23 @@
                     <label class="small fw-bold text-muted">Dependants</label>
                     <input type="text" class="form-control form-control-sm" value="@customer?.numbOfDependant" readonly>
                 </div>
-                <div class="col-md-6">
-                    <label class="small fw-bold text-muted">Resident Status</label>
-                    <input type="text" class="form-control form-control-sm bg-light" value="@customer?.residentStatus" readonly>
-                </div>
-                <div class="col-md-6">
-                    <label class="small fw-bold text-muted">Applicant Type</label>
-                    <input type="text" class="form-control form-control-sm bg-light" value="@customer?.applicantType" readonly>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="docStatus" role="tabpanel">
+            <div id="docStatusContainer">
+                <div class="text-center py-5 doc-loader">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Fetching document metadata...</p>
                 </div>
             </div>
+        </div>
 
-            <p class="fw-bold text-dark border-start border-warning border-4 ps-2 mb-3">Contact & Employment</p>
-            <div class="row g-3 mb-3">
-                <div class="col-md-6">
-                    <label class="small fw-bold text-muted">Email Address</label>
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                        <input type="text" class="form-control" value="@customer?.email" readonly>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <label class="small fw-bold text-muted">Phone Number</label>
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                        <input type="text" class="form-control" value="@customer?.phoneNum" readonly>
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <label class="small fw-bold text-muted">Name of Employer</label>
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text"><i class="bi bi-building"></i></span>
-                        <input type="text" class="form-control" value="@customer?.nameOfEmployer" readonly>
-                    </div>
+        <div class="tab-pane fade" id="covenantStatus" role="tabpanel">
+            <div id="covenantStatusContainer">
+                <div class="text-center py-5 covenant-loader">
+                    <div class="spinner-border text-success" role="status"></div>
+                    <p class="mt-2 text-muted">Fetching covenant details...</p>
                 </div>
             </div>
         </div>
@@ -181,73 +157,74 @@
         {
             <partial name="_LoanDetailsPartial" model="Model.loan" />
         }
-        else
-        {
-            <div class="alert alert-warning">Loan details are not available.</div>
-        }
     </div>
-
 </div>
+
 <script>
-            function loadDocuments(batchId) {
-                if (!batchId || batchId === '00000000-0000-0000-0000-000000000000') {
-        console.error("Invalid Batch ID");
-        return;
-    }
+    // Existing Document Loader
+    function loadDocuments(batchId) {
+        if (!batchId || batchId === '00000000-0000-0000-0000-000000000000') {
+            console.error("Invalid Batch ID");
+            return;
+        }
         const container = $('#docStatusContainer');
         const tabPane = $('#docStatus');
-
-        if (tabPane.data('loaded') === true || !batchId) return;
+        if (tabPane.data('loaded') === true) return;
 
         $.ajax({
             url: '@Url.Action("GetDocumentStatus", "Dashboard")',
             type: 'GET',
             data: { batchId: batchId },
+            success: function (result) {
+                container.html(result);
+                tabPane.data('loaded', true);
+            },
+            error: function (xhr, status, error) {
+                container.html('<div class="alert alert-danger">Error: ' + error + '</div>');
+            }
+        });
+    }
+
+    // New Covenant Loader
+    function loadCovenants(appId) {
+        if (!appId || appId === '00000000-0000-0000-0000-000000000000') {
+            console.error("Invalid Application ID");
+            return;
+        }
+        const container = $('#covenantStatusContainer');
+        const tabPane = $('#covenantStatus');
+
+        // Prevent reloading if already loaded
+        if (tabPane.data('loaded') === true) return;
+
+        $.ajax({
+            url: '@Url.Action("GetCovenantStatus", "Dashboard")',
+            type: 'GET',
+            data: { appId: appId },
             beforeSend: function() {
-                // Optional: confirm the function is actually firing
-                console.log("Fetching docs for batch:", batchId);
+                console.log("Fetching covenants for app:", appId);
             },
             success: function (result) {
                 container.html(result);
                 tabPane.data('loaded', true);
             },
             error: function (xhr, status, error) {
-                console.error("Error:", error);
-                container.html('<div class="alert alert-danger">Error: ' + error + '</div>');
+                console.error("Covenant Error:", error);
+                container.html('<div class="alert alert-danger">Error loading covenants: ' + error + '</div>');
             }
         });
     }
 </script>
 
 <style>
-    /* Ensure the sticky header doesn't hide content when jumping to hash links */
-    :target:before {
-        content: "";
-        display: block;
-        height: 120px;
-        margin: -120px 0 0;
+    /* Styling for the new tab and loader consistency */
+    .nav-tabs .nav-link.active {
+        background-color: transparent;
+        color: #0d6efd;
+        border-bottom: 3px solid #0d6efd;
     }
 
-    .nav-tabs .nav-link {
-        color: #6c757d;
-        border: none;
-        padding: 10px 20px;
-        transition: all 0.2s ease-in-out;
-    }
-
-        .nav-tabs .nav-link.active {
-            background-color: transparent;
-            color: #0d6efd;
-            border-bottom: 3px solid #0d6efd;
-        }
-
-    .form-control-sm, .form-select-sm {
-        border-radius: 4px;
-        border: 1px solid #ced4da;
-    }
-
-    label.small {
-        font-size: 0.82rem;
-        color: #495057;
+    .spinner-border.text-success {
+        color: #198754 !important;
     }
 </style>
