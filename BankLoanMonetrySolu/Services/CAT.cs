@@ -4,7 +4,9 @@ using BankLoanMonetrySolu.DTO;
 using BankLoanMonetrySolu.IServices;
 using BankLoanMonetrySolu.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging; // Added for NLog
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,17 +16,21 @@ namespace BankLoanMonetrySolu.Services
     {
         private readonly DALContext _context;
         private readonly IMapper _mapper;
+        private readonly ILogger<CAT> _logger; // 1. Define Logger
 
-        public CAT(DALContext context, IMapper mapper)
+        public CAT(DALContext context, IMapper mapper, ILogger<CAT> logger) // 2. Inject Logger
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<CATResponseDto> CreateCatAsync(CreditAvailmentTicketDto catDto)
         {
             try
             {
+                _logger.LogInformation("Attempting to create CAT for Customer: {CustomerName}, Account: {AccNum}", catDto.CustomerName, catDto.AccNum);
+
                 var cat = new CreditAvailmentTicket
                 {
                     CustomerName = catDto.CustomerName,
@@ -50,6 +56,8 @@ namespace BankLoanMonetrySolu.Services
                 await _context.cat.AddAsync(cat);
                 await _context.SaveChangesAsync();
 
+                _logger.LogInformation("CAT created successfully for Account: {AccNum}. Approval Limit: {Limit}", catDto.AccNum, catDto.ApprovalLimit);
+
                 return new CATResponseDto
                 {
                     IsSuccess = true,
@@ -58,6 +66,9 @@ namespace BankLoanMonetrySolu.Services
             }
             catch (Exception ex)
             {
+                // Capture the full exception for debugging
+                _logger.LogError(ex, "Error occurred while creating CAT for Account: {AccNum}", catDto.AccNum);
+
                 return new CATResponseDto
                 {
                     IsSuccess = false,
@@ -70,8 +81,13 @@ namespace BankLoanMonetrySolu.Services
         {
             try
             {
+                _logger.LogInformation("Fetching all CAT records from database.");
+
                 var cats = await _context.cat.ToListAsync();
                 var dto = _mapper.Map<List<CreditAvailmentTicketDto>>(cats);
+
+                _logger.LogInformation("Successfully retrieved {Count} CAT records.", cats.Count);
+
                 return new CATResponseDto
                 {
                     IsSuccess = true,
@@ -81,6 +97,7 @@ namespace BankLoanMonetrySolu.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to retrieve all CAT records.");
                 return new CATResponseDto
                 {
                     IsSuccess = false,
@@ -93,15 +110,22 @@ namespace BankLoanMonetrySolu.Services
         {
             try
             {
-                var cat = await _context.cat
-                    .FirstOrDefaultAsync(c => c.AccNum == accountNum);
-                var dto = _mapper.Map<CreditAvailmentTicketDto>(cat);
+                _logger.LogInformation("Searching for CAT with Account Number: {AccNum}", accountNum);
+
+                var cat = await _context.cat.FirstOrDefaultAsync(c => c.AccNum == accountNum);
+
                 if (cat == null)
+                {
+                    _logger.LogWarning("CAT lookup failed: No record found for Account Number: {AccNum}", accountNum);
                     return new CATResponseDto
                     {
                         IsSuccess = false,
                         ResponseMessage = $"No CAT found for account number {accountNum}"
                     };
+                }
+
+                var dto = _mapper.Map<CreditAvailmentTicketDto>(cat);
+                _logger.LogInformation("CAT retrieved successfully for Account: {AccNum}", accountNum);
 
                 return new CATResponseDto
                 {
@@ -112,6 +136,7 @@ namespace BankLoanMonetrySolu.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error retrieving CAT for Account: {AccNum}", accountNum);
                 return new CATResponseDto
                 {
                     IsSuccess = false,
@@ -124,7 +149,8 @@ namespace BankLoanMonetrySolu.Services
         {
             try
             {
-                // Select only the fields you need
+                _logger.LogInformation("Initiating CAT data comparison for Account: {AccNum}", accountNum);
+
                 var data = await _context.cat
                     .Where(c => c.AccNum == accountNum)
                     .Select(c => new CreditAvailmentTicketDto
@@ -140,10 +166,11 @@ namespace BankLoanMonetrySolu.Services
                         Valuedate = c.Valuedate,
                         MaturityOrExpiry = c.MaturityOrExpiry
                     })
-                    .FirstOrDefaultAsync(); // get single record
+                    .FirstOrDefaultAsync();
 
                 if (data == null)
                 {
+                    _logger.LogWarning("Comparison data lookup failed: Account {AccNum} not found.", accountNum);
                     return new CompareCatDto
                     {
                         IsSuccess = false,
@@ -151,15 +178,16 @@ namespace BankLoanMonetrySolu.Services
                     };
                 }
 
-                // Map to CompareCatDto
                 var result = _mapper.Map<CompareCatDto>(data);
                 result.IsSuccess = true;
                 result.ResponseMessage = "Record retrieved successfully";
 
+                _logger.LogInformation("Comparison data successfully mapped for Account: {AccNum}", accountNum);
                 return result;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching comparison data for Account: {AccNum}", accountNum);
                 return new CompareCatDto
                 {
                     IsSuccess = false,
@@ -167,9 +195,5 @@ namespace BankLoanMonetrySolu.Services
                 };
             }
         }
-
-
     }
-
 }
-

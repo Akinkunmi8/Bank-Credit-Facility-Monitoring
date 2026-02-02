@@ -2,6 +2,10 @@
 using BankLoanMonetrySolu.Model;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace BankLoanMonetrySolu.Logic
 {
@@ -9,7 +13,7 @@ namespace BankLoanMonetrySolu.Logic
     {
         private readonly DALContext _context;
         private readonly UserManager<AppUsers> _userManager;
-        private readonly ILogger<AuditLookupService> _logger; // Added for better tracking
+        private readonly ILogger<AuditLookupService> _logger;
 
         public AuditLookupService(
             DALContext context,
@@ -21,35 +25,84 @@ namespace BankLoanMonetrySolu.Logic
             _logger = logger;
         }
 
+        /// <summary>
+        /// Finds the email of the user associated with the most recent audit entry for a specific application.
+        /// </summary>
         public async Task<string?> GetUserEmailByAppIdAsync(Guid appId)
         {
-            var audit = await _context.audits
-                .Where(a => a.AppId == appId)
-                .OrderByDescending(a => a.CreatedAt)
-                .FirstOrDefaultAsync();
+            _logger.LogDebug("Looking up audit trail for AppId: {AppId}", appId);
 
-            if (audit == null)
+            try
             {
-                _logger.LogWarning("Audit record not found for AppId: {AppId}", appId);
-                return null; // Return null instead of throwing
+                // Fetch the most recent audit entry to find the current 'owner' or 'actor'
+                var audit = await _context.audits
+                    .Where(a => a.AppId == appId)
+                    .OrderByDescending(a => a.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (audit == null)
+                {
+                    _logger.LogWarning("No audit trail exists for AppId: {AppId}. Cannot resolve recipient email.", appId);
+                    return null;
+                }
+
+                if (string.IsNullOrEmpty(audit.UserId))
+                {
+                    _logger.LogWarning("Audit record found for AppId: {AppId}, but UserId is null or empty.", appId);
+                    return null;
+                }
+
+                var user = await _userManager.FindByIdAsync(audit.UserId);
+
+                if (user == null)
+                {
+                    _logger.LogError("Audit record exists for UserId {UserId}, but user does not exist in Identity Store. AppId: {AppId}", audit.UserId, appId);
+                    return null;
+                }
+
+                if (string.IsNullOrEmpty(user.Email))
+                {
+                    _logger.LogWarning("User {UserId} found, but has no email address configured.", audit.UserId);
+                    return null;
+                }
+
+                return user.Email;
             }
-
-            var user = await _userManager.FindByIdAsync(audit.UserId);
-
-            if (user == null || string.IsNullOrEmpty(user.Email))
+            catch (Exception ex)
             {
-                _logger.LogWarning("Email not found for UserId: {UserId} linked to AppId: {AppId}", audit.UserId, appId);
+                _logger.LogError(ex, "Exception occurred while looking up user email for AppId: {AppId}", appId);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Directly resolves a User ID to an Email address.
+        /// </summary>
+        public async Task<string?> GetUserEmailByUserIdAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _logger.LogWarning("GetUserEmailByUserIdAsync called with null or empty UserId.");
                 return null;
             }
 
-            return user.Email;
-        }
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
 
-        public async Task<string?> GetUserEmailByUserIdAsync(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            return user?.Email; // Returns null naturally if user or email is missing
+                if (user == null)
+                {
+                    _logger.LogWarning("Identity lookup failed: User {UserId} not found.", userId);
+                    return null;
+                }
+
+                return user.Email;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching email for UserId: {UserId}", userId);
+                return null;
+            }
         }
     }
-
 }

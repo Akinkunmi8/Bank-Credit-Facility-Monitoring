@@ -1,31 +1,41 @@
 ﻿using BankLoanMonetrySolu.Context;
 using BankLoanMonetrySolu.DTO;
 using BankLoanMonetrySolu.IServices;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace BankLoanMonetrySolu.Services
 {
     public class ConventTracker : IConventTracker
     {
         private readonly DALContext _context;
+        private readonly ILogger<ConventTracker> _logger;
 
-        public ConventTracker(DALContext context)
+        public ConventTracker(DALContext context, ILogger<ConventTracker> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<LoanCovenantTrackerResponse> GetLoanCovenantTrackerResponsesAsync(string AppId)
         {
+            _logger.LogInformation("Retrieving loan covenants for AppId: {AppId}", AppId);
+
             try
             {
                 if (!Guid.TryParse(AppId, out Guid guidAppId))
                 {
+                    _logger.LogWarning("Invalid AppId format received: {AppId}", AppId);
                     throw new ArgumentException("Invalid AppId format. Must be a valid Guid.");
                 }
 
+                // Fetch Financial Covenants
                 var financials = await _context.financialCovenants
+                    .AsNoTracking()
                     .Where(x => x.AppId == guidAppId)
                     .Select(f => new ConventFinacialDto
                     {
@@ -33,21 +43,27 @@ namespace BankLoanMonetrySolu.Services
                         Description = f.Description,
                         TargetValue = f.TargetValue,
                         Frequency = f.Frequency,
-                        DataSource = f.DataSource
+                        DataSource = f.DataSource,
+                        AccountNumber = f.AccountNumber // Assuming this property exists in your model
                     }).ToListAsync();
 
+                // Fetch Non-Financial Covenants
                 var nonFinancials = await _context.nonFinancialCovenants
+                    .AsNoTracking()
                     .Where(x => x.AppId == guidAppId)
                     .Select(nf => new NonFinacialConventDto
                     {
                         CovenantType = nf.CovenantType,
                         Description = nf.Description,
-                        Frequency = nf.Frequency
+                        Frequency = nf.Frequency,
+                        AccountNumber = nf.AccountNumber // Assuming this property exists in your model
                     }).ToListAsync();
 
                 var accountNumber = financials.FirstOrDefault()?.AccountNumber
                                     ?? nonFinancials.FirstOrDefault()?.AccountNumber
                                     ?? "N/A";
+
+                _logger.LogInformation("Successfully retrieved covenants for Account: {AccountNumber}", accountNumber);
 
                 return new LoanCovenantTrackerResponse
                 {
@@ -59,12 +75,15 @@ namespace BankLoanMonetrySolu.Services
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error retrieving covenant tracker: {ex.Message}");
+                _logger.LogError(ex, "Failed to retrieve covenants for AppId: {AppId}", AppId);
+                throw; // Re-throw to allow global error handler to capture it
             }
         }
 
         public async Task<string> EditNonFinaciaConeventTracker(string AppId, EditNonFinancialCovenantDto updateDto)
         {
+            _logger.LogInformation("Attempting to update Non-Financial Covenant ID: {CovenantId} for AppId: {AppId}", updateDto.Id, AppId);
+
             try
             {
                 if (!Guid.TryParse(AppId, out Guid guidAppId))
@@ -77,32 +96,28 @@ namespace BankLoanMonetrySolu.Services
 
                 if (existingCovenant == null)
                 {
+                    _logger.LogWarning("Covenant update failed: Record not found for Id {Id}", updateDto.Id);
                     return "Covenant record not found.";
                 }
 
-                // Update CovenantType (e.g., Negative Pledge)
+                // Update Fields
                 if (!string.IsNullOrWhiteSpace(updateDto.CovenantType))
-                {
                     existingCovenant.CovenantType = updateDto.CovenantType;
-                }
 
-                // Update Description (e.g., Reporting requirements)
                 if (!string.IsNullOrWhiteSpace(updateDto.Description))
-                {
                     existingCovenant.Description = updateDto.Description;
-                }
 
-                // Update Frequency
                 if (updateDto.Frequency.HasValue)
-                {
                     existingCovenant.Frequency = updateDto.Frequency.Value;
-                }
 
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Successfully updated Non-Financial Covenant {Id}", updateDto.Id);
                 return "Success";
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Database error during covenant update for AppId: {AppId}", AppId);
                 return $"Update Failed: {ex.Message}";
             }
         }

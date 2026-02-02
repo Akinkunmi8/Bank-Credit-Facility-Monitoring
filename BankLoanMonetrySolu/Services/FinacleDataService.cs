@@ -7,7 +7,11 @@ using BankLoanMonetrySolu.Models;
 using Contracts.Dto;
 using Contracts.Publishing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -19,24 +23,32 @@ namespace BankLoanMonetrySolu.Services
         private readonly IMapper _mapper;
         private readonly IEventPublisher _eventPublisher;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<FinacleDataService> _logger;
 
-        public FinacleDataService(DALContext context, IMapper mapper, IEventPublisher eventPublisher,
-            IHttpContextAccessor httpContextAccessor)
+        public FinacleDataService(
+            DALContext context,
+            IMapper mapper,
+            IEventPublisher eventPublisher,
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<FinacleDataService> logger)
         {
             _context = context;
             _mapper = mapper;
             _eventPublisher = eventPublisher;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
-        public async Task<FinacleResponseDto> GetAllAprovedFinacleData( string region)
+        public async Task<FinacleResponseDto> GetAllAprovedFinacleData(string region)
         {
             try
             {
+                _logger.LogInformation("Fetching approved Finacle records for Region: {Region}", region);
                 var data = await _context.finacleDatas
-                    .Where(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == true ) // Example filter
+                    .Where(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == true)
                     .ToListAsync();
-                var dto = _mapper.Map<List<FinacleDataDto>>(data); ;
+
+                var dto = _mapper.Map<List<FinacleDataDto>>(data);
 
                 return new FinacleResponseDto
                 {
@@ -47,21 +59,20 @@ namespace BankLoanMonetrySolu.Services
             }
             catch (Exception ex)
             {
-                return new FinacleResponseDto
-                {
-                    IsSuccess = false,
-                    ResponseMessage = $"Error fetching approved Finacle data: {ex.Message}"
-                };
+                _logger.LogError(ex, "Error fetching approved data for region: {Region}", region);
+                return new FinacleResponseDto { IsSuccess = false, ResponseMessage = ex.Message };
             }
         }
 
-        public async Task<FinacleResponseDto> GetAllConfirmedFinacleData( string region)
+        public async Task<FinacleResponseDto> GetAllConfirmedFinacleData(string region)
         {
             try
             {
+                _logger.LogInformation("Fetching confirmed Finacle records for Region: {Region}", region);
                 var data = await _context.finacleDatas
                     .Where(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == false)
                     .ToListAsync();
+
                 var dto = _mapper.Map<List<FinacleDataDto>>(data);
                 return new FinacleResponseDto
                 {
@@ -72,11 +83,8 @@ namespace BankLoanMonetrySolu.Services
             }
             catch (Exception ex)
             {
-                return new FinacleResponseDto
-                {
-                    IsSuccess = false,
-                    ResponseMessage = $"Error fetching confirmed Finacle data: {ex.Message}"
-                };
+                _logger.LogError(ex, "Error fetching confirmed data for region: {Region}", region);
+                return new FinacleResponseDto { IsSuccess = false, ResponseMessage = ex.Message };
             }
         }
 
@@ -84,13 +92,13 @@ namespace BankLoanMonetrySolu.Services
         {
             try
             {
+                _logger.LogInformation("Fetching all Finacle data with Customer details.");
                 var entities = await _context.finacleDatas
                     .Include(f => f.Customer)
                     .AsNoTracking()
                     .ToListAsync();
 
                 var dtoList = _mapper.Map<List<FinacleDataDto>>(entities);
-
                 return new FinacleResponseDto
                 {
                     IsSuccess = true,
@@ -100,11 +108,8 @@ namespace BankLoanMonetrySolu.Services
             }
             catch (Exception ex)
             {
-                return new FinacleResponseDto
-                {
-                    IsSuccess = false,
-                    ResponseMessage = $"Error fetching Finacle data: {ex.Message}"
-                };
+                _logger.LogError(ex, "Global Finacle data fetch failed.");
+                return new FinacleResponseDto { IsSuccess = false, ResponseMessage = ex.Message };
             }
         }
 
@@ -112,38 +117,33 @@ namespace BankLoanMonetrySolu.Services
         {
             try
             {
-                var entities = await _context.customerDetails
-                    .AsNoTracking()
-                    .ToListAsync();
-
+                _logger.LogInformation("Retrieving all customer loan details.");
+                var entities = await _context.customerDetails.AsNoTracking().ToListAsync();
                 var dtoList = _mapper.Map<List<CustomerDetailsDto>>(entities);
 
                 return new FinacleResponseDto
                 {
                     IsSuccess = true,
-                    ResponseMessage = $"{dtoList.Count} Finacle records retrieved",
+                    ResponseMessage = $"{dtoList.Count} loan records retrieved",
                     detailsDtos = dtoList
                 };
             }
             catch (Exception ex)
             {
-                return new FinacleResponseDto
-                {
-                    IsSuccess = false,
-                    ResponseMessage = $"Error fetching Finacle data: {ex.Message}"
-                };
+                _logger.LogError(ex, "Error retrieving customer loan details.");
+                return new FinacleResponseDto { IsSuccess = false, ResponseMessage = ex.Message };
             }
         }
-
-
 
         public async Task<FinacleResponseDto> GetAllReConfirmedFinacleDataByRegion(string region)
         {
             try
             {
+                _logger.LogInformation("Fetching re-confirmed records for Region: {Region}", region);
                 var data = await _context.finacleDatas
-                    .Where(f => f.REGION == region && f.CONFIRMED == true  && f.RECONFIRMED == true && f.APPROVED == false ) // Example filter
+                    .Where(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == true && f.APPROVED == false)
                     .ToListAsync();
+
                 var dto = _mapper.Map<List<FinacleDataDto>>(data);
                 return new FinacleResponseDto
                 {
@@ -154,290 +154,203 @@ namespace BankLoanMonetrySolu.Services
             }
             catch (Exception ex)
             {
-                return new FinacleResponseDto
-                {
-                    IsSuccess = false,
-                    ResponseMessage = $"Error fetching re-confirmed Finacle data: {ex.Message}"
-                };
+                _logger.LogError(ex, "Error fetching re-confirmed data for region: {Region}", region);
+                return new FinacleResponseDto { IsSuccess = false, ResponseMessage = ex.Message };
             }
         }
 
         public async Task<FinacleResponseDto> GetAllPendingConfirmationByRegion(string region)
         {
             if (string.IsNullOrWhiteSpace(region))
-                return new FinacleResponseDto
-                {
-                    IsSuccess = false,
-                    ResponseMessage = "Region parameter is required"
-                };
+            {
+                _logger.LogWarning("Pending confirmation fetch failed: Region parameter is null.");
+                return new FinacleResponseDto { IsSuccess = false, ResponseMessage = "Region is required" };
+            }
 
             try
             {
                 var data = await _context.finacleDatas
-                    .Where(f => f.REGION == region && f.CONFIRMED == false  && f.RECONFIRMED == false && f.APPROVED == false)
+                    .Where(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == false && f.APPROVED == false)
                     .ToListAsync();
-                var dto = _mapper.Map<List<FinacleDataDto>>(data); ;
+
                 return new FinacleResponseDto
                 {
                     IsSuccess = true,
-                    ResponseMessage = $"{data.Count} records retrieved for region '{region}'",
-                    DataList = dto
+                    ResponseMessage = $"{data.Count} pending records found for {region}",
+                    DataList = _mapper.Map<List<FinacleDataDto>>(data)
                 };
             }
             catch (Exception ex)
             {
-                return new FinacleResponseDto
-                {
-                    IsSuccess = false,
-                    ResponseMessage = $"Error fetching Finacle data by region: {ex.Message}"
-                };
+                _logger.LogError(ex, "Error fetching pending confirmations for region: {Region}", region);
+                return new FinacleResponseDto { IsSuccess = false, ResponseMessage = ex.Message };
             }
         }
 
-        public async Task<int> GetTotalPendingCount(string region)
-        {
-            return await _context.finacleDatas
-                .AsNoTracking()
-                .CountAsync(f =>
-                    f.REGION == region &&
-                    f.CONFIRMED == false &&
-                    f.APPROVED == false &&
-                    f.RECONFIRMED == false
-                );
-        }
+        // --- Stats Methods ---
+        public async Task<int> GetTotalPendingCount(string region) =>
+            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.APPROVED == false && f.RECONFIRMED == false);
 
+        public async Task<int> GetTotalConfirmedCount(string region) =>
+            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == false);
 
-        public async Task<int> GetTotalConfirmedCount(string region)
-        {
-            return await _context.finacleDatas
-                .AsNoTracking()
-                .CountAsync(f =>
-                    f.REGION == region &&
-                    f.CONFIRMED == true &&
-                    f.RECONFIRMED == false &&
-                    f.APPROVED == false
-                );
-        }
+        public async Task<int> GetTotalReConfirmedCount(string region) =>
+            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false);
 
-
-        public async Task<int> GetTotalReConfirmedCount(string region)
-        {
-            return await _context.finacleDatas
-                .AsNoTracking()
-                .CountAsync(f =>
-                    f.REGION == region &&
-                    f.CONFIRMED == false &&
-                    f.RECONFIRMED == true &&
-                    f.APPROVED == false
-
-                );
-        }
-
-
-        public async Task<int> GetTotalApproveCount(string region)
-        {
-            return await _context.finacleDatas
-                .AsNoTracking()
-                .CountAsync(f =>
-                    f.REGION == region &&
-                    f.CONFIRMED == true &&
-                    f.RECONFIRMED == false &&
-                    f.APPROVED == true
-                );
-        }
+        public async Task<int> GetTotalApproveCount(string region) =>
+            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == true);
 
         public async Task<bool> UpdateFinacleStatus(FinacleStatusUpdateDto dto)
         {
             var httpContext = _httpContextAccessor.HttpContext;
-            if (httpContext == null || !httpContext.User.Identity.IsAuthenticated)
-                throw new UnauthorizedAccessException("User not logged in");
+            var userId = httpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Anonymous";
+            var ipAddress = httpContext?.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
-            var userId = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
+            _logger.LogInformation("Status Update: Action={Action}, AppId={AppId}, User={UserId}", dto.Action, dto.ApplicationId, userId);
 
-            // Use these for audit
-            var audit = new Audit
+            try
             {
-                Id = Guid.NewGuid(),
-                AppId = Guid.TryParse(dto.ApplicationId, out var appGuid) ? appGuid : Guid.Empty,
-                UserId = userId,
-                IpAddress = ipAddress,
-                CreatedAt = DateTime.UtcNow,
-            };
+                if (!Guid.TryParse(dto.ApplicationId, out var appGuid)) throw new ArgumentException("Invalid Application ID");
 
-            // Parse string action into enum
-            if (!Enum.TryParse<AuditAction>(dto.Action, true, out var actionEnum))
-            {
-                throw new ArgumentException($"Invalid action: {dto.Action}");
-            }
+                var record = await _context.finacleDatas.FirstOrDefaultAsync(x => x.Id == appGuid);
+                if (record == null)
+                {
+                    _logger.LogWarning("Record not found for Update: {AppId}", dto.ApplicationId);
+                    return false;
+                }
 
-            audit.Action = actionEnum;
-
-            _context.audits.Add(audit);
-
-            // Existing status update logic
-            var record = await _context.finacleDatas.FirstOrDefaultAsync(x => x.Id == audit.AppId);
-            if (record == null) return false;
-
-            var actionTime = DateTime.UtcNow;
-            switch (dto.Action?.ToLower())
-            {
-                case "confirm":
-                    record.CONFIRMED = true;
-                    record.PROCESSEDATE = actionTime;
-                    break;
-                case "approve":
-                    record.APPROVED = true;
-                    record.PROCESSEDATE = actionTime;
-                    break;
-                case "reject":
-                    record.RECONFIRMED = true;
-                    record.PROCESSEDATE = actionTime;
-                    break;
-                default:
+                if (!Enum.TryParse<AuditAction>(dto.Action, true, out var actionEnum))
+                {
+                    _logger.LogError("Invalid AuditAction string: {Action}", dto.Action);
                     throw new ArgumentException($"Invalid action: {dto.Action}");
+                }
+
+                // Add Audit Trail
+                _context.audits.Add(new Audit
+                {
+                    Id = Guid.NewGuid(),
+                    AppId = appGuid,
+                    UserId = userId,
+                    IpAddress = ipAddress,
+                    CreatedAt = DateTime.UtcNow,
+                    Action = actionEnum
+                });
+
+                // Update record status
+                var actionTime = DateTime.UtcNow;
+                switch (dto.Action.ToLower())
+                {
+                    case "confirm": record.CONFIRMED = true; break;
+                    case "approve": record.APPROVED = true; break;
+                    case "reject": record.RECONFIRMED = true; break; // Note: Ensure RECONFIRMED is intended for 'reject'
+                }
+                record.PROCESSEDATE = actionTime;
+
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Record {AppId} updated successfully to {Action}", dto.ApplicationId, dto.Action);
+
+                // 3. TRIGGER THE EVENTS
+                // This wakes up your EventHandlers (ApprovedEventHandler, ConfirmedEventHandler, etc.)
+                try
+                {
+                    _logger.LogInformation("Publishing event for action: {Action}", dto.Action);
+
+                    switch (dto.Action.ToLower())
+                    {
+                        case "confirm":
+                            await _eventPublisher.PublishAsync(new ConfirmedEvent(appGuid));
+                            break;
+                        case "approve":
+                            await _eventPublisher.PublishAsync(new ApprovedEvents(appGuid));
+                            break;
+                        case "reject":
+                            await _eventPublisher.PublishAsync(new RejectedEvent(appGuid));
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // We log this but don't return 'false' because the DB was already updated successfully
+                    _logger.LogError(ex, "Database updated, but failed to publish event for AppId: {AppId}", dto.ApplicationId);
+                }
+
+                return true;
             }
-
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-
-
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Critical failure updating status for AppId: {AppId}", dto.ApplicationId);
+                return false;
+            }
+        } 
 
         public async Task<FinacleResponseDto> GetCustormerAndLoanDetailsByAppId(string appId)
         {
+            _logger.LogInformation("Fetching full details for AppId: {AppId}", appId);
             try
             {
-                if (!Guid.TryParse(appId, out Guid appGuid))
-                {
-                    return new FinacleResponseDto
-                    {
-                        IsSuccess = false,
-                        ResponseMessage = $"Invalid Application ID format: {appId}"
-                    };
-                }
+                if (!Guid.TryParse(appId, out Guid appGuid)) return new FinacleResponseDto { IsSuccess = false, ResponseMessage = "Invalid ID" };
 
-                // 1️⃣ Fetch the customer including their loan details
-                var customer = await _context.finacleDatas
-                    .Include(c => c.Customer)
-                    .FirstOrDefaultAsync(c => c.Id == appGuid);
+                var customer = await _context.finacleDatas.Include(c => c.Customer).FirstOrDefaultAsync(c => c.Id == appGuid);
+                if (customer == null) return new FinacleResponseDto { IsSuccess = false, ResponseMessage = "Customer not found" };
 
-                if (customer == null)
-                {
-                    return new FinacleResponseDto
-                    {
-                        IsSuccess = false,
-                        ResponseMessage = $"No customer found for AppId {appId}"
-                    };
-                }
-
-                // 2️⃣ Map to DTOs (avoids cycles)
-                var customerDto = _mapper.Map<FinacleDataDto>(customer);
-
-                // 3️⃣ Return response in your standard template
                 return new FinacleResponseDto
                 {
                     IsSuccess = true,
-                    ResponseMessage = "Customer with loan details retrieved successfully",
-                    Data = customerDto
+                    ResponseMessage = "Success",
+                    Data = _mapper.Map<FinacleDataDto>(customer)
                 };
             }
             catch (Exception ex)
             {
-                return new FinacleResponseDto
-                {
-                    IsSuccess = false,
-                    ResponseMessage = $"Error fetching customer data: {ex.Message}"
-                };
+                _logger.LogError(ex, "Error fetching loan details for AppId: {AppId}", appId);
+                return new FinacleResponseDto { IsSuccess = false, ResponseMessage = ex.Message };
             }
         }
 
         public async Task<FincaleCompareDataDto> GetFinacleCompareData(string acctNum)
         {
+            _logger.LogInformation("Comparing Finacle data for Account: {AcctNum}", acctNum);
             try
             {
                 var data = await _context.finacleDatas
                     .Where(c => c.ACCOUNT_NUMBER == acctNum)
-                    .Select(c => new FinacleDataDto
-                    {
-                        Id = c.Id,
-                        ACCOUNT_NAME = c.ACCOUNT_NAME,
-                        ACCOUNT_NUMBER = c.ACCOUNT_NUMBER,
-                        SBU_NAME = c.SBU_NAME,
-                        FACILITY_TYPE = c.FACILITY_TYPE,
-                        TOTAL_BALANCE_FCY = c.TOTAL_BALANCE_FCY,
-                        TOTAL_BALANCE_LCY = c.TOTAL_BALANCE_LCY,
-                        SANCTION_LIMIT = c.SANCTION_LIMIT,
-                        INT_RATE = c.INT_RATE,
-                        FX_RATE = c.FX_RATE,
-                        DATE_GRANTED = c.DATE_GRANTED,
-                        EXPIRY_DATE = c.EXPIRY_DATE
-                    })
                     .FirstOrDefaultAsync();
 
-                if (data == null)
-                {
-                    return new FincaleCompareDataDto
-                    {
-                        IsSuccess = false,
-                        ResponseMessage = "No record found for the given account number"
-                    };
-                }
+                if (data == null) return new FincaleCompareDataDto { IsSuccess = false, ResponseMessage = "Record not found" };
 
                 var result = _mapper.Map<FincaleCompareDataDto>(data);
-
-                // FCY / LCY decision
-                result.TOTAL_BALANCE = data.TOTAL_BALANCE_FCY != 0
-                    ? data.TOTAL_BALANCE_FCY
-                    : data.TOTAL_BALANCE_LCY;
-
-                // 🔥 Explicit formatting
-                result.INT_RATE_DISPLAY = result.INT_RATE.HasValue
-                    ? $"{result.INT_RATE.Value}%"
-                    : null;
-
-                // FX_RATE is int
-                result.FX_RATE_DISPLAY = $"{result.FX_RATE}%";
-
+                result.TOTAL_BALANCE = data.TOTAL_BALANCE_FCY != 0 ? data.TOTAL_BALANCE_FCY : data.TOTAL_BALANCE_LCY;
+                result.INT_RATE_DISPLAY = data.INT_RATE.HasValue ? $"{data.INT_RATE.Value}%" : "0%";
+                result.FX_RATE_DISPLAY = $"{data.FX_RATE}%";
                 result.IsSuccess = true;
-                result.ResponseMessage = "Record retrieved successfully";
 
                 return result;
             }
             catch (Exception ex)
             {
-                return new FincaleCompareDataDto
-                {
-                    IsSuccess = false,
-                    ResponseMessage = $"Failed to fetch record: {ex.Message}"
-                };
+                _logger.LogError(ex, "Comparison error for Account: {AcctNum}", acctNum);
+                return new FincaleCompareDataDto { IsSuccess = false, ResponseMessage = ex.Message };
             }
         }
 
         public async Task<Guid> SaveFilesAsync(UploadFilesDto dto)
         {
-            //if (!Guid.TryParse(dto.AppId, out Guid appGuid))
-            //    throw new Exception("Invalid AppId");
-
-            // Start a transaction
+            _logger.LogInformation("Starting file upload for AppId: {AppId}", dto.AppId);
             using var transaction = await _context.Database.BeginTransactionAsync();
-            var newlyCreatedFiles = new List<string>();
+            var savedFilePaths = new List<string>();
 
             try
             {
                 var finacleData = await _context.finacleDatas
                     .Include(x => x.LoanFileBatch)
-                        .ThenInclude(b => b.Files)
+                    .ThenInclude(b => b.Files)
                     .FirstOrDefaultAsync(x => x.Id == Guid.Parse(dto.AppId));
 
                 if (finacleData == null) throw new Exception("Application not found");
 
-                // 1. Get or Create Batch
-                var batch = finacleData.LoanFileBatch;
-                if (batch == null)
+                var batch = finacleData.LoanFileBatch ?? new LoanFileBatch { Id = Guid.NewGuid(), AppId = dto.AppId };
+                if (finacleData.LoanFileBatch == null)
                 {
-                    batch = new LoanFileBatch { Id = Guid.NewGuid(), AppId = dto.AppId };
                     _context.LoanFileBatch.Add(batch);
                     finacleData.LoanFileBatch = batch;
                 }
@@ -446,28 +359,23 @@ namespace BankLoanMonetrySolu.Services
                 {
                     var extension = Path.GetExtension(item.File.FileName).Replace(".", "");
                     var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "UploadedFiles", item.DocType.ToString());
-
                     Directory.CreateDirectory(folderPath);
 
-                    // 2. NAME FILE AFTER BATCH ID
-                    // Result: UploadedFiles\CAT\7c0bacd6-fdb9-4ba8-8ad0-1abb9fedcfbf.pdf
                     var filePath = Path.Combine(folderPath, $"{batch.Id}.{extension}");
 
-                    // 3. Handle Overwrite (If file already exists for this batch/type)
+                    // Overwrite existing physical file
                     if (File.Exists(filePath)) File.Delete(filePath);
 
+                    // Clean existing record for this DocType in this batch
                     var existingRecord = batch.Files.FirstOrDefault(f => f.DocumentType == item.DocType);
                     if (existingRecord != null) _context.LoanFileItem.Remove(existingRecord);
 
-                    // 4. Save Physical File
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await item.File.CopyToAsync(stream);
                     }
-                    newlyCreatedFiles.Add(filePath);
+                    savedFilePaths.Add(filePath);
 
-                    // 5. Add DB Record (Note: Item ID is still unique for DB integrity, 
-                    // but the physical file on disk uses the Batch.Id)
                     batch.Files.Add(new LoanFileItem
                     {
                         Id = Guid.NewGuid(),
@@ -480,57 +388,42 @@ namespace BankLoanMonetrySolu.Services
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+                _logger.LogInformation("Files successfully saved and batch {BatchId} committed.", batch.Id);
                 return batch.Id;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                foreach (var path in newlyCreatedFiles) if (File.Exists(path)) File.Delete(path);
+                _logger.LogError(ex, "File save failed. Rolling back physical files...");
+                foreach (var path in savedFilePaths) if (File.Exists(path)) File.Delete(path);
                 throw;
             }
         }
 
         public async Task<List<FileViewDto>> GetAllFilesByBatchIdAsync(Guid batchId)
         {
-            var files = await _context.LoanFileItem
-                .Where(f => f.FileBatchId == batchId)
-                .ToListAsync();
-
+            _logger.LogInformation("Retrieving file list for BatchId: {BatchId}", batchId);
+            var files = await _context.LoanFileItem.Where(f => f.FileBatchId == batchId).ToListAsync();
             return files.Select(f => new FileViewDto
             {
                 FileId = f.Id,
                 FileName = f.FileName,
                 DocType = f.DocumentType.ToString(),
-                // Map the ContentType based on extension
                 ContentType = GetMimeType(f.FileFormat),
             }).ToList();
         }
 
         private string GetMimeType(string extension)
         {
-            if (string.IsNullOrWhiteSpace(extension)) return "application/octet-stream";
-
-            // Strip leading dot if present
-            extension = extension.TrimStart('.').ToLower();
-
+            extension = extension?.TrimStart('.').ToLower();
             return extension switch
             {
                 "pdf" => "application/pdf",
                 "jpg" or "jpeg" => "image/jpeg",
                 "png" => "image/png",
-                "tiff" or "tif" => "image/tiff",
-                "txt" => "text/plain",
-                "csv" => "text/csv",
-                "xls" => "application/vnd.ms-excel",
                 "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "doc" => "application/msword",
-                "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "zip" => "application/zip",
-                _ => "application/octet-stream" // Forces a download if type is unknown
+                _ => "application/octet-stream"
             };
         }
-
-
     }
 }
-
