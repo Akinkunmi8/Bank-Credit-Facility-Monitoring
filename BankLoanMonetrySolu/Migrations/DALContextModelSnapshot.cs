@@ -504,6 +504,48 @@ namespace BankLoanMonetrySolu.Migrations
                     b.ToTable("finacleDatas");
                 });
 
+            modelBuilder.Entity("BankLoanMonetrySolu.Model.FinancialCovenant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("AppId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CovenantType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DataSource")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TargetValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppId");
+
+                    b.ToTable("financialCovenants");
+                });
+
             modelBuilder.Entity("BankLoanMonetrySolu.Model.LoanFileBatch", b =>
                 {
                     b.Property<Guid>("Id")
@@ -553,6 +595,40 @@ namespace BankLoanMonetrySolu.Migrations
                     b.HasIndex("FileBatchId");
 
                     b.ToTable("LoanFileItem");
+                });
+
+            modelBuilder.Entity("BankLoanMonetrySolu.Model.NonFinancialCovenant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("AppId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CovenantType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppId");
+
+                    b.ToTable("nonFinancialCovenants");
                 });
 
             modelBuilder.Entity("BankLoanMonetrySolu.Models.Audit", b =>
@@ -736,6 +812,15 @@ namespace BankLoanMonetrySolu.Migrations
                     b.Navigation("LoanFileBatch");
                 });
 
+            modelBuilder.Entity("BankLoanMonetrySolu.Model.FinancialCovenant", b =>
+                {
+                    b.HasOne("BankLoanMonetrySolu.Model.FinacleData", null)
+                        .WithMany()
+                        .HasForeignKey("AppId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("BankLoanMonetrySolu.Model.LoanFileItem", b =>
                 {
                     b.HasOne("BankLoanMonetrySolu.Model.LoanFileBatch", "FileBatch")
@@ -745,6 +830,15 @@ namespace BankLoanMonetrySolu.Migrations
                         .IsRequired();
 
                     b.Navigation("FileBatch");
+                });
+
+            modelBuilder.Entity("BankLoanMonetrySolu.Model.NonFinancialCovenant", b =>
+                {
+                    b.HasOne("BankLoanMonetrySolu.Model.FinacleData", null)
+                        .WithMany()
+                        .HasForeignKey("AppId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BankLoanMonetrySolu.Models.Audit", b =>

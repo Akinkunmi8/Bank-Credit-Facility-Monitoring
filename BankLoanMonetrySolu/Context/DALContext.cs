@@ -19,6 +19,8 @@ namespace BankLoanMonetrySolu.Context
         public DbSet<LoanFileBatch> LoanFileBatch { get; set; }
         public DbSet<LoanFileItem> LoanFileItem { get; set; }
         public DbSet<Audit> audits { get; set; }
+        public DbSet<FinancialCovenant> financialCovenants { get; set; }
+        public DbSet<NonFinancialCovenant> nonFinancialCovenants{ get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -72,6 +74,43 @@ namespace BankLoanMonetrySolu.Context
                       .WithMany()
                       .HasForeignKey(x => x.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+            // Financial Covenant Configuration
+            modelBuilder.Entity<FinancialCovenant>(entity =>
+            {
+                entity.HasKey(x => x.Id);
+
+                // Relationship: FinacleData ↔ FinancialCovenants (1-Many)
+                entity.HasOne<FinacleData>()
+                      .WithMany()
+                      .HasForeignKey(x => x.AppId)
+                      .HasPrincipalKey(f => f.Id) // Linking via AppId as the unique anchor
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Ensure precision for Financial Ratios (e.g., 1.20x)
+                entity.Property(x => x.TargetValue)
+                      .HasPrecision(18, 2);
+
+                // Convert Enum to String in DB for readability
+                entity.Property(x => x.Frequency)
+                      .HasConversion<string>();
+            });
+
+            // Non-Financial Covenant Configuration
+            modelBuilder.Entity<NonFinancialCovenant>(entity =>
+            {
+                entity.HasKey(x => x.Id);
+
+                // Relationship: FinacleData ↔ NonFinancialCovenants (1-Many)
+                entity.HasOne<FinacleData>()
+                      .WithMany()
+                      .HasForeignKey(x => x.AppId)
+                      .HasPrincipalKey(f => f.Id)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Convert Enum to String in DB
+                entity.Property(x => x.Frequency)
+                      .HasConversion<string>();
             });
 
 

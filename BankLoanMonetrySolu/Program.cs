@@ -41,6 +41,7 @@ builder.Services.AddScoped<IAccount, AccountService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IEmailServices, EmailService>();
 builder.Services.AddScoped<IAuditLookupService, AuditLookupService>();
+builder.Services.AddScoped<IConventTracker, ConventTracker>();
 builder.Services.AddHttpContextAccessor();
 
 // Identity
