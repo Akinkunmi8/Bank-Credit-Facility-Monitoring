@@ -1,6 +1,8 @@
 ﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using Credit_Monitor.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
 namespace Credit_Monitor.APICore
@@ -10,11 +12,13 @@ namespace Credit_Monitor.APICore
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
         private readonly JsonSerializerSettings _newtonsoftSettings;
+        private readonly IHttpContextAccessor _httpContextAccessor; // 1. Add this
 
-        public BackendAPIService(HttpClient httpClient, IConfiguration configuration)
+        public BackendAPIService(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClient;
             _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
 
             var baseUrl = _configuration["BackendAPI:BaseUrl"];
             if (!string.IsNullOrEmpty(baseUrl))
@@ -36,6 +40,7 @@ namespace Credit_Monitor.APICore
 
         public async Task<T> GetAsync<T>(string endpoint)
         {
+            AddAuthorizationHeader();
             IgnoreSSL();
             var response = await _httpClient.GetAsync(endpoint);
             await HandleErrors(response);
@@ -51,6 +56,7 @@ namespace Credit_Monitor.APICore
 
         public async Task<T> PostAsync<T>(object payload, string endpoint)
         {
+            AddAuthorizationHeader();
             IgnoreSSL();
 
             // Serialize payload with Newtonsoft
@@ -65,6 +71,19 @@ namespace Credit_Monitor.APICore
 
             if (result is null) throw new InvalidOperationException("API response content was null.");
             return result;
+        }
+
+        private void AddAuthorizationHeader()
+        {
+            // 2. Extract the token from the logged-in user's claims
+            var token = _httpContextAccessor.HttpContext?.User.FindFirst("JWToken")?.Value;
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                // 3. Attach Bearer Token
+                _httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", token);
+            }
         }
 
         private static async Task HandleErrors(HttpResponseMessage response)

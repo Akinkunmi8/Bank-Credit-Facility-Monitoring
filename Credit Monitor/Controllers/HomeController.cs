@@ -85,7 +85,8 @@ namespace Credit_Monitor.Controllers
                     new Claim(ClaimTypes.Name, model.Username),
                     new Claim(ClaimTypes.Role, authResult.User.Role ?? "User"),
                     new Claim("Region", authResult.User.Region ?? "N/A"),
-                    new Claim("LastLogin", DateTime.Now.ToString("g"))
+                    new Claim("LastLogin", DateTime.Now.ToString("g")),
+                    new Claim("JWToken", authResult.User.Token ?? "")
                 };
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

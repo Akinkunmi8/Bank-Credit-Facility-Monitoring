@@ -133,12 +133,12 @@ namespace Credit_Monitor.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> UpdateStatus(Guid applicationId, string actionType)
+        public async Task<IActionResult> UpdateStatus(Guid applicationId, string actionType, string returnUrl, string returnDashboard)
         {
             if (applicationId == Guid.Empty)
             {
                 TempData["ErrorMessage"] = "Invalid Application ID provided.";
-                return RedirectToAction("Staff");
+                return Redirect(returnUrl);
             }
 
             var (isSuccess, message) = await _loanService.ProcessStatusUpdate(applicationId, actionType);
@@ -152,7 +152,7 @@ namespace Credit_Monitor.Controllers
                 TempData["ErrorMessage"] = "Failed: " + message;
             }
 
-            return RedirectToAction("Staff");
+            return RedirectToAction(returnDashboard);
         }
 
         private async Task<StaffDashboardViewModel> GetStaffDashboardData(string searchTerm, int page, string region)

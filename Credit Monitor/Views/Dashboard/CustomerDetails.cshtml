@@ -26,9 +26,17 @@
                 <div class="d-flex justify-content-end gap-2">
                     @if (userRole == "supervisor")
                     {
-                        <a asp-action="ApproveLoan" asp-controller="Loan" asp-route-AccNum="@loan?.accounT_NUMBER" class="btn btn-success btn-sm px-3 fw-bold">
-                            <i class="bi bi-check-circle-fill me-1"></i> Approve Loan Details
-                        </a>
+                        <form asp-action="UpdateStatus" asp-controller="Dashboard" method="post">
+                            <input type="hidden" name="applicationId" value="@loan?.id" />
+                            <input type="hidden" name="actionType" value="approve" />
+                            <input type="hidden" name="returnDashboard" value="Supervisor" />
+
+                            <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+
+                            <button type="submit" class="btn btn-success btn-sm px-3 fw-bold">
+                                <i class="bi bi-check-circle-fill me-1"></i> Approve Loan Details
+                            </button>
+                        </form>
                     }
                     else
                     {

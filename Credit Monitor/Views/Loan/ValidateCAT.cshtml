@@ -76,12 +76,15 @@
 
                     <form asp-action="UpdateStatus" asp-controller="Dashboard" method="post">
                         <input type="hidden" name="applicationId" value="@Model.FinacleData.Id" />
+                        <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                        <input type="hidden" name="returnDashboard" value="Staff" />
 
                         @if (Model.Discrepancies.ErrorCount > 0)
                         {
                             <div class="alert alert-soft-danger border-danger small mb-3">
                                 <strong>Attention!</strong> Mismatch found.
                             </div>
+
                             <input type="hidden" name="actionType" value="reject" />
                             <button type="submit" class="btn btn-danger w-100 mb-2 py-2 fw-bold">Reject & Flag</button>
                         }

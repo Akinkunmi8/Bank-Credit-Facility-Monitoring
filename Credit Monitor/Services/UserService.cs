@@ -51,7 +51,8 @@ namespace Credit_Monitor.Services
                 {
                     Username = jwtToken.Claims.FirstOrDefault(c => c.Type == "email")?.Value ?? "Unknown",
                     Region = jwtToken.Claims.FirstOrDefault(c => c.Type == "Region")?.Value ?? "N/A",
-                    Role = jwtToken.Claims.FirstOrDefault(c => c.Type.Contains("role"))?.Value ?? "Guest"
+                    Role = jwtToken.Claims.FirstOrDefault(c => c.Type.Contains("role"))?.Value ?? "Guest",
+                    Token = apiResponse.token 
                 };
 
                 _logger.LogInformation("User {Username} successfully authenticated. Role: {Role}, Region: {Region}",
