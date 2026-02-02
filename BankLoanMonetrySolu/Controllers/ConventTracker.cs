@@ -1,9 +1,11 @@
 ﻿using BankLoanMonetrySolu.DTO;
 using BankLoanMonetrySolu.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankLoanMonetrySolu.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ConventTrackerController : ControllerBase

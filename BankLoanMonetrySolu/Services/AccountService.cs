@@ -213,7 +213,8 @@ namespace BankLoanMonetrySolu.Services
                     new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
                     new Claim("Fullname", user.Fullname ?? ""),
-                    new Claim(ClaimTypes.Role, role)
+                    new Claim(ClaimTypes.Role, role),
+                    new Claim("Region", user.Region)
                 };
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));

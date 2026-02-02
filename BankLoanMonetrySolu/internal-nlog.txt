@@ -31,3 +31,24 @@
 2026-02-02 11:24:20.4340 Info Registered target NLog.Targets.ConsoleTarget(Name=logconsole)
 2026-02-02 11:24:20.4340 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.1.0.4914. Product version: 6.1.0+5b1846554f5a8f98878ca64cce5a485ca3b8275c. GlobalAssemblyCache: False
 2026-02-02 11:24:20.5026 Info Configuration initialized: TargetNames=allfile, logconsole, errorfile, ConfigItems=43, AutoReload=true, FilePath=C:\Users\User\source\repos\Bank-Credit-Facility-Monitoring\BankLoanMonetrySolu\bin\Debug\net9.0\nlog.config
+2026-02-02 11:51:47.6638 Info Loading assembly name: NLog.Web.AspNetCore
+2026-02-02 11:51:47.6744 Info NLog.Web.AspNetCore, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.1.1.1378. Product version: 6.1.1+ffbea2aee6cef3ff050c70c914774d28abd0d313. GlobalAssemblyCache: False
+2026-02-02 11:51:47.8290 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-02-02 11:51:47.8290 Info Registered target NLog.Targets.FileTarget(Name=errorfile)
+2026-02-02 11:51:47.8386 Info Registered target NLog.Targets.ConsoleTarget(Name=logconsole)
+2026-02-02 11:51:47.8574 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.1.0.4914. Product version: 6.1.0+5b1846554f5a8f98878ca64cce5a485ca3b8275c. GlobalAssemblyCache: False
+2026-02-02 11:51:48.0496 Info Configuration initialized: TargetNames=allfile, logconsole, errorfile, ConfigItems=43, AutoReload=true, FilePath=C:\Users\User\source\repos\Bank-Credit-Facility-Monitoring\BankLoanMonetrySolu\bin\Debug\net9.0\nlog.config
+2026-02-02 13:32:44.3762 Info Loading assembly name: NLog.Web.AspNetCore
+2026-02-02 13:32:44.3883 Info NLog.Web.AspNetCore, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.1.1.1378. Product version: 6.1.1+ffbea2aee6cef3ff050c70c914774d28abd0d313. GlobalAssemblyCache: False
+2026-02-02 13:32:44.4605 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-02-02 13:32:44.4605 Info Registered target NLog.Targets.FileTarget(Name=errorfile)
+2026-02-02 13:32:44.4761 Info Registered target NLog.Targets.ConsoleTarget(Name=logconsole)
+2026-02-02 13:32:44.4761 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.1.0.4914. Product version: 6.1.0+5b1846554f5a8f98878ca64cce5a485ca3b8275c. GlobalAssemblyCache: False
+2026-02-02 13:32:44.6381 Info Configuration initialized: TargetNames=allfile, logconsole, errorfile, ConfigItems=43, AutoReload=true, FilePath=C:\Users\User\source\repos\Bank-Credit-Facility-Monitoring\BankLoanMonetrySolu\bin\Debug\net9.0\nlog.config
+2026-02-02 13:38:00.0705 Info Loading assembly name: NLog.Web.AspNetCore
+2026-02-02 13:38:00.0904 Info NLog.Web.AspNetCore, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.1.1.1378. Product version: 6.1.1+ffbea2aee6cef3ff050c70c914774d28abd0d313. GlobalAssemblyCache: False
+2026-02-02 13:38:00.2384 Info Registered target NLog.Targets.FileTarget(Name=allfile)
+2026-02-02 13:38:00.2415 Info Registered target NLog.Targets.FileTarget(Name=errorfile)
+2026-02-02 13:38:00.2415 Info Registered target NLog.Targets.ConsoleTarget(Name=logconsole)
+2026-02-02 13:38:00.2592 Info NLog, Version=6.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c. File version: 6.1.0.4914. Product version: 6.1.0+5b1846554f5a8f98878ca64cce5a485ca3b8275c. GlobalAssemblyCache: False
+2026-02-02 13:38:00.4032 Info Configuration initialized: TargetNames=allfile, logconsole, errorfile, ConfigItems=43, AutoReload=true, FilePath=C:\Users\User\source\repos\Bank-Credit-Facility-Monitoring\BankLoanMonetrySolu\bin\Debug\net9.0\nlog.config

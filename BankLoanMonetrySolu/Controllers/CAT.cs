@@ -1,10 +1,12 @@
 ﻿using BankLoanMonetrySolu.DTO;
 using BankLoanMonetrySolu.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace BankLoanMonetrySolu.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CATController : ControllerBase

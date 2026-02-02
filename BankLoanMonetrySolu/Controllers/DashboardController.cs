@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankLoanMonetrySolu.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class DashboardController : ControllerBase
@@ -61,7 +62,6 @@ namespace BankLoanMonetrySolu.Controllers
             var result = await _tatService.GetBeyondTAT(region);
             return Ok(result);
         }
-        [Authorize]
         [HttpPost("update-status")]
         public async Task<IActionResult> UpdateStatus([FromBody] FinacleStatusUpdateDto dto)
         {
