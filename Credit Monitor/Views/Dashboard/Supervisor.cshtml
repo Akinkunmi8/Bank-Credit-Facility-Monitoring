@@ -4,12 +4,15 @@
 }
 
 <div class="container-fluid mt-3">
+
+    <!-- ===== KPI CARDS ===== -->
     <div class="row g-3 mb-4">
+        @* Approved Loans *@
         <div class="col-md-3">
             <div class="card bg-primary text-white shadow-sm border-0 h-100">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="text-uppercase fw-bold mb-1" style="font-size: 0.75rem;">Approved Loans</h6>
+                        <h6 class="text-uppercase fw-bold mb-1 small">Approved Loans</h6>
                         <h2 class="mb-0 fw-bold">@Model.TotalApprovedLoans</h2>
                     </div>
                     <i class="bi bi-shield-check fs-2 opacity-50"></i>
@@ -20,11 +23,12 @@
             </div>
         </div>
 
+        @* Verified Cases *@
         <div class="col-md-3">
             <div class="card bg-success text-white shadow-sm border-0 h-100">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="text-uppercase fw-bold mb-1" style="font-size: 0.75rem;">Verified Cases</h6>
+                        <h6 class="text-uppercase fw-bold mb-1 small">Verified Cases</h6>
                         <h2 class="mb-0 fw-bold">@Model.TotalConfirmedLoans</h2>
                     </div>
                     <i class="bi bi-clipboard-check-fill fs-2 opacity-50"></i>
@@ -35,11 +39,12 @@
             </div>
         </div>
 
+        @* Within TAT *@
         <div class="col-md-3">
             <div class="card bg-warning text-dark shadow-sm border-0 h-100">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="text-uppercase fw-bold mb-1" style="font-size: 0.75rem;">Within TAT</h6>
+                        <h6 class="text-uppercase fw-bold mb-1 small">Within TAT</h6>
                         <h2 class="mb-0 fw-bold">@Model.WithinTAT</h2>
                     </div>
                     <i class="bi bi-clock-history fs-2 opacity-50"></i>
@@ -50,11 +55,12 @@
             </div>
         </div>
 
+        @* Beyond TAT *@
         <div class="col-md-3">
             <div class="card bg-danger text-white shadow-sm border-0 h-100">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="text-uppercase fw-bold mb-1" style="font-size: 0.75rem;">Beyond TAT</h6>
+                        <h6 class="text-uppercase fw-bold mb-1 small">Beyond TAT</h6>
                         <h2 class="mb-0 fw-bold">@Model.BeyondTAT</h2>
                     </div>
                     <i class="bi bi-exclamation-octagon fs-2 opacity-50"></i>
@@ -66,6 +72,7 @@
         </div>
     </div>
 
+    <!-- ===== SEARCH + TABLE ===== -->
     <div class="card shadow-sm border-0">
         <div class="card-header bg-white py-3">
             <div class="row align-items-center">
@@ -75,21 +82,27 @@
                             <i class="bi bi-search text-muted"></i>
                         </span>
                         <input type="text" id="searchInput" class="form-control border-start-0"
-                               placeholder="Supervisor Search: Application No, Client or Officer...">
+                               placeholder="Search Application No, Client, Officer...">
                     </div>
                 </div>
                 <div class="col-md-6 text-end">
                     <div class="btn-group">
-                        <button type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-file-earmark-pdf"></i> PDF</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</button>
-                        <button type="button" onclick="loadTable('', 1)" class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-file-earmark-pdf"></i> PDF
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+                        </button>
+                        <button type="button" onclick="loadTable('',1)" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="tableContainer">
-            <div class="table-loader" style="display:none; position:absolute; width:100%; height:100%; background:rgba(255,255,255,0.7); z-index:10; align-items:center; justify-content:center;">
+        <div id="tableContainer" class="position-relative">
+            <div class="table-loader d-flex" style="display:none; position:absolute; width:100%; height:100%; background:rgba(255,255,255,0.7); z-index:10; align-items:center; justify-content:center;">
                 <div class="spinner-border text-primary" role="status"></div>
                 <strong class="ms-2 text-primary">Fetching Supervisor Data...</strong>
             </div>
@@ -104,12 +117,10 @@
         $(document).ready(function () {
             let timeout = null;
 
-            // Handle Real-time Search
             $('#searchInput').on('keyup', function () {
                 clearTimeout(timeout);
                 let searchTerm = $(this).val();
 
-                // Wait 500ms after typing stops before hitting the server
                 timeout = setTimeout(function () {
                     loadTable(searchTerm, 1);
                 }, 500);
@@ -117,30 +128,20 @@
         });
 
         function loadTable(search, page) {
-            // 1. Show the supervisor-specific loader
-            $(".table-loader").css("display", "flex");
+            const loader = $(".table-loader");
+            loader.show();
             $("#tableContainer table").css("opacity", "0.3");
 
             $.ajax({
-                // Ensure this points to your Supervisor filtering action if it's different
                 url: '@Url.Action("FilterLoans", "Dashboard")',
                 type: 'GET',
-                data: {
-                    searchTerm: search,
-                    page: page,
-                    role: "supervisor" // Optional: pass role if your backend filters differently
-                },
+                data: { searchTerm: search, page: page, role: "supervisor" },
                 success: function (result) {
-                    // 2. Update the table container with the partial view
                     $('#tableContainer').html(result);
-
-                    // Note: If result replaces the whole #tableContainer,
-                    // the .table-loader is removed. This is fine as the
-                    // partial usually doesn't include the loader div.
                 },
                 error: function () {
                     alert("System error: Could not retrieve supervisor records.");
-                    $(".table-loader").hide();
+                    loader.hide();
                     $("#tableContainer table").css("opacity", "1");
                 }
             });

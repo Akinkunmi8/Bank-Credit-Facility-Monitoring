@@ -1,67 +1,129 @@
 ﻿@model Credit_Monitor.ViewModels.CovenantViewModel
 
-<div class="covenant-container">
-    <h5 class="mb-3 text-primary"><i class="fas fa-file-invoice-dollar"></i> Financial Covenants</h5>
-    <div class="table-responsive mb-4">
-        <table class="table table-hover table-bordered">
-            <thead class="table-light">
-                <tr>
-                    <th>Type</th>
-                    <th>Description</th>
-                    <th>Target Value</th>
-                    <th>Frequency</th>
-                    <th>Data Source</th>
-                </tr>
-            </thead>
-            <tbody>
+<div class="row g-4">
+
+    <!-- ================= Financial Covenants ================= -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary-subtle d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 text-primary fw-bold">
+                    <i class="bi bi-cash-coin me-2"></i>Financial Covenants
+                </h6>
+                <span class="badge bg-primary text-white">
+                    @(Model.Financials?.Count() ?? 0)
+                </span>
+            </div>
+
+            <div class="card-body p-0">
                 @if (Model.Financials != null && Model.Financials.Any())
                 {
-                    foreach (var item in Model.Financials)
-                    {
-                        <tr>
-                            <td><strong>@item.CovenantType</strong></td>
-                            <td>@item.Description</td>
-                            <td class="text-center">@item.TargetValue</td>
-                            <td><span class="badge bg-info text-dark">@item.Frequency</span></td>
-                            <td><small class="text-muted">@item.DataSource</small></td>
-                        </tr>
-                    }
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-uppercase">
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th class="text-center">Target</th>
+                                    <th>Frequency</th>
+                                    <th>Source</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Financials)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold text-dark">
+                                            @item.CovenantType
+                                        </td>
+                                        <td class="text-muted">
+                                            @item.Description
+                                        </td>
+                                        <td class="text-center fw-bold text-primary">
+                                            @item.TargetValue
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info-subtle text-info border">
+                                                @item.Frequency
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">@item.DataSource</small>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 }
                 else
                 {
-                    <tr><td colspan="5" class="text-center text-muted">No financial covenants found.</td></tr>
+                    <div class="text-center py-4">
+                        <i class="bi bi-info-circle fs-3 text-muted"></i>
+                        <p class="mt-2 text-muted mb-0">
+                            No financial covenants available.
+                        </p>
+                    </div>
                 }
-            </tbody>
-        </table>
+            </div>
+        </div>
     </div>
 
-    <h5 class="mb-3 text-success"><i class="fas fa-clipboard-check"></i> Non-Financial Covenants</h5>
-    <div class="table-responsive">
-        <table class="table table-hover table-bordered">
-            <thead class="table-light">
-                <tr>
-                    <th>Compliance Type</th>
-                    <th>Requirements / Description</th>
-                    <th>Frequency</th>
-                </tr>
-            </thead>
-            <tbody>
+    <!-- ================= Non-Financial Covenants ================= -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-success-subtle d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 text-success fw-bold">
+                    <i class="bi bi-clipboard-check me-2"></i>Non-Financial Covenants
+                </h6>
+                <span class="badge bg-success text-white">
+                    @(Model.NonFinancials?.Count() ?? 0)
+                </span>
+            </div>
+
+            <div class="card-body p-0">
                 @if (Model.NonFinancials != null && Model.NonFinancials.Any())
                 {
-                    foreach (var item in Model.NonFinancials)
-                    {
-                        <tr>
-                            <td><strong>@item.CovenantType</strong></td>
-                            <td>@item.Description</td>
-                            <td><span class="badge bg-secondary">@item.Frequency</span></td>
-                        </tr>
-                    }
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-uppercase">
+                                <tr>
+                                    <th>Compliance Type</th>
+                                    <th>Description</th>
+                                    <th>Frequency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.NonFinancials)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">
+                                            @item.CovenantType
+                                        </td>
+                                        <td class="text-muted">
+                                            @item.Description
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary-subtle text-secondary border">
+                                                @item.Frequency
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 }
                 else
                 {
-                    <tr><td colspan="3" class="text-center text-muted">No non-financial covenants found.</td></tr>
+                    <div class="text-center py-4">
+                        <i class="bi bi-clipboard-x fs-3 text-muted"></i>
+                        <p class="mt-2 text-muted mb-0">
+                            No non-financial covenants available.
+                        </p>
+                    </div>
                 }
-            </tbody>
-        </table>
+            </div>
+        </div>
     </div>
+
 </div>

@@ -1,172 +1,221 @@
 ﻿@model Credit_Monitor.ViewModel.PendingLoanWithCustomerDetailsViewModel
 @using System.Security.Claims
 @{
-    ViewData["Title"] = "Customer Details";
+    ViewData["Title"] = "Customer Credit Profile";
     var loan = Model.loan;
     var customer = Model.customer;
     var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
 }
 
-<div class="sticky-top bg-white shadow-sm border-bottom pb-2 mb-3 pt-3" style="top: 0; z-index: 1020;">
+<style>
+    /* ===== Banking UI Enhancements ===== */
+    .page-header {
+        position: sticky;
+        top: 0;
+        z-index: 1020;
+        background: #fff;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .info-label {
+        font-size: .7rem;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .info-value {
+        font-weight: 500;
+        font-size: .875rem;
+    }
+
+    .section-title {
+        font-size: .8rem;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        font-weight: 700;
+        color: #0d6efd;
+        border-left: 4px solid #0d6efd;
+        padding-left: .5rem;
+        margin-bottom: 1rem;
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        color: #6c757d;
+    }
+
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            background: transparent;
+            border-bottom: 3px solid #0d6efd;
+        }
+
+    .profile-card {
+        border-radius: 12px;
+    }
+</style>
+
+<!-- ===== Sticky Header ===== -->
+<div class="page-header py-3 mb-4 shadow-sm">
     <div class="container-fluid">
         <div class="row align-items-center mb-2">
             <div class="col-md-4">
-                <h6 class="mb-0 fw-bold">Application Id : <span class="text-primary">@loan?.id</span></h6>
+                <small class="info-label">Application ID</small>
+                <div class="fw-bold text-primary">@loan?.id</div>
             </div>
             <div class="col-md-4 text-center">
-                <h6 class="mb-0 fw-bold">Applicant Name : <span class="text-primary">@loan?.accounT_NAME</span></h6>
+                <small class="info-label">Applicant Name</small>
+                <div class="fw-bold text-primary">@loan?.accounT_NAME</div>
+            </div>
+            <div class="col-md-4 text-end">
+                <small class="info-label">Stage</small>
+                <div class="fw-bold text-success">Post-Disbursement</div>
             </div>
         </div>
 
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <h5 class="text-primary fw-bold mb-0">Post Disbursement Stage</h5>
-            </div>
-            <div class="col-md-6 text-end">
-                <div class="d-flex justify-content-end gap-2">
-                    @if (userRole == "supervisor")
-                    {
-                        <form asp-action="UpdateStatus" asp-controller="Dashboard" method="post">
-                            <input type="hidden" name="applicationId" value="@loan?.id" />
-                            <input type="hidden" name="actionType" value="approve" />
-                            <input type="hidden" name="returnDashboard" value="Supervisor" />
+        <div class="d-flex justify-content-end gap-2 mt-2">
+            @if (userRole == "supervisor")
+            {
+                <form asp-action="UpdateStatus" asp-controller="Dashboard" method="post">
+                    <input type="hidden" name="applicationId" value="@loan?.id" />
+                    <input type="hidden" name="actionType" value="approve" />
+                    <input type="hidden" name="returnDashboard" value="Supervisor" />
+                    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
 
-                            <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
-
-                            <button type="submit" class="btn btn-success btn-sm px-3 fw-bold">
-                                <i class="bi bi-check-circle-fill me-1"></i> Approve Loan Details
-                            </button>
-                        </form>
-                    }
-                    else
-                    {
-                        <a asp-action="ValidateCAT" asp-controller="Loan" asp-route-AccNum="@loan?.accounT_NUMBER" class="btn btn-warning btn-sm px-3 fw-bold">
-                            <i class="bi bi-shield-check me-1"></i> Validate with CAT
-                        </a>
-                    }
-                    <button onclick="history.back()" class="btn btn-secondary btn-sm px-4">
-                        <i class="bi bi-arrow-left me-1"></i> Back
+                    <button type="submit" class="btn btn-success btn-sm fw-bold px-3">
+                        <i class="bi bi-check-circle-fill me-1"></i> Approve
                     </button>
-                </div>
-            </div>
+                </form>
+            }
+            else
+            {
+                <a asp-action="ValidateCAT"
+                   asp-controller="Loan"
+                   asp-route-AccNum="@loan?.accounT_NUMBER"
+                   class="btn btn-warning btn-sm fw-bold px-3">
+                    <i class="bi bi-shield-check me-1"></i> Validate CAT
+                </a>
+            }
+
+            <button onclick="history.back()" class="btn btn-outline-secondary btn-sm px-3">
+                <i class="bi bi-arrow-left"></i> Back
+            </button>
         </div>
     </div>
 </div>
 
 <div class="container-fluid">
-    <ul class="nav nav-tabs bg-light border-0 mb-3" id="detailsTab" role="tablist">
+
+    <!-- ===== Tabs ===== -->
+    <ul class="nav nav-tabs mb-3">
         <li class="nav-item">
-            <button class="nav-link active fw-bold small text-uppercase" data-bs-toggle="tab" data-bs-target="#basicInfo">Basic Info</button>
+            <button class="nav-link active fw-bold small"
+                    data-bs-toggle="tab"
+                    data-bs-target="#basicInfo">
+                Customer Profile
+            </button>
         </li>
         <li class="nav-item">
-            <button class="nav-link fw-bold small text-uppercase"
-                    id="doc-status-tab"
+            <button class="nav-link fw-bold small"
                     data-bs-toggle="tab"
                     data-bs-target="#docStatus"
-                    type="button"
-                    onclick="loadDocuments('@Model.loan?.LoanFileBatchId')">
+                    onclick="loadDocuments('@loan?.LoanFileBatchId')">
                 Document Status
             </button>
         </li>
         <li class="nav-item">
-            <button class="nav-link fw-bold small text-uppercase"
-                    id="covenant-tab"
+            <button class="nav-link fw-bold small"
                     data-bs-toggle="tab"
                     data-bs-target="#covenantStatus"
-                    type="button"
-                    onclick="loadCovenants('@Model.loan?.id')">
+                    onclick="loadCovenants('@loan?.id')">
                 Covenant Tracker
             </button>
         </li>
     </ul>
 
-    <div class="tab-content border rounded p-4 bg-white shadow-sm">
+    <div class="tab-content bg-white p-4 shadow-sm profile-card">
+
+        <!-- ===== BASIC INFO ===== -->
         <div class="tab-pane fade show active" id="basicInfo">
-            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
-                <h6 class="text-primary fw-bold mb-0">
-                    <i class="bi bi-person-lines-fill me-2"></i>Full Customer Profile
-                </h6>
-                <span class="badge bg-info text-dark">Record Status: Active</span>
-            </div>
 
-            <p class="fw-bold text-dark border-start border-primary border-4 ps-2 mb-3">Identity & Personal Details</p>
+            <div class="section-title">Identity & Personal Information</div>
             <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <label class="small fw-bold text-muted">Title</label>
-                    <input type="text" class="form-control form-control-sm bg-light" value="@customer?.tittle" readonly>
+                <div class="col-md-3">
+                    <div class="info-label">Title</div>
+                    <div class="info-value">@customer?.tittle</div>
                 </div>
-                <div class="col-md-4">
-                    <label class="small fw-bold text-muted">First Name</label>
-                    <input type="text" class="form-control form-control-sm" value="@customer?.firstname" readonly>
+                <div class="col-md-3">
+                    <div class="info-label">First Name</div>
+                    <div class="info-value">@customer?.firstname</div>
                 </div>
-                <div class="col-md-4">
-                    <label class="small fw-bold text-muted">Middle Name</label>
-                    <input type="text" class="form-control form-control-sm" value="@customer?.middlename" readonly>
+                <div class="col-md-3">
+                    <div class="info-label">Middle Name</div>
+                    <div class="info-value">@customer?.middlename</div>
                 </div>
-                <div class="col-md-4">
-                    <label class="small fw-bold text-muted">Last Name</label>
-                    <input type="text" class="form-control form-control-sm" value="@customer?.lastname" readonly>
+                <div class="col-md-3">
+                    <div class="info-label">Last Name</div>
+                    <div class="info-value">@customer?.lastname</div>
                 </div>
-                <div class="col-md-4">
-                    <label class="small fw-bold text-muted">Gender</label>
-                    <input type="text" class="form-control form-control-sm bg-light" value="@customer?.gender" readonly>
+                <div class="col-md-3">
+                    <div class="info-label">Gender</div>
+                    <div class="info-value">@customer?.gender</div>
                 </div>
-                <div class="col-md-4">
-                    <label class="small fw-bold text-muted">Nationality</label>
-                    <input type="text" class="form-control form-control-sm bg-light" value="@customer?.nationallity" readonly>
+                <div class="col-md-3">
+                    <div class="info-label">Nationality</div>
+                    <div class="info-value">@customer?.nationallity</div>
                 </div>
             </div>
 
-            <p class="fw-bold text-dark border-start border-success border-4 ps-2 mb-3">Demographics & Status</p>
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <label class="small fw-bold text-muted">Date of Birth</label>
-                    <input type="text" class="form-control form-control-sm" value="@customer?.dob" readonly>
+            <div class="section-title">Demographics & Status</div>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="info-label">Date of Birth</div>
+                    <div class="info-value">@customer?.dob</div>
                 </div>
                 <div class="col-md-2">
-                    <label class="small fw-bold text-muted">Age</label>
-                    <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" value="@customer?.age" readonly>
-                        <span class="input-group-text">Yrs</span>
-                    </div>
+                    <div class="info-label">Age</div>
+                    <div class="info-value">@customer?.age Yrs</div>
                 </div>
                 <div class="col-md-3">
-                    <label class="small fw-bold text-muted">Marital Status</label>
-                    <input type="text" class="form-control form-control-sm" value="@customer?.maritalStatus" readonly>
+                    <div class="info-label">Marital Status</div>
+                    <div class="info-value">@customer?.maritalStatus</div>
                 </div>
-                <div class="col-md-3">
-                    <label class="small fw-bold text-muted">Dependants</label>
-                    <input type="text" class="form-control form-control-sm" value="@customer?.numbOfDependant" readonly>
+                <div class="col-md-2">
+                    <div class="info-label">Dependants</div>
+                    <div class="info-value">@customer?.numbOfDependant</div>
                 </div>
             </div>
         </div>
 
-        <div class="tab-pane fade" id="docStatus" role="tabpanel">
-            <div id="docStatusContainer">
-                <div class="text-center py-5 doc-loader">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-2 text-muted">Fetching document metadata...</p>
-                </div>
+        <!-- ===== DOCUMENT STATUS ===== -->
+        <div class="tab-pane fade" id="docStatus">
+            <div id="docStatusContainer" class="text-center py-5">
+                <div class="spinner-border text-primary"></div>
+                <p class="text-muted mt-2">Loading document status…</p>
             </div>
         </div>
 
-        <div class="tab-pane fade" id="covenantStatus" role="tabpanel">
-            <div id="covenantStatusContainer">
-                <div class="text-center py-5 covenant-loader">
-                    <div class="spinner-border text-success" role="status"></div>
-                    <p class="mt-2 text-muted">Fetching covenant details...</p>
-                </div>
+        <!-- ===== COVENANT STATUS ===== -->
+        <div class="tab-pane fade" id="covenantStatus">
+            <div id="covenantStatusContainer" class="text-center py-5">
+                <div class="spinner-border text-success"></div>
+                <p class="text-muted mt-2">Loading covenant tracker…</p>
             </div>
         </div>
+
     </div>
 
+    <!-- ===== LOAN DETAILS ===== -->
     <div class="mt-4">
-        @if (Model.loan != null)
+        @if (loan != null)
         {
-            <partial name="_LoanDetailsPartial" model="Model.loan" />
+            <partial name="_LoanDetailsPartial" model="loan" />
         }
     </div>
 </div>
+
 
 <script>
     // Existing Document Loader

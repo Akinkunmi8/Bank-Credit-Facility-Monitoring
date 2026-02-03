@@ -1,62 +1,60 @@
 ﻿@model Credit_Monitor.ViewModel.ValidateCATPageViewModel
+@{
+    ViewData["Title"] = "CAT Validation Dashboard";
+    var accuracy = (1 - ((double)Model.Discrepancies.ErrorCount / Model.Discrepancies.TotalFields)) * 100;
+}
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <div>
             <h4 class="fw-bold text-dark">CAT Validation Dashboard</h4>
             <p class="text-muted">Comparing Account: <span class="fw-bold">@Model.Discrepancies.AccNum</span></p>
         </div>
         <div class="text-end">
-            @{
-                var accuracy = (1 - ((double)Model.Discrepancies.ErrorCount / Model.Discrepancies.TotalFields)) * 100;
-            }
             <h2 class="@(accuracy == 100 ? "text-success" : "text-danger") fw-bold mb-0">@accuracy.ToString("0")%</h2>
             <span class="badge @(accuracy == 100 ? "bg-success" : "bg-warning text-dark")">Accuracy Score</span>
         </div>
     </div>
 
-    <div class="row">
+    <div class="row g-4">
+
+        <!-- Left Column: Detailed Table -->
         <div class="col-lg-9">
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-primary text-white py-3">
-                    <h6 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Detailed Comparison Analysis</h6>
+                    <h6 class="mb-0"><i class="bi bi-clipboard-check me-2"></i> Detailed Comparison Analysis</h6>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light text-uppercase small fw-bold">
-                            <tr>
-                                <th class="ps-3" style="width: 15%;">Field</th>
-                                <th style="width: 25%;">Finacle Value</th>
-                                <th style="width: 25%;">CAT Value</th>
-                                <th style="width: 25%;">Discrepancy Message</th>
-                                <th class="text-center" style="width: 10%;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <tbody>
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Customer Name", Fin = Model.FinacleData.AccountName, Cat = Model.CatData.CustomerName, Result = Model.Discrepancies.CustomerName })
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-uppercase small fw-bold">
+                                <tr>
+                                    <th class="ps-3" style="width: 15%;">Field</th>
+                                    <th style="width: 25%;">Finacle Value</th>
+                                    <th style="width: 25%;">CAT Value</th>
+                                    <th style="width: 25%;">Discrepancy Message</th>
+                                    <th class="text-center" style="width: 10%;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @await Html.PartialAsync("_ValidationRow", new { Label = "Customer Name", Fin = Model.FinacleData.AccountName, Cat = Model.CatData.CustomerName, Result = Model.Discrepancies.CustomerName })
+                                @await Html.PartialAsync("_ValidationRow", new { Label = "Directorate/SBU", Fin = Model.FinacleData.SbuName, Cat = Model.CatData.Directorate, Result = Model.Discrepancies.Directorate })
+                                @await Html.PartialAsync("_ValidationRow", new { Label = "Facility Type", Fin = Model.FinacleData.FacilityType, Cat = Model.CatData.FacilityType, Result = Model.Discrepancies.FacilityType })
+                                @await Html.PartialAsync("_ValidationRow", new { Label = "Approval Limit", Fin = Model.FinacleData.SanctionLimit.ToString("N2"), Cat = Model.CatData.ApprovalLimit.ToString("N2"), Result = Model.Discrepancies.ApprovalLimit })
 
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Directorate/SBU", Fin = Model.FinacleData.SbuName, Cat = Model.CatData.Directorate, Result = Model.Discrepancies.Directorate })
-
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Facility Type", Fin = Model.FinacleData.FacilityType, Cat = Model.CatData.FacilityType, Result = Model.Discrepancies.FacilityType })
-
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Approval Limit", Fin = Model.FinacleData.SanctionLimit.ToString("N2"), Cat = Model.CatData.ApprovalLimit.ToString("N2"), Result = Model.Discrepancies.ApprovalLimit })
-
-                            @{
-                                // Logic for Total Balance as defined in your method
-                                decimal finBalance = Model.FinacleData.TotalBalanceLcy == 0 ? Model.FinacleData.TotalBalanceFcy : Model.FinacleData.TotalBalanceLcy;
-                            }
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Disbursed Amount", Fin = finBalance.ToString("N2"), Cat = Model.CatData.DisbursementRequired.ToString("N2"), Result = Model.Discrepancies.DisbursmentRequired })
-
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Fees", Fin = Model.FinacleData.FxRate.ToString("N2"), Cat = Model.CatData.Fees.ToString("N2"), Result = Model.Discrepancies.Fee })
-
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Interest Rate", Fin = Model.FinacleData.IntRateDisplay + "%", Cat = Model.CatData.Interest + "%", Result = Model.Discrepancies.Interest })
-
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Value Date", Fin = Model.FinacleData.DateGranted.ToString("dd-MMM-yyyy"), Cat = Model.CatData.ValueDate.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.ValueDate })
-
-                            @await Html.PartialAsync("_ValidationRow", new { Label = "Maturity Date", Fin = Model.FinacleData.ExpiryDate.ToString("dd-MMM-yyyy"), Cat = Model.CatData.MaturityOrExpiry.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.MaturityDate })
-                        </tbody>
-                    </table>
+                                @{
+                                    decimal finBalance = Model.FinacleData.TotalBalanceLcy == 0 ? Model.FinacleData.TotalBalanceFcy : Model.FinacleData.TotalBalanceLcy;
+                                }
+                                @await Html.PartialAsync("_ValidationRow", new { Label = "Disbursed Amount", Fin = finBalance.ToString("N2"), Cat = Model.CatData.DisbursementRequired.ToString("N2"), Result = Model.Discrepancies.DisbursmentRequired })
+                                @await Html.PartialAsync("_ValidationRow", new { Label = "Fees", Fin = Model.FinacleData.FxRate.ToString("N2"), Cat = Model.CatData.Fees.ToString("N2"), Result = Model.Discrepancies.Fee })
+                                @await Html.PartialAsync("_ValidationRow", new { Label = "Interest Rate", Fin = Model.FinacleData.IntRateDisplay + "%", Cat = Model.CatData.Interest + "%", Result = Model.Discrepancies.Interest })
+                                @await Html.PartialAsync("_ValidationRow", new { Label = "Value Date", Fin = Model.FinacleData.DateGranted.ToString("dd-MMM-yyyy"), Cat = Model.CatData.ValueDate.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.ValueDate })
+                                @await Html.PartialAsync("_ValidationRow", new { Label = "Maturity Date", Fin = Model.FinacleData.ExpiryDate.ToString("dd-MMM-yyyy"), Cat = Model.CatData.MaturityOrExpiry.ToString("dd-MMM-yyyy"), Result = Model.Discrepancies.MaturityDate })
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="card-footer bg-white text-muted small">
                     Showing validation for @Model.Discrepancies.TotalFields core banking fields.
@@ -64,43 +62,96 @@
             </div>
         </div>
 
+        <!-- Right Column: Action Center & Charts -->
         <div class="col-lg-3">
-            <div class="card shadow-sm border-0">
+            <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header fw-bold bg-white">Action Center</div>
-                <div class="card-body">
-                    <div class="text-center mb-3">
-                        <h1 class="display-6 fw-bold">@Model.Discrepancies.ErrorCount</h1>
-                        <p class="text-muted small">Discrepancies Found</p>
-                        <p>Application ID: @Model.FinacleData.Id</p>
+                <div class="card-body text-center">
+
+                    <!-- Discrepancy Alert -->
+                    @if (Model.Discrepancies.ErrorCount > 0)
+                    {
+                        <div class="alert alert-danger fw-bold">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            Attention! Mismatch found.
+                        </div>
+                        <button class="btn btn-danger w-100 mb-2 py-2 fw-bold">Reject & Flag</button>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success fw-bold">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Ready! No discrepancies.
+                        </div>
+                        <button class="btn btn-success w-100 mb-2 py-2 fw-bold">Confirm & Validate</button>
+                    }
+                    <button onclick="history.back()" class="btn btn-outline-secondary w-100 py-2">Go Back</button>
+
+                    <!-- Pie Chart -->
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-2">Discrepancy Distribution</h6>
+                        <canvas id="pieChart" height="200"></canvas>
                     </div>
 
-                    <form asp-action="UpdateStatus" asp-controller="Dashboard" method="post">
-                        <input type="hidden" name="applicationId" value="@Model.FinacleData.Id" />
-                        <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
-                        <input type="hidden" name="returnDashboard" value="Staff" />
+                    <!-- Bar Chart -->
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-2">Field Accuracy Stats</h6>
+                        <canvas id="barChart" height="250"></canvas>
+                    </div>
 
-                        @if (Model.Discrepancies.ErrorCount > 0)
-                        {
-                            <div class="alert alert-soft-danger border-danger small mb-3">
-                                <strong>Attention!</strong> Mismatch found.
-                            </div>
-
-                            <input type="hidden" name="actionType" value="reject" />
-                            <button type="submit" class="btn btn-danger w-100 mb-2 py-2 fw-bold">Reject & Flag</button>
-                        }
-                        else
-                        {
-                            <div class="alert alert-soft-success border-success small mb-3">
-                                <strong>Ready!</strong> No discrepancies.
-                            </div>
-                            <input type="hidden" name="actionType" value="confirm" />
-                            <button type="submit" class="btn btn-success w-100 mb-2 py-2 fw-bold">Confirm & Validate</button>
-                        }
-                    </form>
-
-                    <button onclick="history.back()" class="btn btn-outline-secondary w-100 py-2">Go Back</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Pie Chart
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        const pieChart = new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Synchronized', 'Discrepancies'],
+                datasets: [{
+                    data: [
+                        @(Model.Discrepancies.TotalFields - Model.Discrepancies.ErrorCount),
+                        @(Model.Discrepancies.ErrorCount)
+                    ],
+                    backgroundColor: ['#198754', '#dc3545']
+                }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
+
+        // Bar Chart
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        const barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Customer Name', 'SBU', 'Facility Type', 'Approval Limit', 'Disbursed Amount', 'Fees', 'Interest', 'Value Date', 'Maturity Date'],
+                datasets: [{
+                    label: 'Field Accuracy',
+                    data: [
+                        @(Model.Discrepancies.CustomerName.IsValid ? 1 : 0),
+                        @(Model.Discrepancies.Directorate.IsValid ? 1 : 0),
+                        @(Model.Discrepancies.FacilityType.IsValid ? 1 : 0),
+                        @(Model.Discrepancies.ApprovalLimit.IsValid ? 1 : 0),
+                        @(Model.Discrepancies.DisbursmentRequired.IsValid ? 1 : 0),
+                        @(Model.Discrepancies.Fee.IsValid ? 1 : 0),
+                        @(Model.Discrepancies.Interest.IsValid ? 1 : 0),
+                        @(Model.Discrepancies.ValueDate.IsValid ? 1 : 0),
+                        @(Model.Discrepancies.MaturityDate.IsValid ? 1 : 0)
+                    ],
+                    backgroundColor: '#0d6efd'
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                scales: { x: { min: 0, max: 1, ticks: { stepSize: 1 } } },
+                plugins: { legend: { display: false }, tooltip: { enabled: true } }
+            }
+        });
+    </script>
+}

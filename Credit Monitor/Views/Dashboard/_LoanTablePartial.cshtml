@@ -1,18 +1,65 @@
 ﻿@model Credit_Monitor.ViewModel.StaffDashboardViewModel
 
+<style>
+    /* ===== Enterprise Table Styling ===== */
+    .credit-table th {
+        font-size: .75rem;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #6c757d;
+        white-space: nowrap;
+    }
+
+    .credit-table td {
+        font-size: .875rem;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .credit-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .badge-risk {
+        font-weight: 500;
+        padding: .35em .6em;
+        border-radius: 6px;
+    }
+
+    .badge-current {
+        background-color: rgba(25, 135, 84, .1);
+        color: #198754;
+    }
+
+    .badge-pastdue {
+        background-color: rgba(220, 53, 69, .1);
+        color: #dc3545;
+    }
+
+    .empty-state i {
+        opacity: .25;
+    }
+
+    .pagination .page-link {
+        border-radius: 6px;
+        margin-left: 4px;
+    }
+</style>
+
 <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
+    <table class="table credit-table table-hover align-middle mb-0">
         <thead class="table-light">
             <tr>
-                <th class="ps-3">Application No.</th>
+                <th class="ps-3">Application No</th>
                 <th>Client Name</th>
                 <th>Product</th>
                 <th>Location</th>
                 <th>Status</th>
-                <th>Since Day</th>
+                <th>Since</th>
                 <th>Branch</th>
             </tr>
         </thead>
+
         <tbody>
             @if (Model?.loans != null && Model.loans.Any())
             {
@@ -20,33 +67,55 @@
                 {
                     <tr>
                         <td class="ps-3">
-                            <a asp-action="CustomerDetails" asp-route-id="@loan.id" class="fw-bold text-decoration-none">@loan.id</a>
+                            <a asp-action="CustomerDetails"
+                               asp-route-id="@loan.id"
+                               class="fw-semibold text-primary text-decoration-none">
+                                @loan.id
+                            </a>
                         </td>
-                        <td>@loan.accounT_NAME</td>
-                        <td><small>@loan.facilitY_TYPE</small></td>
-                        <td>@loan.regioN_NAME</td>
+
+                        <td class="fw-medium">@loan.accounT_NAME</td>
+
                         <td>
-                            <span class="badge @(loan.dayS_PAST_DUE > 0 ? "bg-danger" : "bg-success")">
-                                @(loan.dayS_PAST_DUE > 0 ? $"Past Due ({loan.dayS_PAST_DUE})" : "Current")
-                            </span>
+                            <span class="text-muted">@loan.facilitY_TYPE</span>
                         </td>
-                        <td>One week ago</td>
+
+                        <td>@loan.regioN_NAME</td>
+
+                        <td>
+                            @if (loan.dayS_PAST_DUE > 0)
+                            {
+                                <span class="badge badge-risk badge-pastdue">
+                                    Past Due · @loan.dayS_PAST_DUE d
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-risk badge-current">
+                                    Current
+                                </span>
+                            }
+                        </td>
+
+                        <td class="text-muted">One week ago</td>
+
                         <td>@loan.brancH_NAME</td>
                     </tr>
                 }
             }
             else
             {
-@*                 <tr>
-                    <td colspan="7" class="text-center py-5 text-muted">No records matching your search.</td>
-                </tr> *@
                 <tr>
-                    <td colspan="7" class="text-center py-5">
-                        <div class="d-flex flex-column align-items-center">
-                            <i class="bi bi-search text-muted mb-2" style="font-size: 3rem; opacity: 0.3;"></i>
-                            <h5 class="text-muted fw-light">No matching records found</h5>
-                            <p class="text-muted small">Try adjusting your search criteria or clear the search to see all records.</p>
-                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="$('#searchInput').val(''); loadTable('', 1);">
+                    <td colspan="7" class="py-5">
+                        <div class="d-flex flex-column align-items-center empty-state">
+                            <i class="bi bi-search mb-3" style="font-size: 3rem;"></i>
+                            <h6 class="fw-semibold text-muted">No records found</h6>
+                            <p class="small text-muted text-center mb-3">
+                                Try adjusting your search or clear the filter to view all loan applications.
+                            </p>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary"
+                                    onclick="$('#searchInput').val(''); loadTable('', 1);">
                                 Clear Search
                             </button>
                         </div>
@@ -57,18 +126,26 @@
     </table>
 </div>
 
+<!-- ===== Footer / Pagination ===== -->
 <div class="card-footer bg-white border-top-0 py-2">
     <div class="row align-items-center">
         <div class="col-sm-6">
-            <p class="mb-0 small text-muted">Total Records: <strong>@Model.TotalItems</strong></p>
+            <small class="text-muted">
+                Total Records: <strong>@Model.TotalItems</strong>
+            </small>
         </div>
+
         <div class="col-sm-6">
             <nav>
                 <ul class="pagination pagination-sm justify-content-end mb-0">
                     @for (int i = 1; i <= Model.TotalPages; i++)
                     {
                         <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                            <a class="page-link" href="javascript:void(0)" onclick="loadTable($('#searchInput').val(), @i)">@i</a>
+                            <a class="page-link"
+                               href="javascript:void(0)"
+                               onclick="loadTable($('#searchInput').val(), @i)">
+                                @i
+                            </a>
                         </li>
                     }
                 </ul>
@@ -76,4 +153,3 @@
         </div>
     </div>
 </div>
-
