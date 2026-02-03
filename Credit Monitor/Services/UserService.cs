@@ -2,9 +2,8 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
 using Credit_Monitor.APIDto;
-using Credit_Monitor.Data;
+using Credit_Monitor.APIDto.Credit_Monitor.APIDto;
 using Credit_Monitor.Interfaces;
-using Credit_Monitor.Models;
 using Credit_Monitor.ViewModel;
 
 namespace Credit_Monitor.Services
@@ -114,6 +113,41 @@ namespace Credit_Monitor.Services
 
             return success;
         }
+
+        public async Task<ResetPasswordResponseDto> UpdatePasswordAsync(ResetPasswordRequestDto resetData)
+        {
+            _logger.LogInformation("Attempting to update password for user: {Email}", resetData.Email);
+
+            try
+            {
+                // Call the API service layer
+                var response = await _loginAndRegisterAPIService.UpdatePasswordAsync(resetData);
+
+                if (response != null && response.IsSuccess)
+                {
+                    _logger.LogInformation("Password successfully updated for: {Email}", resetData.Email);
+                }
+                else
+                {
+                    _logger.LogWarning("Password update failed for {Email}. Reason: {Reason}",
+                        resetData.Email, response?.ResponseMessage ?? "Unknown Error");
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Critical error updating password for {Email}", resetData.Email);
+
+                // Return a failed response instead of letting the app crash
+                return new ResetPasswordResponseDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = "An internal error occurred while processing your request."
+                };
+            }
+        }
+
     }
 
         

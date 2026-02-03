@@ -67,7 +67,11 @@
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header fw-bold bg-white">Action Center</div>
                 <div class="card-body text-center">
-
+                    <form asp-action="UpdateStatus" asp-controller="Dashboard" method="post">
+                        <input type="hidden" name="applicationId" value="@Model.FinacleData.Id" />
+                        <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                        <input type="hidden" name="returnDashboard" value="Staff" />
+                    
                     <!-- Discrepancy Alert -->
                     @if (Model.Discrepancies.ErrorCount > 0)
                     {
@@ -75,6 +79,7 @@
                             <i class="bi bi-exclamation-triangle me-1"></i>
                             Attention! Mismatch found.
                         </div>
+                        <input type="hidden" name="actionType" value="reject" />
                         <button class="btn btn-danger w-100 mb-2 py-2 fw-bold">Reject & Flag</button>
                     }
                     else
@@ -83,10 +88,12 @@
                             <i class="bi bi-check-circle me-1"></i>
                             Ready! No discrepancies.
                         </div>
-                        <button class="btn btn-success w-100 mb-2 py-2 fw-bold">Confirm & Validate</button>
+                        <input type="hidden" name="actionType" value="confirm" />
+                        <button type="submit" class="btn btn-success w-100 mb-2 py-2 fw-bold">Confirm & Validate</button>
                     }
+                    </form>
                     <button onclick="history.back()" class="btn btn-outline-secondary w-100 py-2">Go Back</button>
-
+                    
                     <!-- Pie Chart -->
                     <div class="mt-4">
                         <h6 class="fw-bold mb-2">Discrepancy Distribution</h6>

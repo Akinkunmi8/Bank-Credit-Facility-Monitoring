@@ -1,4 +1,5 @@
 ﻿using Credit_Monitor.APIDto;
+using Credit_Monitor.APIDto.Credit_Monitor.APIDto;
 using Credit_Monitor.APIsDto;
 using Credit_Monitor.Interfaces;
 using Microsoft.AspNetCore.Identity.Data;
@@ -32,6 +33,13 @@ namespace Credit_Monitor.APICore
         {
             var endpoint = "/api/account/register";
             var result = await _apiService.PostAsync<RegisterResponseDto>(registerData, endpoint);
+            return result;
+        }
+
+        public async Task<ResetPasswordResponseDto> UpdatePasswordAsync(ResetPasswordRequestDto resetData)
+        {
+            var endpoint = "api/account/reset-password";
+            var result = await _apiService.PostAsync<ResetPasswordResponseDto>(resetData, endpoint);
             return result;
         }
     }

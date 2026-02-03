@@ -1,12 +1,15 @@
 using System.Diagnostics;
 using System.Security.Claims;
+using Credit_Monitor.APIDto.Credit_Monitor.APIDto;
 using Credit_Monitor.Interfaces;
 using Credit_Monitor.Models;
+using Credit_Monitor.Services;
 using Credit_Monitor.ViewModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace Credit_Monitor.Controllers
 {
@@ -39,6 +42,49 @@ namespace Credit_Monitor.Controllers
         public IActionResult Register()
         {
             return View();
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string email, string token)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("Login");
+            }
+
+            var model = new ResetPasswordViewModel
+            {
+                Email = email,
+                Token = token // Try both decodedToken or token depending on how your backend expects it
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+  
+            // Map ViewModel to DTO
+            var resetDto = new ResetPasswordRequestDto
+            {
+                Email = model.Email,
+                Token = model.Token,
+                NewPassword = model.NewPassword
+            };
+
+            // Call the function we just implemented
+            var result = await _userservice.UpdatePasswordAsync(resetDto);
+
+            if (result.IsSuccess)
+            {
+                TempData["SuccessMessage"] = "Your password has been reset successfully.";
+                return RedirectToAction("Login");
+            }
+
+            // Add the API's error message (e.g., "Invalid Token") to the screen
+            ModelState.AddModelError(string.Empty, result.ResponseMessage);
+            return View(model);
         }
 
         [AllowAnonymous]
