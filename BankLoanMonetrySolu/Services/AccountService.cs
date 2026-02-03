@@ -167,7 +167,7 @@ namespace BankLoanMonetrySolu.Services
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var encodedToken = WebUtility.UrlEncode(token);
-            var resetUrl = $"{_configuration["AppSettings:ResetPasswordUrl"]}?email={user.Email}&token={encodedToken}";
+            var resetUrl = $"{_configuration["AppSetting:ResetPasswordUrl"]}?email={user.Email}&token={encodedToken}";
 
             try
             {
