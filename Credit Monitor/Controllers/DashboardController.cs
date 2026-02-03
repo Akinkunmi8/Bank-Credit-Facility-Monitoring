@@ -18,19 +18,21 @@ namespace Credit_Monitor.Controllers
         private readonly IDashboardAPI _dashboardapi;
         private readonly IFileService _fileService;
         private readonly ICovenantTrackerService _covenantService;
+        private string _storagePath;
 
-        private readonly string _storagePath = @"C:\Users\dell\c#\Credit Monitor Backend\BankLoanMonetrySolu\UploadedFiles\";
+        //private readonly string _storagePath = @"C:\Users\User\source\repos\Bank-Credit-Facility-Monitoring\BankLoanMonetrySolu\UploadedFiles";
 
         public DashboardController(
             ILoanService loanService,
             IDashboardAPI dashboardapi,
             IFileService fileService,
-            ICovenantTrackerService covenantService) 
+            ICovenantTrackerService covenantService,IConfiguration configuration) 
         {
             _loanService = loanService;
             _dashboardapi = dashboardapi;
             _fileService = fileService;
-            _covenantService = covenantService; 
+            _covenantService = covenantService;
+            _storagePath = configuration["FileSettings:StoragePath"];
         }
 
         [Authorize(Roles = "staff")]
