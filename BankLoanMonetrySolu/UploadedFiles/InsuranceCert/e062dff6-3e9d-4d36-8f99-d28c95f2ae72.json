@@ -1,0 +1,114 @@
+{
+  "info": {
+    "_postman_id": "819557d2-c09d-4b78-89a1-eaef912ecc6f",
+    "name": "Banl Loan Credit Monitoring",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "25942518"
+  },
+  "item": [
+    {
+      "name": "Upload Files",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "AppId",
+              "value": "22222222-2222-2222-2222-222222222222",
+              "type": "text",
+              "uuid": "c1b02562-2d33-4dd0-91e0-06e7c7e3a93e"
+            },
+            {
+              "key": "FileItems[0].file",
+              "type": "file",
+              "uuid": "b72801b6-a5e2-4201-87ec-067285837f48",
+              "src": "/C:/Users/akinkunmi.olawale/Downloads/RDP ACCESS CREATION FORM .pdf"
+            },
+            {
+              "key": "FileItems[0].docType",
+              "value": "CAT",
+              "type": "text",
+              "uuid": "f17c34f3-c5c8-4f11-9117-1d5052f1b35e"
+            },
+            {
+              "key": "FileItems[1].file",
+              "type": "file",
+              "uuid": "00125dee-d7a0-40ba-87f3-f38fefd5a9b3",
+              "src": "/C:/Users/akinkunmi.olawale/Downloads/BankingOpsWindowServer.xlsx"
+            },
+            {
+              "key": "FileItems[1].docType",
+              "value": "CACOM",
+              "type": "text",
+              "uuid": "a41401b2-a711-49d4-a9dc-5708ad7c7806"
+            },
+            {
+              "key": "FileItems[2].file",
+              "type": "file",
+              "uuid": "baafdffd-1d4c-4cdc-b314-2456701381fa",
+              "src": "/C:/Users/akinkunmi.olawale/Downloads/CreditData.txt"
+            },
+            {
+              "key": "FileItems[2].docType",
+              "value": "OfferLetter",
+              "type": "text",
+              "uuid": "0102651b-823d-4f1f-918e-295942906f75"
+            },
+            {
+              "key": "FileItems[3].file",
+              "type": "file",
+              "uuid": "509b617e-706e-40bd-a7a4-fde6000e797e",
+              "src": "/C:/Users/akinkunmi.olawale/Downloads/NEW CAT SAMPLE.doc"
+            },
+            {
+              "key": "FileItems[3].docType",
+              "value": "ApprovalMail",
+              "type": "text",
+              "uuid": "d7651029-5a60-49eb-be14-9ffb2681332e"
+            },
+            {
+              "key": "FileItems[4].file",
+              "type": "file",
+              "uuid": "bfb4265b-9116-4d41-9b63-67a9e02a3a89",
+              "src": "/C:/Users/akinkunmi.olawale/Downloads/CAT_dummy_data.json"
+            },
+            {
+              "key": "FileItems[4].docType",
+              "value": "InsuranceCert",
+              "type": "text",
+              "uuid": "7658c6ef-588f-4e6c-92ab-564554ce1334"
+            },
+            {
+              "key": "FileItems[5].file",
+              "type": "file",
+              "uuid": "b14203e3-70d3-424e-8a6e-5a4d8a547984",
+              "src": "/C:/Users/akinkunmi.olawale/Downloads/Environmental_Social_and_Governance.pdf"
+            },
+            {
+              "key": "FileItems[5].docType",
+              "value": "CashCollateral",
+              "type": "text",
+              "uuid": "bcad68f1-9dd6-40c4-b43c-3f3cab5c5806"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:5221/api/Finacle/upload-loan-files",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5221",
+          "path": [
+            "api",
+            "Finacle",
+            "upload-loan-files"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

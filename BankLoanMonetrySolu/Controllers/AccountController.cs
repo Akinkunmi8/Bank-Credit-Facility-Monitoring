@@ -60,7 +60,7 @@ namespace BankLoanMonetrySolu.Controllers
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] forgortPasswordResetdto dto)
         {
-            var result = await _account.ResetForgotPassword(dto.email, dto.newPassword,dto.token);
+            var result = await _account.ResetForgotPassword(dto.email,dto.token,dto.newPassword);
 
             if (result.IsSuccess == false)
                 return BadRequest(result);
