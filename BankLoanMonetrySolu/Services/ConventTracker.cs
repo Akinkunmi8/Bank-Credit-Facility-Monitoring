@@ -1,6 +1,7 @@
 ﻿using BankLoanMonetrySolu.Context;
 using BankLoanMonetrySolu.DTO;
 using BankLoanMonetrySolu.IServices;
+using BankLoanMonetrySolu.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -119,6 +120,47 @@ namespace BankLoanMonetrySolu.Services
             {
                 _logger.LogError(ex, "Database error during covenant update for AppId: {AppId}", AppId);
                 return $"Update Failed: {ex.Message}";
+            }
+        }
+
+        public async Task<string> AddNonFinaciaConeventTracker(string AppId, AddNonFincialConvDto addDto)
+        {
+            // 1. Validate GUID format
+            if (!Guid.TryParse(AppId, out Guid guidAppId))
+            {
+                return "Invalid Guid Format";
+            }
+
+            // 2. Fetch account record (Fixed the '=' vs '==' bug here)
+            var accountRecord = await _context.finacleDatas
+                .FirstOrDefaultAsync(f => f.Id == guidAppId);
+
+            if (accountRecord == null)
+            {
+                return "No account record found for the provided ID";
+            }
+
+            // 3. Map and create the new record
+            var newData = new NonFinancialCovenant
+            {
+                AppId = guidAppId,
+                AccountNumber = accountRecord.ACCOUNT_NUMBER?.ToString() ?? "N/A",
+                CovenantType = addDto.CovenantType,
+                Description = addDto.Description,
+                Frequency = addDto.Frequency ?? FrequencyEnum.Monthly,
+                
+            };
+
+            try
+            {
+                await _context.nonFinancialCovenants.AddAsync(newData);
+                await _context.SaveChangesAsync();
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (ex) here if you have a logger
+                return $"Error saving data: {ex.Message}";
             }
         }
     }

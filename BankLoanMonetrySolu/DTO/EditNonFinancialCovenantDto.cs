@@ -7,4 +7,12 @@
         public string? Description { get; set; }
         public FrequencyEnum? Frequency { get; set; }
     }
+
+    public class AddNonFincialConvDto
+    {
+
+        public string? CovenantType { get; set; }
+        public string? Description { get; set; }
+        public FrequencyEnum? Frequency { get; set; }
+    }
 }

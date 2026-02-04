@@ -66,5 +66,20 @@ namespace BankLoanMonetrySolu.Controllers
 
             return StatusCode(500, result);
         }
+
+        [HttpPost("add-covenant/{appId}")]
+        public async Task<IActionResult> AddCovenant(string appId, [FromBody] AddNonFincialConvDto addDto)
+        {
+            if (addDto == null)
+            {
+                return BadRequest("Request body cannot be null.");
+            }
+            var result = await _conventService.AddNonFinaciaConeventTracker(appId, addDto);
+            if (result == "Success")
+            {
+                return Ok(new { message = "Non-Financial Covenant added successfully." });
+            }
+            return BadRequest(new { error = result });
+        }
     }
 }
