@@ -73,6 +73,25 @@ namespace Credit_Monitor.APICore
             return result;
         }
 
+        public async Task<T> PutAsync<T>(object payload, string endpoint)
+        {
+            AddAuthorizationHeader();
+            IgnoreSSL();
+
+            // Serialize payload with Newtonsoft
+            var jsonPayload = JsonConvert.SerializeObject(payload, _newtonsoftSettings);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync(endpoint, content);
+            await HandleErrors(response);
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<T>(jsonResponse, _newtonsoftSettings);
+
+            if (result is null) throw new InvalidOperationException("API response content was null.");
+            return result;
+        }
+
         private void AddAuthorizationHeader()
         {
             // 2. Extract the token from the logged-in user's claims

@@ -54,5 +54,60 @@ namespace Credit_Monitor.APICore
                 return null;
             }
         }
+
+        public async Task<UpdateCovenantResponseDto?> UpdateNonFinancialCovenant(Guid appId, UpdateCovenantRequestDto request)
+        {
+            // The GUID goes in the URL path per your provided example
+            var urlPath = $"/api/ConventTracker/EditNonFinancial/{appId}";
+
+            _logger.LogInformation("Covenant API Request: Updating non-financial covenant for AppId {AppId}", appId);
+
+            try
+            {
+                // Using PostAsync. The 'request' object will be serialized to JSON via Newtonsoft
+                var result = await _apiService.PutAsync<UpdateCovenantResponseDto>(request, urlPath);
+
+                if (result == null)
+                {
+                    _logger.LogWarning("Covenant API Response: Null response received for update on AppId {AppId}", appId);
+                    return null;
+                }
+
+                _logger.LogInformation("Covenant API Response: Update result for {AppId}: {Message}",
+                    appId, result.Message);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Covenant API Error: Failed to update covenant at {UrlPath}", urlPath);
+                return new UpdateCovenantResponseDto { Message = $"Connection Error: {ex.Message}" };
+            }
+        }
+
+        public async Task<UpdateCovenantResponseDto?> AddNonFinancialCovenant(Guid appId, UpdateCovenantRequestDto request)
+        {
+            var urlPath = $"/api/ConventTracker/add-covenant/{appId}";
+
+            _logger.LogInformation("Covenant API Request: Adding new covenant for AppId {AppId}", appId);
+
+            try
+            {
+                var result = await _apiService.PostAsync<UpdateCovenantResponseDto>(request, urlPath);
+
+                if (result == null)
+                {
+                    _logger.LogWarning("Covenant API Response: Null response for add on AppId {AppId}", appId);
+                    return null;
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Covenant API Error: Failed to add covenant at {UrlPath}", urlPath);
+                return new UpdateCovenantResponseDto { Message = $"Connection Error: {ex.Message}" };
+            }
+        }
     }
 }

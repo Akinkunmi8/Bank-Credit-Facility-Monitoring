@@ -4,6 +4,7 @@
     {
         public Task<T> GetAsync<T>(string endpoint);
         public Task<T> PostAsync<T>(object payload, string endpoint);
+        public Task<T> PutAsync<T>(object payload, string endpoint);
 
     }
 }

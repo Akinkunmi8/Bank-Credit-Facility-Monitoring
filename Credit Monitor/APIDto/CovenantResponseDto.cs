@@ -43,4 +43,36 @@ namespace Credit_Monitor.APIDto
         public string Description { get; set; }
         public int Frequency { get; set; }
     }
+
+    public class UpdateCovenantRequestDto
+    {
+        // Add the ID so the API knows which record to update
+        [JsonProperty("id")]
+        public int Id { get; set; }
+
+        [JsonProperty("covenantType")]
+        public string CovenantType { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        // Using int to match the "0" in your JSON
+        [JsonProperty("frequency")]
+        public int Frequency { get; set; }
+
+        [JsonProperty("applicationId")]
+        public Guid ApplicationId { get; set; }
+    }
+
+    public class UpdateCovenantResponseDto
+    {
+        [JsonProperty("$id")]
+        public string ReferenceId { get; set; }
+
+        [JsonProperty("message")]
+        public string Message { get; set; }
+
+        // Helper property to check success based on the message content
+        public bool IsSuccess => Message?.Contains("successfully", StringComparison.OrdinalIgnoreCase) ?? false;
+    }
 }

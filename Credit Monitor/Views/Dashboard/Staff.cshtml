@@ -157,15 +157,22 @@
 
                 <div class="col-md-6 text-end">
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-secondary">
+                        <button id="btnDownloadPdf" class="btn btn-outline-secondary">
                             <i class="bi bi-file-earmark-pdf"></i> PDF
                         </button>
-                        <button class="btn btn-outline-secondary">
+                        <button id="btnDownloadCsv" class="btn btn-outline-secondary">
                             <i class="bi bi-file-earmark-spreadsheet"></i> CSV
                         </button>
-                        <button onclick="loadTable('', 1)" class="btn btn-outline-primary">
+                        <button onclick="loadTable($('#searchInput').val(), 1)" class="btn btn-outline-primary">
                             <i class="bi bi-arrow-clockwise"></i> Refresh
                         </button>
+                    </div>
+                </div>
+
+                <div id="downloadOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-none align-items-center justify-content-center" style="z-index: 10;">
+                    <div class="text-center">
+                        <div class="spinner-grow text-success" role="status"></div>
+                        <p class="mt-2 fw-bold text-success">Preparing your document...</p>
                     </div>
                 </div>
             </div>
@@ -212,6 +219,45 @@
                     alert("Connection error. Please try again.");
                     $(".table-loader").hide();
                     $("#tableContainer table").css("opacity", "1");
+                }
+            });
+        }
+                $(document).ready(function () {
+            $('#btnDownloadPdf, #btnDownloadCsv').click(function () {
+                // Detect format from button ID or text
+                const format = $(this).attr('id').includes('Pdf') ? 'pdf' : 'csv';
+                const searchTerm = $('#searchInput').val();
+
+                // Use a hidden role field or detect from the URL/Partial
+                // For this example, let's assume you can check if a certain element exists
+                // or just pass a variable from C#
+                const userRole = "@(User.IsInRole("supervisor") ? "supervisor" : "staff")";
+
+                downloadFile(format, searchTerm, userRole);
+            });
+        });
+
+        function downloadFile(format, search, role) {
+            const $overlay = $('#downloadOverlay');
+            $overlay.removeClass('d-none').addClass('d-flex');
+
+            $.ajax({
+                url: '@Url.Action("ExportLoans", "Dashboard")',
+                type: 'GET',
+                data: { format: format, searchTerm: search, role: role },
+                xhrFields: { responseType: 'blob' },
+                success: function (data, status, xhr) {
+                    const fileName = `LoanExport_${new Date().getTime()}.${format}`;
+                    const blob = new Blob([data], { type: xhr.getResponseHeader('Content-Type') });
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = fileName;
+                    link.click();
+                    $overlay.removeClass('d-flex').addClass('d-none');
+                },
+                error: function () {
+                    alert("Export failed.");
+                    $overlay.removeClass('d-flex').addClass('d-none');
                 }
             });
         }

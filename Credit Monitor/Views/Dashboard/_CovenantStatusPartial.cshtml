@@ -1,4 +1,8 @@
-﻿@model Credit_Monitor.ViewModels.CovenantViewModel
+﻿@using System.Security.Claims
+@model Credit_Monitor.ViewModels.CovenantViewModel
+@{
+    var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
+}
 
 <div class="row g-4">
 
@@ -90,22 +94,25 @@
                                     <th>Compliance Type</th>
                                     <th>Description</th>
                                     <th>Frequency</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var item in Model.NonFinancials)
                                 {
                                     <tr>
-                                        <td class="fw-semibold">
-                                            @item.CovenantType
-                                        </td>
-                                        <td class="text-muted">
-                                            @item.Description
-                                        </td>
+                                        <td class="fw-semibold">@item.CovenantType</td>
+                                        <td class="text-muted">@item.Description</td>
                                         <td>
                                             <span class="badge bg-secondary-subtle text-secondary border">
                                                 @item.Frequency
                                             </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    onclick="openUpdateModal('@item.Id', '@item.CovenantType', '@item.Description', '@item.Frequency')">
+                                                <i class="bi bi-pencil-square"></i> Update
+                                            </button>
                                         </td>
                                     </tr>
                                 }
@@ -115,11 +122,12 @@
                 }
                 else
                 {
-                    <div class="text-center py-4">
-                        <i class="bi bi-clipboard-x fs-3 text-muted"></i>
-                        <p class="mt-2 text-muted mb-0">
-                            No non-financial covenants available.
-                        </p>
+                    <div class="text-center py-5">
+                        <i class="bi bi-clipboard-x fs-1 text-muted"></i>
+                        <p class="mt-2 text-muted">No non-financial covenants available.</p>
+                        <button class="btn btn-success btn-sm mt-2" onclick="openCreateModal()">
+                            <i class="bi bi-plus-circle me-1"></i> Create New Covenant
+                        </button>
                     </div>
                 }
             </div>
@@ -127,3 +135,82 @@
     </div>
 
 </div>
+
+  @* Modal Part *@
+
+<div class="modal fade" id="covenantModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalTitle">Update Covenant</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="UpdateCovenant" asp-controller="Dashboard" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="covenantId" value="" />
+
+                    <input type="hidden" name="ApplicationId" value="@Model.AppId" />
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Covenant Type</label>
+                        <input type="text" name="CovenantType" id="covenantType" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea name="Description" id="covenantDescription" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Frequency</label>
+                        <select name="Frequency" id="covenantFrequency" class="form-select">
+                            <option value="Monthly">Monthly</option>
+                            <option value="Quarterly">Quarterly</option>
+                            <option value="Bi-Annually">Bi-Annually</option>
+                            <option value="Annually">Annually</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="submitBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+        function openUpdateModal(id, type, desc, freq) {
+        document.getElementById('modalTitle').innerText = "Update Non-Financial Covenant";
+        document.getElementById('submitBtn').innerText = "Save Changes";
+        document.getElementById('submitBtn').className = "btn btn-primary";
+
+        // Explicitly set the value and the attribute
+        var idField = document.getElementById('covenantId');
+        idField.value = 1;
+        idField.setAttribute('value', id);
+        
+
+        document.getElementById('covenantType').value = type;
+        document.getElementById('covenantDescription').value = desc;
+
+        // Ensure the Frequency dropdown matches the text passed
+        var freqSelect = document.getElementById('covenantFrequency');
+        freqSelect.value = freq;
+
+        var myModal = new bootstrap.Modal(document.getElementById('covenantModal'));
+        myModal.show();
+    }
+
+    function openCreateModal() {
+        document.getElementById('modalTitle').innerText = "Create New Non-Financial Covenant";
+        document.getElementById('submitBtn').innerText = "Create Covenant";
+        document.getElementById('submitBtn').className = "btn btn-success";
+
+        // Setting value to 0 tells the Controller (int Id) this is a NEW record
+        document.getElementById('covenantId').value = 0;
+        document.getElementById('covenantType').value = "";
+        document.getElementById('covenantDescription').value = "";
+        document.getElementById('covenantFrequency').value = "Monthly";
+
+        new bootstrap.Modal(document.getElementById('covenantModal')).show();
+    }
+</script>

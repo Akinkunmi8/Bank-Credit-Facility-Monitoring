@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Security.Claims;
+using Credit_Monitor.APIDto;
 using Credit_Monitor.Interfaces;
 using Credit_Monitor.Services;
 using Credit_Monitor.ViewModel;
@@ -69,6 +70,39 @@ namespace Credit_Monitor.Controllers
 
             // If no records found, return an empty ViewModel instead of null
             return PartialView("_CovenantStatusPartial", covenants ?? new CovenantViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateCovenant(NonFinancialCovenantVM model, Guid ApplicationId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction("CustomerDetails", "Dashboard", new { id = ApplicationId });
+            }
+
+            UpdateCovenantResponseDto result;
+
+            if (model.Id == 0)
+            {
+                // Call the ADD service
+                result = await _covenantService.CreateCovenant(model, ApplicationId);
+            }
+            else
+            {
+                // Call the UPDATE service
+                result = await _covenantService.UpdateCovenant(model, ApplicationId);
+            }
+
+            if (result != null && result.IsSuccess)
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result?.Message ?? "Operation failed.";
+            }
+
+            return RedirectToAction("CustomerDetails", "Dashboard", new { id = ApplicationId });
         }
 
         [HttpGet]
@@ -155,6 +189,85 @@ namespace Credit_Monitor.Controllers
             }
 
             return RedirectToAction(returnDashboard);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportLoans(string format, string searchTerm, string role)
+        {
+            // 1. Validation & Setup
+            var region = User.FindFirst("Region")?.Value;
+            if (string.IsNullOrEmpty(region)) return Unauthorized();
+
+            // 2. Fetch Data based on Role
+            IEnumerable<PendingConfirmedLoanViewModel> data = (role == "supervisor")
+                ? await _loanService.GetConfirmedLoanByRegion(region)
+                : await _loanService.GetPendingConfirmedLoansByRegion(region);
+
+            // 3. Apply Search Filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                data = data.Where(l =>
+                    l.accounT_NAME.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    l.id.ToString().Contains(searchTerm)
+                );
+            }
+
+            var list = data.ToList();
+
+            // 4. Handle CSV Export
+            if (format.ToLower() == "csv")
+            {
+                var csv = new System.Text.StringBuilder();
+
+                // 1. Full Header (Matches your ViewModel properties)
+                csv.AppendLine("Application ID,Account Name,Account Number,Contract ID,Customer ID,Region,Branch," +
+                               "Facility Type,Currency,Sanction Limit,Balance LCY,Balance FCY,Interest Rate," +
+                               "Date Granted,Expiry Date,Days Past Due,Performance Status," +
+                               "Sector,Sub-Sector,Repayment Freq (Prin),Repayment Freq (Int),Account Officer");
+
+                foreach (var item in list)
+                {
+                    string currentStatus = !string.IsNullOrEmpty(item.performancE_CLASS_DESC)
+                                           ? item.performancE_CLASS_DESC
+                                           : "Pending Staff Review";
+
+                    // 2. Full Data Row 
+                    // We use .Replace(",", " ") on strings to ensure embedded commas don't shift CSV columns
+                    csv.AppendLine($"{item.id}," +
+                                   $"\"{item.accounT_NAME?.Trim().Replace(",", " ")}\"," +
+                                   $"{item.accounT_NUMBER}," +
+                                   $"{item.contracT_ID}," +
+                                   $"{item.customeR_ID}," +
+                                   $"{item.region}," +
+                                   $"\"{item.brancH_NAME?.Replace(",", " ")}\"," +
+                                   $"{item.facilitY_TYPE}," +
+                                   $"{item.accounT_CURRENCY}," +
+                                   $"{item.sanctioN_LIMIT}," +
+                                   $"{item.loaN_BALANCE_LCY}," +
+                                   $"{item.loaN_BALANCE_FCY}," +
+                                   $"{item.inT_RATE}%," +
+                                   $"{item.datE_GRANTED:yyyy-MM-dd}," +
+                                   $"{item.expirY_DATE:yyyy-MM-dd}," +
+                                   $"{item.dayS_PAST_DUE ?? 0}," +
+                                   $"{currentStatus}," +
+                                   $"\"{item.cusT_SECTOR_DESC?.Replace(",", " ")}\"," +
+                                   $"\"{item.cusT_SUB_SECTOR_DESC?.Replace(",", " ")}\"," +
+                                   $"{item.priN_REPAYMENT_FREQUENCY}," +
+                                   $"{item.inT_REPAYMENT_FREQUENCY}," +
+                                   $"\"{item.accounT_OFFICER?.Replace(",", " ")}\"");
+                }
+
+                byte[] buffer = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+                return File(buffer, "text/csv", $"Full_Loan_Export_{DateTime.Now:yyyyMMdd_HHmm}.csv");
+            }
+            // 5. Handle PDF Export (Placeholders)
+            if (format.ToLower() == "pdf")
+            {
+                // Add your PDF logic here later
+                return BadRequest("PDF Export engine not yet configured.");
+            }
+
+            return BadRequest("Invalid format.");
         }
 
         private async Task<StaffDashboardViewModel> GetStaffDashboardData(string searchTerm, int page, string region)
