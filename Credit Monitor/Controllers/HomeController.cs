@@ -158,6 +158,8 @@ namespace Credit_Monitor.Controllers
                 {
                     return RedirectToAction("Supervisor", "Dashboard");
                 }
+
+                
             }
 
             _logger.LogWarning("Login failed for {Username}: {Message}", model.Username, authResult.Response.Message);

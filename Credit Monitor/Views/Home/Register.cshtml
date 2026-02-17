@@ -67,9 +67,11 @@
                                 <label asp-for="Role" class="form-label fw-bold small"></label>
                                 <select asp-for="Role" class="form-select">
                                     <option value="">-- Select Role --</option>
-                                    <option value="staff">Staff</option>
-                                    <option value="supervisor">Supervisor</option>
-                                </select>
+                                    <option value="CM">Credit Monitor</option>
+                                    <option value="CMS">Credit Monitor Supervisor</option>
+                                    <option value="AO">Accounting Officer</option>
+                                    <option value="BM">Bank Manager</option>
+                                 </select>
                                 <span asp-validation-for="Role" class="text-danger small"></span>
                             </div>
                         </div>
