@@ -217,6 +217,28 @@ namespace BankLoanMonetrySolu.Migrations
                     b.ToTable("customerDetails");
                 });
 
+            modelBuilder.Entity("BankLoanMonetrySolu.Model.DiscrepancyRemark", b =>
+                {
+                    b.Property<Guid>("AppId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Discrepancies")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecomendedAction")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Responsibility")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("AppId");
+
+                    b.ToTable("discrepancyRemarks");
+                });
+
             modelBuilder.Entity("BankLoanMonetrySolu.Model.FinacleData", b =>
                 {
                     b.Property<Guid>("Id")
@@ -322,6 +344,9 @@ namespace BankLoanMonetrySolu.Migrations
                     b.Property<int>("DAYS_PAST_DUE")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("DEADLINE")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("DETAILS_OF_SECURITIES_OTHERS")
                         .HasColumnType("nvarchar(max)");
 
@@ -366,6 +391,9 @@ namespace BankLoanMonetrySolu.Migrations
 
                     b.Property<string>("INT_REPAYMENT_FREQUENCY")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("ISRESOLVED")
+                        .HasColumnType("bit");
 
                     b.Property<decimal?>("LAST_CREDIT_AMT")
                         .HasColumnType("decimal(18,2)");
@@ -687,6 +715,32 @@ namespace BankLoanMonetrySolu.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("Roles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "e0f2d69d-1afe-49a6-8633-bcae374e604f",
+                            Name = "CMS",
+                            NormalizedName = "CMS"
+                        },
+                        new
+                        {
+                            Id = "e35f8fdb-4566-4f48-b565-5edf7a0bc205",
+                            Name = "CMO",
+                            NormalizedName = "CMO"
+                        },
+                        new
+                        {
+                            Id = "856a6b9f-3c52-493f-ba9e-6009bfaa5002",
+                            Name = "AO",
+                            NormalizedName = "AO"
+                        },
+                        new
+                        {
+                            Id = "bc5128c5-78c3-47b7-be0e-b1b3fcc37f4c",
+                            Name = "BM",
+                            NormalizedName = "BM"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -793,6 +847,17 @@ namespace BankLoanMonetrySolu.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("UserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("BankLoanMonetrySolu.Model.DiscrepancyRemark", b =>
+                {
+                    b.HasOne("BankLoanMonetrySolu.Model.FinacleData", "FinacleData")
+                        .WithOne()
+                        .HasForeignKey("BankLoanMonetrySolu.Model.DiscrepancyRemark", "AppId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FinacleData");
                 });
 
             modelBuilder.Entity("BankLoanMonetrySolu.Model.FinacleData", b =>

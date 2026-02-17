@@ -13,6 +13,7 @@ namespace BankLoanMonetrySolu.Logic
             CreateMap<CreditAvailmentTicket,CreditAvailmentTicketDto>();
             CreateMap<CustomerDetails,CustomerDetailsDto>();
             CreateMap<CreditAvailmentTicketDto, CompareCatDto>();
+            CreateMap<FinacleData, UnresolvedTATDetailDto>();
 
         }
     }

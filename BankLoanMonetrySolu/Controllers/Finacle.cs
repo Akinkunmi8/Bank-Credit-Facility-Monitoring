@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankLoanMonetrySolu.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class Finacle : ControllerBase
@@ -58,6 +58,17 @@ namespace BankLoanMonetrySolu.Controllers
                 return BadRequest("Region is required.");
 
             var response = await _finacleData.GetAllReConfirmedFinacleDataByRegion(region);
+            return Ok(response);
+        }
+
+        // get resolved finacle data
+        [HttpGet("resolved/by-region/{region}")]
+        public async Task<IActionResult> GetAllResolvedFinacleDataByRegion(string region)
+        {
+            if (string.IsNullOrWhiteSpace(region))
+                return BadRequest("Region is required.");
+
+            var response = await _finacleData.GetResolvedFinacleData(region);
             return Ok(response);
         }
 

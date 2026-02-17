@@ -25,6 +25,7 @@ namespace BankLoanMonetrySolu.Models
         Approve = 1,
         Reject = 2,
         Confirm = 3,
+        resolve = 4,
         Reconfirm = 4,
         CreateUser = 5,
         Login = 6
