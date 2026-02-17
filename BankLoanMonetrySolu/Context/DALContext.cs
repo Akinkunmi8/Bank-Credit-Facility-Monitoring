@@ -21,6 +21,7 @@ namespace BankLoanMonetrySolu.Context
         public DbSet<Audit> audits { get; set; }
         public DbSet<FinancialCovenant> financialCovenants { get; set; }
         public DbSet<NonFinancialCovenant> nonFinancialCovenants{ get; set; }
+        public DbSet<DiscrepancyRemark> discrepancyRemarks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -112,61 +113,44 @@ namespace BankLoanMonetrySolu.Context
                 entity.Property(x => x.Frequency)
                       .HasConversion<string>();
             });
+            modelBuilder.Entity<DiscrepancyRemark>(entity =>
+            {
+                // 1. Define AppId as the Primary Key for this table
+                entity.HasKey(e => e.AppId);
 
+                // 2. Set up the One-to-One relationship
+                entity.HasOne(d => d.FinacleData)
+                      .WithOne()                       
+                      .HasForeignKey<DiscrepancyRemark>(d => d.AppId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
 
-
-            //// 4️⃣ Seed Data for Testing Validation
-            //var customerId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-
-            //modelBuilder.Entity<CustomerDetails>().HasData(
-            //    new CustomerDetails
-            //    {
-            //        Id = customerId,
-            //        Tittle = "Mr",
-            //        Firstname = "John",
-            //        Lastname = "Doe",
-            //        Email = "john.doe@test.com",
-            //        phoneNum = "08030000001",
-            //        DOB = "21-05-1989",
-            //        MaritalStatus = "Married",
-            //        gender = "Male",
-            //        ResidentStatus = "Resident",
-            //        NameOfEmployer = "UBA",
-            //        Nationallity = "Nigerian",
-            //        ApplicantType = "Individual"
-            //    }
-            //);
-
-            //// Seed Finacle (Core Banking Side)
-            //modelBuilder.Entity<FinacleData>().HasData(
-            //    new FinacleData
-            //    {
-            //        Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-            //        ACCOUNT_NUMBER = "1234567890",
-            //        ACCOUNT_NAME = "John Doe",
-            //        SANCTION_LIMIT = 5000000m,
-            //        INT_RATE = 15.5m,
-            //        EXPIRY_DATE = new DateTime(2027, 12, 31),
-            //        CustomerId = customerId,
-            //        SBU_NAME = "RETAIL BANKING",
-            //        FACILITY_TYPE = "Personal Loan"
-            //    }
-            //);
-
-            //// Seed CAT (Internal Application Side)
-            //modelBuilder.Entity<CreditAvailmentTicket>().HasData(
-            //    new CreditAvailmentTicket
-            //    {
-            //        Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-            //        AccNum = "1234567890",
-            //        CustomerName = "John Doe", // Match
-            //        ApprovalLimit = 4500000m,  // DISCREPANCY: 5.0M vs 4.5M
-            //        Interest = 15.5m,         // Match
-            //        MaturityOrExpiry = new DateTime(2027, 12, 31), // Match
-            //        Directorate = "RETAIL BANKING"
-            //    }
-            //);
-
+//            modelBuilder.Entity<IdentityRole>().HasData(
+//    new IdentityRole
+//    {
+//        Id = "e0f2d69d-1afe-49a6-8633-bcae374e604f",
+//        Name = "CMS",
+//        NormalizedName = "CMS"
+//    },
+//    new IdentityRole
+//    {
+//        Id = "e35f8fdb-4566-4f48-b565-5edf7a0bc205",
+//        Name = "CMO",
+//        NormalizedName = "CMO"
+//    },
+//    new IdentityRole
+//    {
+//        Id = Guid.NewGuid().ToString(),
+//        Name = "AO",
+//        NormalizedName = "AO"
+//    },
+//    new IdentityRole
+//    {
+//        Id = Guid.NewGuid().ToString(),
+//        Name = "BM",
+//        NormalizedName = "BM"
+//    }
+//);
             // 5️⃣ Rename Identity tables
             modelBuilder.Entity<AppUsers>().ToTable("Users");
             modelBuilder.Entity<IdentityRole>().ToTable("Roles");

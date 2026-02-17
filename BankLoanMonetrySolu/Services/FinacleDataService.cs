@@ -187,18 +187,45 @@ namespace BankLoanMonetrySolu.Services
             }
         }
 
+        public async Task<FinacleResponseDto> GetResolvedFinacleData(string region)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching resolved Finacle records for Region: {Region}", region);
+                var data = await _context.finacleDatas
+                    .Where(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false && f.ISRESOLVED == true)
+                    .ToListAsync();
+
+                var dto = _mapper.Map<List<FinacleDataDto>>(data);
+                return new FinacleResponseDto
+                {
+                    IsSuccess = true,
+                    ResponseMessage = $"{data.Count} Resolved records retrieved",
+                    DataList = dto
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching resolved data for region: {Region}", region);
+                return new FinacleResponseDto { IsSuccess = false, ResponseMessage = ex.Message };
+            }
+        }
+
         // --- Stats Methods ---
         public async Task<int> GetTotalPendingCount(string region) =>
-            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.APPROVED == false && f.RECONFIRMED == false);
+            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.APPROVED == false && f.RECONFIRMED == false && f.ISRESOLVED == false);
 
         public async Task<int> GetTotalConfirmedCount(string region) =>
-            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == false);
+            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == false && f.APPROVED == false && f.ISRESOLVED == false);
 
         public async Task<int> GetTotalReConfirmedCount(string region) =>
-            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false);
+            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false && f.ISRESOLVED == false);
 
         public async Task<int> GetTotalApproveCount(string region) =>
-            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == true);
+            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == true && f.ISRESOLVED == false);
+
+        public async Task<int> GetTotalUnResolvedCount(string region) =>
+            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false && f.ISRESOLVED == true);
 
         public async Task<bool> UpdateFinacleStatus(FinacleStatusUpdateDto dto)
         {
@@ -206,26 +233,19 @@ namespace BankLoanMonetrySolu.Services
             var userId = httpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Anonymous";
             var ipAddress = httpContext?.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
 
-            _logger.LogInformation("Status Update: Action={Action}, AppId={AppId}, User={UserId}", dto.Action, dto.ApplicationId, userId);
-
             try
             {
                 if (!Guid.TryParse(dto.ApplicationId, out var appGuid)) throw new ArgumentException("Invalid Application ID");
 
                 var record = await _context.finacleDatas.FirstOrDefaultAsync(x => x.Id == appGuid);
-                if (record == null)
-                {
-                    _logger.LogWarning("Record not found for Update: {AppId}", dto.ApplicationId);
-                    return false;
-                }
+                if (record == null) return false;
 
                 if (!Enum.TryParse<AuditAction>(dto.Action, true, out var actionEnum))
                 {
-                    _logger.LogError("Invalid AuditAction string: {Action}", dto.Action);
                     throw new ArgumentException($"Invalid action: {dto.Action}");
                 }
 
-                // Add Audit Trail
+                // 1. Logic for Audit Trail
                 _context.audits.Add(new Audit
                 {
                     Id = Guid.NewGuid(),
@@ -236,42 +256,52 @@ namespace BankLoanMonetrySolu.Services
                     Action = actionEnum
                 });
 
-                // Update record status
+                // 2. Update record status and Dynamic Deadline
                 var actionTime = DateTime.UtcNow;
-                switch (dto.Action.ToLower())
+                var actionLower = dto.Action.ToLower();
+
+                switch (actionLower)
                 {
-                    case "confirm": record.CONFIRMED = true; break;
-                    case "approve": record.APPROVED = true; break;
-                    case "reject": record.RECONFIRMED = true; break; // Note: Ensure RECONFIRMED is intended for 'reject'
+                    case "confirm":
+                        record.CONFIRMED = true;
+                        break;
+                    case "approve":
+                        record.APPROVED = true;
+                        break;
+                    case "reject":
+                        record.RECONFIRMED = true;
+                        // Assign the deadline from the DTO if provided
+                        if (dto.Deadline.HasValue)
+                        {
+                            record.DEADLINE = dto.Deadline.Value;
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Reject action received without a Deadline for AppId: {AppId}", dto.ApplicationId);
+                        }
+                        break;
+                    case "resolve":
+                        record.ISRESOLVED = true;
+                        break;
                 }
+
                 record.PROCESSEDATE = actionTime;
 
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Record {AppId} updated successfully to {Action}", dto.ApplicationId, dto.Action);
 
                 // 3. TRIGGER THE EVENTS
-                // This wakes up your EventHandlers (ApprovedEventHandler, ConfirmedEventHandler, etc.)
                 try
                 {
-                    _logger.LogInformation("Publishing event for action: {Action}", dto.Action);
-
-                    switch (dto.Action.ToLower())
+                    switch (actionLower)
                     {
-                        case "confirm":
-                            await _eventPublisher.PublishAsync(new ConfirmedEvent(appGuid));
-                            break;
-                        case "approve":
-                            await _eventPublisher.PublishAsync(new ApprovedEvents(appGuid));
-                            break;
-                        case "reject":
-                            await _eventPublisher.PublishAsync(new RejectedEvent(appGuid));
-                            break;
+                        case "confirm": await _eventPublisher.PublishAsync(new ConfirmedEvent(appGuid)); break;
+                        case "approve": await _eventPublisher.PublishAsync(new ApprovedEvents(appGuid)); break;
+                        case "reject": await _eventPublisher.PublishAsync(new RejectedEvent(appGuid)); break;
                     }
                 }
                 catch (Exception ex)
                 {
-                    // We log this but don't return 'false' because the DB was already updated successfully
-                    _logger.LogError(ex, "Database updated, but failed to publish event for AppId: {AppId}", dto.ApplicationId);
+                    _logger.LogError(ex, "Event publication failed for AppId: {AppId}", dto.ApplicationId);
                 }
 
                 return true;
@@ -281,7 +311,7 @@ namespace BankLoanMonetrySolu.Services
                 _logger.LogError(ex, "Critical failure updating status for AppId: {AppId}", dto.ApplicationId);
                 return false;
             }
-        } 
+        }
 
         public async Task<FinacleResponseDto> GetCustormerAndLoanDetailsByAppId(string appId)
         {
@@ -333,6 +363,84 @@ namespace BankLoanMonetrySolu.Services
             }
         }
 
+        public async Task<ServiceResponseDto> AddOrUpdateDiscrepancyRemark(DiscrepancyRemarkDto dto)
+        {
+            try
+            {
+                // 1. Validate that the application actually exists
+                var appExists = await _context.finacleDatas.AnyAsync(x => x.Id == dto.AppId);
+                if (!appExists)
+                {
+                    return new ServiceResponseDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage = "Error: The Application ID does not exist in the system."
+                    };
+                }
+
+                // 2. Check for existing remark (Upsert logic)
+                var existingRemark = await _context.discrepancyRemarks
+                    .FirstOrDefaultAsync(x => x.AppId == dto.AppId);
+
+                if (existingRemark != null)
+                {
+                    // Update
+                    existingRemark.Discrepancies = dto.Discrepancies;
+                    existingRemark.Remarks = dto.Remarks;
+                    existingRemark.RecomendedAction = dto.RecomendedAction;
+                    existingRemark.Responsibility = dto.Responsibility;
+                    _context.discrepancyRemarks.Update(existingRemark);
+                }
+                else
+                {
+                    // Create
+                    var newRemark = new DiscrepancyRemark
+                    {
+                        AppId = dto.AppId,
+                        Discrepancies = dto.Discrepancies,
+                        Remarks = dto.Remarks,
+                        RecomendedAction = dto.RecomendedAction,
+                        Responsibility = dto.Responsibility
+                    };
+                    await _context.discrepancyRemarks.AddAsync(newRemark);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return new ServiceResponseDto
+                {
+                    IsSuccess = true,
+                    ResponseMessage = "The discrepancy data saved successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save discrepancy for AppId: {AppId}", dto.AppId);
+                return new ServiceResponseDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = "An internal error occurred while saving the discrepancy data."
+                };
+            }
+        }
+
+        public async Task<DiscrepancyRemarkDto?> GetRemarkByAppId(Guid appId)
+        {
+            var remark = await _context.discrepancyRemarks
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.AppId == appId);
+
+            if (remark == null) return null;
+
+            return new DiscrepancyRemarkDto
+            {
+                AppId = remark.AppId,
+                Discrepancies = remark.Discrepancies,
+                Remarks = remark.Remarks,
+                RecomendedAction = remark.RecomendedAction,
+                Responsibility = remark.Responsibility
+            };
+        }
         public async Task<Guid> SaveFilesAsync(UploadFilesDto dto)
         {
             _logger.LogInformation("Starting file upload for AppId: {AppId}", dto.AppId);
@@ -425,5 +533,6 @@ namespace BankLoanMonetrySolu.Services
                 _ => "application/octet-stream"
             };
         }
+
     }
 }
