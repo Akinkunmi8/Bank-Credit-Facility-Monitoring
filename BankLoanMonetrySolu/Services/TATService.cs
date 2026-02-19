@@ -30,7 +30,7 @@ namespace BankLoanMonetrySolu.Services
             try
             {
                 // Defined as processed within the last 2 hours
-                var threshold = DateTime.UtcNow.AddHours(-2);
+                var threshold = DateTime.UtcNow.AddHours(-22);
 
                 var count = await _context.finacleDatas
                     .AsNoTracking()
@@ -75,7 +75,7 @@ namespace BankLoanMonetrySolu.Services
         {
             try
             {
-                var threshold = DateTime.UtcNow.AddHours(-2);
+                var threshold = DateTime.UtcNow.AddHours(-22);
 
                 var count = await _context.finacleDatas
                     .AsNoTracking()
@@ -174,7 +174,7 @@ namespace BankLoanMonetrySolu.Services
         // Returns Unreviewed data within 2-hour window
         public async Task<List<FinacleDataDto>> GetDataWithinTATForUnReview(string region)
         {
-            var threshold = DateTime.UtcNow.AddHours(-2);
+            var threshold = DateTime.UtcNow.AddHours(-22);
             var data = await _context.finacleDatas
                 .AsNoTracking()
                 .Where(x => x.PROCESSEDATE >= threshold &&
@@ -191,7 +191,7 @@ namespace BankLoanMonetrySolu.Services
         // Returns Unreviewed data where more than 2 hours have passed
         public async Task<List<FinacleDataDto>> GetDataBeyondTATForUnReview(string region)
         {
-            var threshold = DateTime.UtcNow.AddHours(-2);
+            var threshold = DateTime.UtcNow.AddHours(-22);
             var data = await _context.finacleDatas
                 .AsNoTracking()
                 .Where(x => x.PROCESSEDATE < threshold &&

@@ -112,6 +112,13 @@ namespace BankLoanMonetrySolu.Controllers
             var result = await _tatService.GetDataBeyondTATForUnReview(region);
             return Ok(result);
         }
+
+        [HttpGet("data/within/unreview/{region}")]
+        public async Task<IActionResult> GetDataWithinTATForUnReview(string region)
+        {
+            var result = await _tatService.GetDataWithinTATForUnReview(region);
+            return Ok(result);
+        }
         [HttpPost("update-status")]
         public async Task<IActionResult> UpdateStatus([FromBody] FinacleStatusUpdateDto dto)
         {

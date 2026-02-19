@@ -125,32 +125,7 @@ namespace BankLoanMonetrySolu.Context
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-//            modelBuilder.Entity<IdentityRole>().HasData(
-//    new IdentityRole
-//    {
-//        Id = "e0f2d69d-1afe-49a6-8633-bcae374e604f",
-//        Name = "CMS",
-//        NormalizedName = "CMS"
-//    },
-//    new IdentityRole
-//    {
-//        Id = "e35f8fdb-4566-4f48-b565-5edf7a0bc205",
-//        Name = "CMO",
-//        NormalizedName = "CMO"
-//    },
-//    new IdentityRole
-//    {
-//        Id = Guid.NewGuid().ToString(),
-//        Name = "AO",
-//        NormalizedName = "AO"
-//    },
-//    new IdentityRole
-//    {
-//        Id = Guid.NewGuid().ToString(),
-//        Name = "BM",
-//        NormalizedName = "BM"
-//    }
-//);
+
             // 5️⃣ Rename Identity tables
             modelBuilder.Entity<AppUsers>().ToTable("Users");
             modelBuilder.Entity<IdentityRole>().ToTable("Roles");
