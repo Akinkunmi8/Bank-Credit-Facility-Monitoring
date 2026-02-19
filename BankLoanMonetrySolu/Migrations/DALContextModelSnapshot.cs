@@ -715,32 +715,6 @@ namespace BankLoanMonetrySolu.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("Roles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "e0f2d69d-1afe-49a6-8633-bcae374e604f",
-                            Name = "CMS",
-                            NormalizedName = "CMS"
-                        },
-                        new
-                        {
-                            Id = "e35f8fdb-4566-4f48-b565-5edf7a0bc205",
-                            Name = "CMO",
-                            NormalizedName = "CMO"
-                        },
-                        new
-                        {
-                            Id = "856a6b9f-3c52-493f-ba9e-6009bfaa5002",
-                            Name = "AO",
-                            NormalizedName = "AO"
-                        },
-                        new
-                        {
-                            Id = "bc5128c5-78c3-47b7-be0e-b1b3fcc37f4c",
-                            Name = "BM",
-                            NormalizedName = "BM"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

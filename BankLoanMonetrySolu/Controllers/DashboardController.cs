@@ -56,32 +56,32 @@ namespace BankLoanMonetrySolu.Controllers
             return Ok(result);
         }
 
-        [HttpGet("tatcount/within/Unreview{region}")]
+        [HttpGet("tatcount/within/Unreview/{region}")]
         public async Task<IActionResult> GetWithinTATForUnreview(string region)
         {
             var result = await _tatService.GetWithinTATForUnReview(region);
             return Ok(result);
         }
-        [HttpGet("tatcount/within/Unresolve{region}")]
+        [HttpGet("tatcount/within/Unresolve/{region}")]
         public async Task<IActionResult> GetWithinTATForUnresolve(string region)
         {
             var result = await _tatService.GetWithinTATForUnResolved(region);
             return Ok(result);
         }
 
-        [HttpGet("tatcount/beyond/Unreview{region}")]
+        [HttpGet("tatcount/beyond/Unreview/{region}")]
         public async Task<IActionResult> GetBeyondTATForUnreview(string region)
         {
             var result = await _tatService.GetBeyondTATForUnreview(region);
             return Ok(result);
         }
-        [HttpGet("tatcount/beyond/UnApprove{region}")]
+        [HttpGet("tatcount/beyond/UnApprove/{region}")]
         public async Task<IActionResult> GetBeyondTATForUnAprove(string region)
         {
             var result = await _tatService.GetBeyondTATForReviewedforApproval(region);
             return Ok(result);
         }
-        [HttpGet("tatcount/beyond/Unresolve{region}")]
+        [HttpGet("tatcount/beyond/Unresolve/{region}")]
         public async Task<IActionResult> GetBeyondTATForUnresolve(string region)
         {
             var result = await _tatService.GetBeyondTATForUnResolved(region);

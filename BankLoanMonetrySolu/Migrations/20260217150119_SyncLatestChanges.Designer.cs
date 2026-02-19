@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankLoanMonetrySolu.Migrations
 {
     [DbContext(typeof(DALContext))]
-    [Migration("20260217122023_DiscrepanciesTable")]
-    partial class DiscrepanciesTable
+    [Migration("20260217150119_SyncLatestChanges")]
+    partial class SyncLatestChanges
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
