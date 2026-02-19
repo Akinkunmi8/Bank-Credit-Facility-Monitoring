@@ -99,6 +99,35 @@ namespace Credit_Monitor.APICore
             return response;
         }
 
+        public async Task<SaveRemarkResponseDto> SaveDiscrepancyRemarksAsync(SaveRemarkRequestDto request)
+        {
+            var urlPath = "/api/Dashboard/remarks/save";
+
+            _logger.LogInformation("Loan API: Saving discrepancy remarks for AppId: {AppId}", request.AppId);
+
+            try
+            {
+                // Calling PostAsync with the request body and the endpoint
+                var response = await _apiService.PostAsync<SaveRemarkResponseDto>(request, urlPath);
+
+                if (response == null)
+                {
+                    _logger.LogError("Loan API: Received null response while saving remarks for {AppId}", request.AppId);
+                    return new SaveRemarkResponseDto { IsSuccess = false, ResponseMessage = "No response from server." };
+                }
+
+                _logger.LogInformation("Loan API: Save result: {Success} | {Message}",
+                    response.IsSuccess, response.ResponseMessage);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Loan API: Exception saving remarks for {AppId}", request.AppId);
+                return new SaveRemarkResponseDto { IsSuccess = false, ResponseMessage = "An error occurred on the client." };
+            }
+        }
+
         public async Task<List<FinacleRecord>?> GetApprovedLoansByRegion(string region)
         {
             var urlPath = $"api/Finacle/approved?region={region}";

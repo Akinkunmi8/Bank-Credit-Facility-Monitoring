@@ -21,8 +21,6 @@ namespace Credit_Monitor.Controllers
         private readonly ICovenantTrackerService _covenantService;
         private string _storagePath;
 
-        //private readonly string _storagePath = @"C:\Users\User\source\repos\Bank-Credit-Facility-Monitoring\BankLoanMonetrySolu\UploadedFiles";
-
         public DashboardController(
             ILoanService loanService,
             IDashboardAPI dashboardapi,
@@ -36,15 +34,15 @@ namespace Credit_Monitor.Controllers
             _storagePath = configuration["FileSettings:StoragePath"];
         }
 
-        [Authorize(Roles = "staff")]
-        public async Task<IActionResult> Staff()
+        [Authorize(Roles = "CMO")]
+        public async Task<IActionResult> CMODashboard()
         {
             var region = User.FindFirst("Region")?.Value;
 
             if (string.IsNullOrEmpty(region)) return View(new List<PendingConfirmedLoanViewModel>());
 
             var loan = await _loanService.GetPendingConfirmedLoansByRegion(region);
-            return View(await GetStaffDashboardData(null, 1, region));
+            return View(await GetCMODashboardData(null, 1, region));
         }
 
         [HttpGet]
@@ -130,7 +128,7 @@ namespace Credit_Monitor.Controllers
         }
 
         // GET: Dashboard/FilterLoans (The AJAX call)
-        public async Task<IActionResult> FilterLoans(string searchTerm, string role, int page = 1)
+        public async Task<IActionResult> FilterLoans(string searchTerm, string role, string status,  int page = 1 )
         {
             var region = User.FindFirst("Region")?.Value;
             if (string.IsNullOrEmpty(region)) return Unauthorized();
@@ -141,13 +139,13 @@ namespace Credit_Monitor.Controllers
                 return PartialView("_ConfirmedLoanTablePartial", supervisorVM);
             }
 
-            var staffVM = await GetStaffDashboardData(searchTerm, page, region);
-            return PartialView("_LoanTablePartial", staffVM);
+            var CMOVM = await GetCMODashboardData(searchTerm, page, region);
+            return PartialView("_LoanTablePartial", CMOVM);
         }
 
 
-        [Authorize(Roles = "supervisor")]
-        public async Task<IActionResult> Supervisor()
+        [Authorize(Roles = "CMS")]
+        public async Task<IActionResult> CMSDashboard()
         {
             var region = User.FindFirst("Region")?.Value;
 
@@ -270,10 +268,27 @@ namespace Credit_Monitor.Controllers
             return BadRequest("Invalid format.");
         }
 
-        private async Task<StaffDashboardViewModel> GetStaffDashboardData(string searchTerm, int page, string region)
+        private async Task<CMODashboardViewModel> GetCMODashboardData(string searchTerm, int page, string region, string status)
         {
             int pageSize = 10;
-            var allLoans = await _loanService.GetPendingConfirmedLoansByRegion(region);
+            if(status == "Unreviewed")
+            {
+                var allLoans = await _loanService.GetPendingConfirmedLoansByRegion(region);
+
+            }
+            else if(status == "Reviewed")
+            {
+                var allLoans = await _loanService.GetConfirmedLoanByRegion(region);
+            }
+            else if(status == "Unresolved")
+            {
+                var allLoans = await _loanService.GetRejectedLoanByRegion(region);
+            }
+            else if(status == "Resolved")
+            {
+                var allLoans = await _loanService.GetRejectedLoanByRegion(region);
+            }
+
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
@@ -289,13 +304,16 @@ namespace Credit_Monitor.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            return new StaffDashboardViewModel
+            return new CMODashboardViewModel
             {
-                TotalPendingLoans = await _dashboardapi.GetTotalPending(region),
-                TotalConfirmedLoans = await _dashboardapi.GetTotalConfirmed(region),
-                TotalRejectedLoans = await _dashboardapi.GetTotalRejected(region),
-                WithinTAT = await _dashboardapi.GetWithinTAT(region),
-                BeyondTAT = await _dashboardapi.GetBeyondTAT(region),
+                TotalUnreviewedLoans = await _dashboardapi.GetTotalPending(region),
+                TotalReviewedLoans = await _dashboardapi.GetTotalConfirmed(region),
+                TotalUnresolvedLoans = await _dashboardapi.GetTotalRejected(region),
+                TotalResolvedLoans = await _dashboardapi.GetTotalResolved(region),
+                WithinTATUnreviewed = await _dashboardapi.GetWithinTATUnReview(region),
+                WithinTATUnresolved = await _dashboardapi.GetWithinTATUnResolve(region),
+                BeyondTATUnresolved = await _dashboardapi.GetBeyondTATUnResolve(region),
+                BeyondTATUnreviewed = await _dashboardapi.GetBeyondTATUnReview(region),                
 
                 loans = pagedLoans,
                 CurrentPage = page,

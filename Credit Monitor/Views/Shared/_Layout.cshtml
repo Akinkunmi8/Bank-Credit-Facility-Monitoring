@@ -65,7 +65,7 @@
                 <div class="collapse navbar-collapse" id="subNavbar">
                     <ul class="navbar-nav me-auto align-items-center">
                         <li class="nav-item"> 
-                            <a asp-controller="Dashboard" asp-action="@(userRole == "supervisor" ? "Supervisor" : "Staff")" class="nav-link active fw-bold border-bottom border-primary border-3"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                            <a asp-controller="Dashboard" asp-action="@userRole" class="nav-link active fw-bold border-bottom border-primary border-3"><i class="bi bi-speedometer2"></i> Dashboard</a>
                         </li>
 
                         @if (User.Identity.IsAuthenticated)

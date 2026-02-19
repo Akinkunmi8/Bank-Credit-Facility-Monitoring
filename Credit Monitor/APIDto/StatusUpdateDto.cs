@@ -6,6 +6,7 @@ namespace Credit_Monitor.APIDto
     {
         public string ApplicationId { get; set; }
         public string Action { get; set; } // "reject" or "confirm"
+        public DateTime? deadline { get; set; }
     }
 
     public class StatusUpdateResponseDto

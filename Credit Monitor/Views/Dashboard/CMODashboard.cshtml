@@ -1,0 +1,331 @@
+﻿@model Credit_Monitor.ViewModel.CMODashboardViewModel
+@using System.Security.Claims;
+@{
+    var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
+    ViewData["Title"] = "Credit Monitoring Dashboard";
+}
+
+<style>
+    /* 1. Core Card Structure */
+    .stat-card {
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+        background: #ffffff;
+        transition: all .2s ease-in-out;
+    }
+
+    /* 2. Nav Link Reset & Interactive Styles */
+    #kpiNav .nav-link {
+        background: none !important;
+        padding: 0;
+        border: none;
+        text-align: left;
+    }
+
+        /* The "Selected" Card Look */
+        #kpiNav .nav-link.active .stat-card {
+            border: 2px solid #0d6efd !important;
+            background-color: #f8f9ff;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.1);
+        }
+
+        #kpiNav .nav-link:hover .stat-card {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,.06);
+        }
+
+    /* 3. Icon and Accent Utility */
+    .stat-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+    }
+
+    /* Left-border accents for quick status identification */
+    .accent-primary {
+        border-left: 4px solid #0d6efd;
+    }
+
+    .accent-success {
+        border-left: 4px solid #198754;
+    }
+
+    .accent-danger {
+        border-left: 4px solid #dc3545;
+    }
+
+    .accent-info {
+        border-left: 4px solid #0dcaf0;
+    }
+
+    .accent-warning {
+        border-left: 4px solid #ffc107;
+    }
+
+    /* 4. Table & UI Feedback */
+    .table-loader {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        gap: 10px;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+
+    <!-- ===== Page Header ===== -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Bank Credit Monitoring</h4>
+            <small class="text-muted">Real-time overview of loan applications & turnaround status</small>
+        </div>
+    </div>
+
+    <!-- ===== KPI CARDS ===== -->
+    <ul class="nav nav-pills row g-3 mb-4 border-0" id="kpiNav">
+        <li class="nav-item col-xl-3 col-md-6">
+            <button class="nav-link active p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'Unreviewed')">
+                <div class="stat-card accent-primary p-3 h-100 text-start">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted text-uppercase">Unreviewed</small>
+                            <h3 class="fw-bold mb-0 text-dark">@Model.TotalUnreviewedLoans</h3>
+                        </div>
+                        <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                    </div>
+                </div>
+            </button>
+        </li>
+
+        <li class="nav-item col-xl-3 col-md-6">
+            <button class="nav-link p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'Reviewed')">
+                <div class="stat-card accent-success p-3 h-100 text-start">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted text-uppercase">Reviewed</small>
+                            <h3 class="fw-bold mb-0 text-dark">@Model.TotalReviewedLoans</h3>
+                        </div>
+                        <div class="stat-icon bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </button>
+        </li>
+
+        <li class="nav-item col-xl-3 col-md-6">
+            <button class="nav-link p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'Unresolved')">
+                <div class="stat-card accent-danger p-3 h-100 text-start">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted text-uppercase">Unresolved</small>
+                            <h3 class="fw-bold mb-0 text-dark">@Model.TotalUnresolvedLoans</h3>
+                        </div>
+                        <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </button>
+        </li>
+
+        <li class="nav-item col-xl-3 col-md-6">
+            <button class="nav-link p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'Resolved')">
+                <div class="stat-card accent-info p-3 h-100 text-start">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted text-uppercase">Resolved</small>
+                            <h3 class="fw-bold mb-0 text-dark">@Model.TotalResolvedLoans</h3>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 text-info">
+                            <i class="bi bi-patch-check-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </button>
+        </li>
+
+        <li class="nav-item col-xl-3 col-md-6">
+            <button class="nav-link p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'WithinTATUnreviewed')">
+                <div class="stat-card border-start border-4 border-warning p-2 h-100 text-center">
+                    <h5 class="fw-bold mb-0 text-dark">@Model.WithinTATUnreviewed</h5>
+                    <small class="text-muted" style="font-size: 0.65rem;">WITHIN TAT (UNREVIEWED)</small>
+                </div>
+            </button>
+        </li>
+
+        <li class="nav-item col-xl-3 col-md-6">
+            <button class="nav-link p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'WithinTATUnresolved')">
+                <div class="stat-card border-start border-4 border-warning p-2 h-100 text-center">
+                    <h5 class="fw-bold mb-0 text-dark">@Model.WithinTATUnresolved</h5>
+                    <small class="text-muted" style="font-size: 0.65rem;">WITHIN TAT (UNRESOLVED)</small>
+                </div>
+            </button>
+        </li>
+
+        <li class="nav-item col-xl-3 col-md-6">
+            <button class="nav-link p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'BeyondTATUnreviewed')">
+                <div class="stat-card border-start border-4 border-danger p-2 h-100 text-center">
+                    <h5 class="fw-bold mb-0 text-dark">@Model.BeyondTATUnreviewed</h5>
+                    <small class="text-muted" style="font-size: 0.65rem;">BEYOND TAT (UNREVIEWED)</small>
+                </div>
+            </button>
+        </li>
+
+        <li class="nav-item col-xl-3 col-md-6">
+            <button class="nav-link p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'BeyondTATUnresolved')">
+                <div class="stat-card border-start border-4 border-danger p-2 h-100 text-center">
+                    <h5 class="fw-bold mb-0 text-dark">@Model.BeyondTATUnresolved</h5>
+                    <small class="text-muted" style="font-size: 0.65rem;">BEYOND TAT (UNRESOLVED)</small>
+                </div>
+            </button>
+        </li>
+    </ul>
+
+    <!-- ===== TABLE SECTION ===== -->
+    <div class="card table-card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+            <div class="row align-items-center g-2">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control border-0 bg-light"
+                               placeholder="Search by Application No or Client Name">
+                    </div>
+                </div>
+
+                <div class="col-md-6 text-end">
+                    <div class="btn-group btn-group-sm">
+                        <button id="btnDownloadPdf" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark-pdf"></i> PDF
+                        </button>
+                        <button id="btnDownloadCsv" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+                        </button>
+                        <button onclick="refreshCurrentTable()" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="sharedTablePane" role="tabpanel">
+                <div id="tableContainer" class="position-relative">
+                    <div class="table-loader">
+                        <div class="spinner-border text-primary"></div>
+                        <strong class="text-primary">Updating records…</strong>
+                    </div>
+
+                    <partial name="_LoanTablePartial" model="Model" />
+                </div>
+            </div>
+        </div>
+
+        <div id="downloadOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-none align-items-center justify-content-center" style="z-index: 10;">
+            <div class="text-center">
+                <div class="spinner-grow text-success" role="status"></div>
+                <p class="mt-2 fw-bold text-success">Preparing your document...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+            // Keep track of the current filter state
+        let currentStatus = 'Unreviewed';
+
+            $(document).ready(function () {
+            let timeout = null;
+
+            // Search logic
+            $('#searchInput').on('keyup', function () {
+                clearTimeout(timeout);
+                let searchTerm = $(this).val();
+                timeout = setTimeout(function () {
+                    loadTable(searchTerm, 1, currentStatus);
+                }, 500);
+            });
+        });
+
+            function refreshCurrentTable() {
+            const search = $('#searchInput').val();
+            loadTable(search, 1, currentStatus);
+        }
+
+           function loadTable(search, page, status) {
+            // Update global status tracker
+            currentStatus = status;
+
+            $(".table-loader").css("display", "flex");
+            $("#tableContainer table").css("opacity", "0.3");
+
+            $.ajax({
+                url: '@Url.Action("FilterLoans", "Dashboard")',
+                type: 'GET',
+                // Note: We pass the 'status' to the controller
+                data: { searchTerm: search, page: page, status: status },
+                success: function (result) {
+                    $('#tableContainer').html(result);
+                    // Ensure loader is hidden after HTML replacement
+                    $(".table-loader").hide();
+                },
+                error: function () {
+                    alert("Connection error. Please try again.");
+                    $(".table-loader").hide();
+                    $("#tableContainer table").css("opacity", "1");
+                }
+            });
+        }
+                $(document).ready(function () {
+            $('#btnDownloadPdf, #btnDownloadCsv').click(function () {
+                // Detect format from button ID or text
+                const format = $(this).attr('id').includes('Pdf') ? 'pdf' : 'csv';
+                const searchTerm = $('#searchInput').val();
+
+                // Use a hidden role field or detect from the URL/Partial
+                // For this example, let's assume you can check if a certain element exists
+                // or just pass a variable from C#
+                const userRole = "@userRole";
+
+                downloadFile(format, searchTerm, userRole);
+            });
+        });
+
+        function downloadFile(format, search, role) {
+            const $overlay = $('#downloadOverlay');
+            $overlay.removeClass('d-none').addClass('d-flex');
+
+            $.ajax({
+                url: '@Url.Action("ExportLoans", "Dashboard")',
+                type: 'GET',
+                data: { format: format, searchTerm: search, role: role },
+                xhrFields: { responseType: 'blob' },
+                success: function (data, status, xhr) {
+                    const fileName = `LoanExport_${new Date().getTime()}.${format}`;
+                    const blob = new Blob([data], { type: xhr.getResponseHeader('Content-Type') });
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = fileName;
+                    link.click();
+                    $overlay.removeClass('d-flex').addClass('d-none');
+                },
+                error: function () {
+                    alert("Export failed.");
+                    $overlay.removeClass('d-flex').addClass('d-none');
+                }
+            });
+        }
+    </script>
+}

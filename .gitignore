@@ -3,6 +3,8 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+BankLoanMonetrySolu/internal-nlog.txt
+
 # dotenv files
 .env
 

@@ -76,12 +76,12 @@
         </div>
 
         <div class="d-flex justify-content-end gap-2 mt-2">
-            @if (userRole == "supervisor")
+            @if (userRole == "CMS")
             {
                 <form asp-action="UpdateStatus" asp-controller="Dashboard" method="post">
                     <input type="hidden" name="applicationId" value="@loan?.id" />
                     <input type="hidden" name="actionType" value="approve" />
-                    <input type="hidden" name="returnDashboard" value="Supervisor" />
+                    <input type="hidden" name="returnDashboard" value="CMSDashboard" />
                     <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
 
                     <button type="submit" class="btn btn-success btn-sm fw-bold px-3">
@@ -89,7 +89,7 @@
                     </button>
                 </form>
             }
-            else
+            else if(userRole == "CMO")
             {
                 <a asp-action="ValidateCAT"
                    asp-controller="Loan"

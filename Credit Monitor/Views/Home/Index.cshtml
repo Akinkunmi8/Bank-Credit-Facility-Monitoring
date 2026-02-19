@@ -55,7 +55,7 @@
                         <h4>Dashboard</h4>
                         <p>Manage pending and confirmed loans by region.</p>
                         <a asp-controller="Dashboard"
-                           asp-action="@(userRole == "Supervisor" ? "Supervisor" : "Staff")"
+                           asp-action="@userRole"
                            class="stretched-link">
                             Open Dashboard <i class="bi bi-arrow-right"></i>
                         </a>

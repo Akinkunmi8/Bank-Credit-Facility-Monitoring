@@ -1,5 +1,7 @@
-﻿@{
+﻿@using System.Security.Claims
+@{
     ViewData["Title"] = "Access Denied";
+    var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
 }
 
 <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
@@ -22,18 +24,9 @@
                     <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary px-4">
                         Back to Home
                     </a>
-                    @if (User.IsInRole("Staff"))
-                    {
-                        <a asp-controller="Dashboard" asp-action="Staff" class="btn btn-primary px-4">
+                        <a asp-controller="Dashboard" asp-action="@userRole" class="btn btn-primary px-4">
                             Switch Account
-                        </a>
-                    }
-                    @if (User.IsInRole("Supervisor"))
-                    {
-                        <a asp-controller="Dashboard" asp-action="Supervisor" class="btn btn-primary px-4">
-                            Switch Account
-                        </a>
-                    }
+                        </a>                 
                     @if(!User.Identity.IsAuthenticated)
                     {
                         <a asp-controller="Home" asp-action="Login" class="btn btn-outline-secondary px-4">
