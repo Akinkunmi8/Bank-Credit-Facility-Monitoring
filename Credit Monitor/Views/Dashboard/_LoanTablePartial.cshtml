@@ -1,4 +1,7 @@
 ﻿@model Credit_Monitor.ViewModel.CMODashboardViewModel
+@{
+    var tableTitle = ViewData["Title"] ?? "Loan Records";
+}
 
 <style>
     /* ===== Enterprise Table Styling ===== */
@@ -44,7 +47,24 @@
         border-radius: 6px;
         margin-left: 4px;
     }
+
+    .table-header-custom {
+        padding: 1.25rem;
+        background-color: #fff;
+        border-bottom: 1px solid #e9ecef;
+    }
 </style>
+<div class="card-header bg-white py-3 border-bottom">
+    <div class="d-flex align-items-center justify-content-between">
+        @* This pulls the title sent from the Controller *@
+        <h5 class="mb-0 fw-bold text-dark">
+            @(ViewData["Title"] ?? "Loan Applications")
+        </h5>
+        <span class="badge bg-primary bg-opacity-10 text-primary border-primary border-opacity-25 px-3">
+            @Model.TotalItems Total
+        </span>
+    </div>
+</div>
 
 <div class="table-responsive">
     <table class="table credit-table table-hover align-middle mb-0">

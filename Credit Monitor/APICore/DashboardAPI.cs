@@ -140,7 +140,7 @@ namespace Credit_Monitor.APICore
 
         public async Task<int> GetBeyondTATUnReview(string region)
         {
-            var urlPath = $"/api/Dashboard/tatcount/within/Unresolve/{region}";
+            var urlPath = $"/api/Dashboard/tatcount/beyond/Unreview/{region}";
             var result = await _apiService.GetAsync<TATResponseDto>(urlPath);
 
             if (result == null || !result.isSuccessful)
@@ -197,18 +197,18 @@ namespace Credit_Monitor.APICore
             try
             {
                 // We call the wrapper because of the $values JSON structure
-                var result = await _apiService.GetAsync<TATOutputResponseWrapper>(urlPath);
+                var result = await _apiService.GetAsync<List<TATOutputResponse>>(urlPath);
 
-                if (result == null || result.DataList == null)
+                if (result == null || result == null)
                 {
                     _logger.LogWarning("Loan API: No data returned for region {Region} at {Url}", region, urlPath);
                     return new List<TATOutputResponse>();
                 }
 
                 _logger.LogInformation("Loan API: Successfully retrieved {Count} unreviewed loans for {Region}",
-                    result.DataList.Count, region);
+                    result.Count, region);
 
-                return result.DataList;
+                return result;
             }
             catch (Exception ex)
             {
@@ -225,18 +225,18 @@ namespace Credit_Monitor.APICore
             try
             {
                 // We call the wrapper because of the $values JSON structure
-                var result = await _apiService.GetAsync<TATOutputResponseWrapper>(urlPath);
+                var result = await _apiService.GetAsync<List<TATOutputResponse>>(urlPath);
 
-                if (result == null || result.DataList == null)
+                if (result == null || result == null)
                 {
                     _logger.LogWarning("Loan API: No data returned for region {Region} at {Url}", region, urlPath);
                     return new List<TATOutputResponse>();
                 }
 
                 _logger.LogInformation("Loan API: Successfully retrieved {Count} unreviewed loans for {Region}",
-                    result.DataList.Count, region);
+                    result.Count, region);
 
-                return result.DataList;
+                return result;
             }
             catch (Exception ex)
             {
@@ -253,18 +253,45 @@ namespace Credit_Monitor.APICore
             try
             {
                 // We call the wrapper because of the $values JSON structure
-                var result = await _apiService.GetAsync<TATOutputResponseWrapper>(urlPath);
+                var result = await _apiService.GetAsync<List<TATOutputResponse>>(urlPath);
 
-                if (result == null || result.DataList == null)
+                if (result == null || result == null)
                 {
                     _logger.LogWarning("Loan API: No data returned for region {Region} at {Url}", region, urlPath);
                     return new List<TATOutputResponse>();
                 }
 
                 _logger.LogInformation("Loan API: Successfully retrieved {Count} unreviewed loans for {Region}",
-                    result.DataList.Count, region);
+                    result.Count, region);
 
-                return result.DataList;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Loan API: Error fetching unreviewed loans for {Region}", region);
+                return null;
+            }
+        }
+        public async Task<List<TATOutputResponse>?> GetWithinTATUnreviewedLoansByRegion(string region)
+        {
+            // The specific URL from your requirement
+            var urlPath = $"/api/Dashboard/data/within/unreview/{region}";
+
+            try
+            {
+                // We call the wrapper because of the $values JSON structure
+                var result = await _apiService.GetAsync<List<TATOutputResponse>>(urlPath);
+
+                if (result == null || result == null)
+                {
+                    _logger.LogWarning("Loan API: No data returned for region {Region} at {Url}", region, urlPath);
+                    return new List<TATOutputResponse>();
+                }
+
+                _logger.LogInformation("Loan API: Successfully retrieved {Count} unreviewed loans within TAT for {Region}",
+                    result.Count, region);
+
+                return result;
             }
             catch (Exception ex)
             {

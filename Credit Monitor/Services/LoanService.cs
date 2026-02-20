@@ -140,6 +140,32 @@ namespace Credit_Monitor.Services
             }
         }
 
+        public async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetResolvedLoanByRegion(string region)
+        {
+            //_logger.LogInformation("Requesting RESOLVED loans for region: {Region}", region);
+
+            try
+            {
+                var loans = await _loanAPIservice.GetResolvedLoansByRegion(region);
+
+                if (loans == null)
+                {
+                  //  _logger.LogWarning("No resolved loans found in API response for region: {Region}", region);
+                    return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+                }
+
+                var mapped = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+                //_logger.LogInformation("Retrieved {Count} resolved loans for region: {Region}", mapped.Count(), region);
+
+                return mapped;
+            }
+            catch (Exception ex)
+            {
+                //_logger.LogError(ex, "Error fetching resolved loans for region: {Region}", region);
+                throw;
+            }
+        }
+
         public async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetRejectedLoanByRegion(string region)
         {
             _logger.LogInformation("Requesting REJECTED loans for region: {Region}", region);

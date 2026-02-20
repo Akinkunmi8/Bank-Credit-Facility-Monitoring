@@ -2,31 +2,38 @@
 
 @{
     bool isValid = Model.Result.IsValid;
-    string rowClass = isValid ? "table-success-subtle" : "table-danger-subtle";
-    string iconClass = isValid ? "bi-check-circle-fill text-success" : "bi-x-circle-fill text-danger";
+    // We'll pass these values to the modal via data attributes
     string statusText = isValid ? "Synchronized" : Model.Result.Message;
+    string rowClass = isValid ? "" : "table-light";
+
+    string badgeClass = isValid ? "bg-success-subtle text-success border-success" : "bg-danger-subtle text-danger border-danger";
 }
 
-<tr class="@rowClass align-middle" style="transition: background-color 0.3s;" title="@(!isValid ? statusText : "")">
+<tr class="@rowClass align-middle">
     <td class="ps-3 fw-bold text-secondary small">@Model.Label</td>
     <td class="font-monospace small">@Model.Fin</td>
     <td class="font-monospace small">@Model.Cat</td>
+
     <td>
-        @if (isValid)
-        {
-            <span class="badge bg-success text-white small">
-                <i class="bi bi-shield-check me-1"></i>@statusText
-            </span>
-        }
-        else
-        {
-            <span class="badge bg-danger text-white small" data-bs-toggle="tooltip" title="@statusText">
-                <i class="bi bi-exclamation-triangle me-1"></i>@statusText
-            </span>
-        }
+        <span class="badge border @badgeClass fw-medium px-2 py-1" style="font-size: 0.75rem;">
+            <i class="bi @(isValid ? "bi-check-circle" : "bi-exclamation-circle") me-1"></i>
+            @statusText
+        </span>
     </td>
-    <td class="text-center fs-5">
-        <i class="bi @iconClass"></i>
+
+    <td class="text-end pe-3">
+        <button type="button"
+                class="btn btn-sm @(isValid ? "btn-outline-secondary" : "btn-primary")"
+                data-bs-toggle="modal"
+                data-bs-target="#reviewModal"
+                data-label="@Model.Label"
+                data-fin="@Model.Fin"
+                data-cat="@Model.Cat"
+                data-status="@statusText"
+                data-isvalid="@isValid.ToString().ToLower()">
+            <i class="bi @(isValid ? "bi-eye" : "bi-pencil-square") me-1"></i>
+            @(isValid ? "Details" : "Review")
+        </button>
     </td>
 </tr>
 

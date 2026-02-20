@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Security.Claims;
+using AutoMapper;
 using Credit_Monitor.APIDto;
 using Credit_Monitor.Interfaces;
 using Credit_Monitor.Services;
@@ -20,29 +21,46 @@ namespace Credit_Monitor.Controllers
         private readonly IFileService _fileService;
         private readonly ICovenantTrackerService _covenantService;
         private string _storagePath;
+        private readonly IMapper _mapper;
 
         public DashboardController(
             ILoanService loanService,
             IDashboardAPI dashboardapi,
             IFileService fileService,
-            ICovenantTrackerService covenantService,IConfiguration configuration) 
+            ICovenantTrackerService covenantService,
+            IConfiguration configuration,
+            IMapper mapper) 
         {
             _loanService = loanService;
             _dashboardapi = dashboardapi;
             _fileService = fileService;
             _covenantService = covenantService;
             _storagePath = configuration["FileSettings:StoragePath"];
+            _mapper = mapper;
         }
 
         [Authorize(Roles = "CMO")]
-        public async Task<IActionResult> CMODashboard()
+        public async Task<IActionResult> CMODashboard(string status)
         {
             var region = User.FindFirst("Region")?.Value;
+            if (status == null) status = "Unreviewed";
 
             if (string.IsNullOrEmpty(region)) return View(new List<PendingConfirmedLoanViewModel>());
 
+            ViewData["Title"] = status switch
+            {
+                "Unreviewed" => "Unreviewed Loan Applications",
+                "Reviewed" => "Reviewed & Confirmed Loans",
+                "Unresolved" => "Unresolved (Rejected) Loans",
+                "Resolved" => "Resolved Applications",
+                "WithinTATUnreviewed" => "Unreviewed Loans (Within TAT)",
+                "WithinTATUnresolved" => "Unresolved Loans (Within TAT)",
+                "BeyondTATUnreviewed" => "Unreviewed Loans (Beyond TAT)",
+                "BeyondTATUnresolved" => "Unresolved Loans (Beyond TAT)",
+                _ => " Unreviewed Loan Applications"
+            };
             var loan = await _loanService.GetPendingConfirmedLoansByRegion(region);
-            return View(await GetCMODashboardData(null, 1, region));
+            return View(await GetCMODashboardData(null, 1, region, status));
         }
 
         [HttpGet]
@@ -138,8 +156,19 @@ namespace Credit_Monitor.Controllers
                 var supervisorVM = await GetSupervisorDashboardData(searchTerm, page, region);
                 return PartialView("_ConfirmedLoanTablePartial", supervisorVM);
             }
-
-            var CMOVM = await GetCMODashboardData(searchTerm, page, region);
+            ViewData["Title"] = status switch
+            {
+                "Unreviewed" => "Unreviewed Loan Applications",
+                "Reviewed" => "Reviewed & Confirmed Loans",
+                "Unresolved" => "Unresolved (Rejected) Loans",
+                "Resolved" => "Resolved Applications",
+                "WithinTATUnreviewed" => "Unreviewed Loans (Within TAT)",
+                "WithinTATUnresolved" => "Unresolved Loans (Within TAT)",
+                "BeyondTATUnreviewed" => "Unreviewed Loans (Beyond TAT)",
+                "BeyondTATUnresolved" => "Unresolved Loans (Beyond TAT)",
+                _ => " Unreviewed Loan Applications"
+            };
+            var CMOVM = await GetCMODashboardData(searchTerm, page, region, status);
             return PartialView("_LoanTablePartial", CMOVM);
         }
 
@@ -271,22 +300,43 @@ namespace Credit_Monitor.Controllers
         private async Task<CMODashboardViewModel> GetCMODashboardData(string searchTerm, int page, string region, string status)
         {
             int pageSize = 10;
-            if(status == "Unreviewed")
+            IEnumerable<PendingConfirmedLoanViewModel> allLoans = new List<PendingConfirmedLoanViewModel>();
+            if (status == "Unreviewed" || status == "")
             {
-                var allLoans = await _loanService.GetPendingConfirmedLoansByRegion(region);
+                allLoans = await _loanService.GetPendingConfirmedLoansByRegion(region);
 
             }
-            else if(status == "Reviewed")
+            else if (status == "Reviewed")
             {
-                var allLoans = await _loanService.GetConfirmedLoanByRegion(region);
+                allLoans = await _loanService.GetConfirmedLoanByRegion(region);
             }
-            else if(status == "Unresolved")
+            else if (status == "Unresolved")
             {
-                var allLoans = await _loanService.GetRejectedLoanByRegion(region);
+                allLoans = await _loanService.GetRejectedLoanByRegion(region);
             }
-            else if(status == "Resolved")
+            else if (status == "Resolved")
             {
-                var allLoans = await _loanService.GetRejectedLoanByRegion(region);
+                allLoans = await _loanService.GetResolvedLoanByRegion(region);
+            }
+            else if (status == "WithinTATUnresolved")
+            {
+               var data = await _dashboardapi.GetWithinTATUnresolvedLoansByRegion(region);
+               allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
+            }
+            else if (status == "BeyondTATUnreviewed")
+            {
+                var data = await _dashboardapi.GetBeyondTATUnreviewedLoansByRegion(region);
+                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
+            }
+            else if(status == "BeyondTATUnresolved")
+            {
+                var data = await _dashboardapi.GetBeyondTATUnresolvedLoansByRegion(region);
+                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
+            }
+            else if (status == "WithinTATUnreviewed")
+            {
+                var data = await _dashboardapi.GetWithinTATUnreviewedLoansByRegion(region);
+                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
             }
 
 

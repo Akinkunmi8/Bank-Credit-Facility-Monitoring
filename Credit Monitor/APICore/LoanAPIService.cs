@@ -186,5 +186,34 @@ namespace Credit_Monitor.APICore
             }
         }
 
+        public async Task<List<FinacleRecord>?> GetResolvedLoansByRegion(string region)
+        {
+            var urlPath = $"api/Finacle/resolved/by-region/{region}";
+
+            _logger.LogInformation("Loan API: Fetching Resolved loans for region: {Region}", region);
+
+            try
+            {
+                var result = await _apiService.GetAsync<FinacleResponseWrapper>(urlPath);
+
+                if (result == null || !result.isSuccess)
+                {
+                    _logger.LogWarning("Loan API: Failed to fetch Resolved loans for {Region}. Path used: {Url}",
+                        region, urlPath);
+                    return null;
+                }
+
+                _logger.LogInformation("Loan API: Retrieved {Count} Resolved loans for {Region}",
+                    result.dataList?.Count ?? 0, region);
+
+                return result.dataList ?? new List<FinacleRecord>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Loan API: Critical error fetching Resolved loans for {Region}", region);
+                return null;
+            }
+        }
+
     }
 }

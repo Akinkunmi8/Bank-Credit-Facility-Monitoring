@@ -15,5 +15,6 @@ namespace Credit_Monitor.Interfaces
         Task<IEnumerable<PendingConfirmedLoanViewModel>> GetApprovedLoanByRegion(string region);
         Task<IEnumerable<PendingConfirmedLoanViewModel>> GetRejectedLoanByRegion(string region);
 
+        Task<IEnumerable<PendingConfirmedLoanViewModel>> GetResolvedLoanByRegion(string region);
     }
 }

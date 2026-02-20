@@ -150,16 +150,10 @@ namespace Credit_Monitor.Controllers
                 _logger.LogInformation("User {Username} signed in via Cookies. Redirecting to {Role} dashboard.",
                     model.Username, authResult.User.Role);
 
-                if (authResult.User.Role?.ToLower() == "staff" && !string.IsNullOrEmpty(authResult.User.Region))
+                if (authResult.User.Role?.ToLower() != " " && !string.IsNullOrEmpty(authResult.User.Region))
                 {
-                    return RedirectToAction("Staff", "Dashboard");
-                }
-                if (authResult.User.Role?.ToLower() == "supervisor" && !string.IsNullOrEmpty(authResult.User.Region))
-                {
-                    return RedirectToAction("Supervisor", "Dashboard");
-                }
-
-                
+                    return RedirectToAction($"{authResult.User.Role}Dashboard", "Dashboard");
+                }                            
             }
 
             _logger.LogWarning("Login failed for {Username}: {Message}", model.Username, authResult.Response.Message);
