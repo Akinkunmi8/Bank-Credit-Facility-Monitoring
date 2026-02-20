@@ -52,7 +52,7 @@ namespace BankLoanMonetrySolu.Controllers
 
         public async Task<IActionResult> GetResolvedCountByRegion(string region)
         {
-            var result = await _finacleService.GetTotalUnResolvedCount(region);
+            var result = await _finacleService.GetTotalResolvedCount(region);
             return Ok(result);
         }
 

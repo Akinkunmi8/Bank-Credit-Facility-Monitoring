@@ -204,51 +204,57 @@ namespace BankLoanMonetrySolu.Services
 
             return _mapper.Map<List<FinacleDataDto>>(data);
         }
-        public async Task<List<UnresolvedTATDetailDto>> GetDataWithinTATForUnResolved(string region)
+        // Returns Unresolved data where Deadline has NOT passed (WITHIN TAT)
+        // Simplified to query only the FinacleDatas table
+        public async Task<List<FinacleDataDto>> GetDataWithinTATForUnResolved(string region)
         {
             var now = DateTime.UtcNow;
             try
             {
-                var queryData = await (from finacle in _context.finacleDatas.AsNoTracking()
-                                       join remark in _context.discrepancyRemarks.AsNoTracking()
-                                       on finacle.Id equals remark.AppId
-                                       where finacle.REGION == region &&
-                                             finacle.ISRESOLVED == false &&
-                                             finacle.DEADLINE >= now
-                                       select new { finacle, remark })
-                                       .ToListAsync();
+                var data = await _context.finacleDatas
+                    .AsNoTracking()
+                    .Where(x => x.REGION == region &&
+                                x.RECONFIRMED == true && // Targeted status for rejected/unresolved items
+                                x.ISRESOLVED == false &&
+                                x.DEADLINE != null &&
+                                x.DEADLINE >= now)      // Still within the deadline
+                    .ToListAsync();
 
-                // Map explicitly here to avoid Type Conversion errors
-                return queryData.Select(x => MapToSingleDto(x.finacle, x.remark)).ToList();
+                // Direct mapping to FinacleDataDto using AutoMapper
+                return _mapper.Map<List<FinacleDataDto>>(data);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching Joined Within TAT Unresolved for {Region}", region);
-                return new List<UnresolvedTATDetailDto>();
+                _logger.LogError(ex, "Error fetching Within TAT Unresolved for {Region}", region);
+                return new List<FinacleDataDto>();
             }
         }
 
         // Returns Unresolved data where the Deadline HAS passed (BEYOND TAT)
-        public async Task<List<UnresolvedTATDetailDto>> GetDataBeyondTATForUnResolved(string region)
+        // Returns Unresolved data where the Deadline HAS passed (BEYOND TAT)
+        // No Join, just querying the main table
+        public async Task<List<FinacleDataDto>> GetDataBeyondTATForUnResolved(string region)
         {
             var now = DateTime.UtcNow;
+
             try
             {
-                var queryData = await (from finacle in _context.finacleDatas.AsNoTracking()
-                                       join remark in _context.discrepancyRemarks.AsNoTracking()
-                                       on finacle.Id equals remark.AppId
-                                       where finacle.REGION == region &&
-                                             finacle.ISRESOLVED == false &&
-                                             finacle.DEADLINE < now
-                                       select new { finacle, remark })
-                                       .ToListAsync();
+                var data = await _context.finacleDatas
+                    .AsNoTracking()
+                    .Where(x => x.REGION == region &&
+                                x.RECONFIRMED == true &&
+                                x.ISRESOLVED == false &&
+                                x.DEADLINE != null && // Ensures it was a rejected/unresolved item
+                                x.DEADLINE < now)     // Filter for items past the deadline
+                    .ToListAsync();
 
-                return queryData.Select(x => MapToSingleDto(x.finacle, x.remark)).ToList();
+                // Map the entities directly to your FinacleDataDto (using your AutoMapper)
+                return _mapper.Map<List<FinacleDataDto>>(data);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching Joined Beyond TAT Unresolved for {Region}", region);
-                return new List<UnresolvedTATDetailDto>();
+                _logger.LogError(ex, "Error retrieving Finacle data for beyond TAT in {Region}", region);
+                return new List<FinacleDataDto>();
             }
         }
         private UnresolvedTATDetailDto MapToSingleDto(FinacleData finacle, DiscrepancyRemark remark)

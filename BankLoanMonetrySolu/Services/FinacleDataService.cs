@@ -141,7 +141,7 @@ namespace BankLoanMonetrySolu.Services
             {
                 _logger.LogInformation("Fetching re-confirmed records for Region: {Region}", region);
                 var data = await _context.finacleDatas
-                    .Where(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == true && f.APPROVED == false)
+                    .Where(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false && f.ISRESOLVED == false)
                     .ToListAsync();
 
                 var dto = _mapper.Map<List<FinacleDataDto>>(data);
@@ -216,7 +216,7 @@ namespace BankLoanMonetrySolu.Services
             await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.APPROVED == false && f.RECONFIRMED == false && f.ISRESOLVED == false);
 
         public async Task<int> GetTotalConfirmedCount(string region) =>
-            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == false && f.APPROVED == false && f.ISRESOLVED == false);
+            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == false && f.ISRESOLVED == false);
 
         public async Task<int> GetTotalReConfirmedCount(string region) =>
             await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false && f.ISRESOLVED == false);
@@ -224,7 +224,7 @@ namespace BankLoanMonetrySolu.Services
         public async Task<int> GetTotalApproveCount(string region) =>
             await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == true && f.ISRESOLVED == false);
 
-        public async Task<int> GetTotalUnResolvedCount(string region) =>
+        public async Task<int> GetTotalResolvedCount(string region) =>
             await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false && f.ISRESOLVED == true);
 
         public async Task<bool> UpdateFinacleStatus(FinacleStatusUpdateDto dto)
@@ -424,22 +424,31 @@ namespace BankLoanMonetrySolu.Services
             }
         }
 
-        public async Task<DiscrepancyRemarkDto?> GetRemarkByAppId(Guid appId)
+        public async Task<List<DiscrepancyRemarkDto>> GetRemarkByAppId(Guid appId)
         {
-            var remark = await _context.discrepancyRemarks
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.AppId == appId);
-
-            if (remark == null) return null;
-
-            return new DiscrepancyRemarkDto
+            try
             {
-                AppId = remark.AppId,
-                Discrepancies = remark.Discrepancies,
-                Remarks = remark.Remarks,
-                RecomendedAction = remark.RecomendedAction,
-                Responsibility = remark.Responsibility
-            };
+                // 1. Filter the table for all records matching the AppId
+                var remarks = await _context.discrepancyRemarks
+                    .AsNoTracking()
+                    .Where(x => x.AppId == appId)
+                    .ToListAsync();
+
+                // 2. Map the list of entities to a list of DTOs
+                return remarks.Select(remark => new DiscrepancyRemarkDto
+                {
+                    AppId = remark.AppId,
+                    Discrepancies = remark.Discrepancies,
+                    Remarks = remark.Remarks,
+                    RecomendedAction = remark.RecomendedAction,
+                    Responsibility = remark.Responsibility
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving remarks list for AppId: {AppId}", appId);
+                return new List<DiscrepancyRemarkDto>(); // Return empty list on error
+            }
         }
         public async Task<Guid> SaveFilesAsync(UploadFilesDto dto)
         {
