@@ -13,7 +13,7 @@ namespace BankLoanMonetrySolu.IServices
         Task<List<Guid>> GetBeyondTATAppIds(string region);
         Task<List<FinacleDataDto>> GetDataWithinTATForUnReview(string region);
         Task<List<FinacleDataDto>> GetDataBeyondTATForUnReview(string region);
-        Task<List<UnresolvedTATDetailDto>> GetDataWithinTATForUnResolved(string region);
-        Task<List<UnresolvedTATDetailDto>> GetDataBeyondTATForUnResolved(string region);
+        Task<List<FinacleDataDto>> GetDataWithinTATForUnResolved(string region);
+        Task<List<FinacleDataDto>> GetDataBeyondTATForUnResolved(string region);
     }
 }
