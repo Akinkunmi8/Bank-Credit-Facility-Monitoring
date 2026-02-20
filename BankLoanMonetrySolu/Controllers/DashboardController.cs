@@ -176,7 +176,7 @@ namespace BankLoanMonetrySolu.Controllers
                 return BadRequest(new ServiceResponseDto { IsSuccess = false, ResponseMessage = "Invalid data provided." });
             }
 
-            var result = await _finacleService.AddOrUpdateDiscrepancyRemark(dto);
+            var result = await _finacleService.AddDiscrepancyRemark(dto);
 
             if (result.IsSuccess)
             {

@@ -7,13 +7,17 @@ using BankLoanMonetrySolu.Models;
 using Contracts.Dto;
 using Contracts.Publishing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BankLoanMonetrySolu.Services
 {
@@ -363,11 +367,11 @@ namespace BankLoanMonetrySolu.Services
             }
         }
 
-        public async Task<ServiceResponseDto> AddOrUpdateDiscrepancyRemark(DiscrepancyRemarkDto dto)
+        public async Task<ServiceResponseDto> AddDiscrepancyRemark(DiscrepancyRemarkDto dto)
         {
             try
             {
-                // 1. Validate that the application actually exists
+                // 1. Verify the parent application exists before adding a remark
                 var appExists = await _context.finacleDatas.AnyAsync(x => x.Id == dto.AppId);
                 if (!appExists)
                 {
@@ -378,33 +382,17 @@ namespace BankLoanMonetrySolu.Services
                     };
                 }
 
-                // 2. Check for existing remark (Upsert logic)
-                var existingRemark = await _context.discrepancyRemarks
-                    .FirstOrDefaultAsync(x => x.AppId == dto.AppId);
-
-                if (existingRemark != null)
+                // 2. Always Insert a new record to maintain history
+                var newRemark = new DiscrepancyRemark
                 {
-                    // Update
-                    existingRemark.Discrepancies = dto.Discrepancies;
-                    existingRemark.Remarks = dto.Remarks;
-                    existingRemark.RecomendedAction = dto.RecomendedAction;
-                    existingRemark.Responsibility = dto.Responsibility;
-                    _context.discrepancyRemarks.Update(existingRemark);
-                }
-                else
-                {
-                    // Create
-                    var newRemark = new DiscrepancyRemark
-                    {
-                        AppId = dto.AppId,
-                        Discrepancies = dto.Discrepancies,
-                        Remarks = dto.Remarks,
-                        RecomendedAction = dto.RecomendedAction,
-                        Responsibility = dto.Responsibility
-                    };
-                    await _context.discrepancyRemarks.AddAsync(newRemark);
-                }
+                    AppId = dto.AppId,
+                    Discrepancies = dto.Discrepancies,
+                    Remarks = dto.Remarks,
+                    RecomendedAction = dto.RecomendedAction,
+                    Responsibility = dto.Responsibility
+                };
 
+                await _context.discrepancyRemarks.AddAsync(newRemark);
                 await _context.SaveChangesAsync();
 
                 return new ServiceResponseDto
@@ -419,7 +407,7 @@ namespace BankLoanMonetrySolu.Services
                 return new ServiceResponseDto
                 {
                     IsSuccess = false,
-                    ResponseMessage = "An internal error occurred while saving the discrepancy data."
+                    ResponseMessage = "An internal error occurred while saving. Check database constraints."
                 };
             }
         }
@@ -542,6 +530,43 @@ namespace BankLoanMonetrySolu.Services
                 _ => "application/octet-stream"
             };
         }
+
+
+//        BEGIN TRANSACTION;
+
+//        BEGIN TRY
+//    -- 1. Remove the Primary Key from AppId if it is still there
+//    -- We use a subquery to find the constraint name dynamically
+//    DECLARE @PKName NVARCHAR(200);
+//        SELECT @PKName = name FROM sys.key_constraints WHERE type = 'PK' AND parent_object_id = OBJECT_ID('discrepancyRemarks');
+
+//        IF @PKName IS NOT NULL
+//        BEGIN
+//        EXEC('ALTER TABLE discrepancyRemarks DROP CONSTRAINT ' + @PKName);
+//        END
+
+//    -- 2. Add 'Id' ONLY if it doesn't exist yet
+//    IF NOT EXISTS(SELECT* FROM sys.columns WHERE Name = 'Id' AND Object_ID = OBJECT_ID('discrepancyRemarks'))
+//    BEGIN
+//        ALTER TABLE discrepancyRemarks ADD Id INT IDENTITY(1,1);
+//        END
+
+//    -- 3. Set 'Id' as the new Primary Key
+//    ALTER TABLE discrepancyRemarks ADD CONSTRAINT PK_discrepancyRemarks_New PRIMARY KEY(Id);
+
+//    -- 4. Add 'CreatedAt' if it doesn't exist
+//    IF NOT EXISTS(SELECT* FROM sys.columns WHERE Name = 'CreatedAt' AND Object_ID = OBJECT_ID('discrepancyRemarks'))
+//    BEGIN
+//        ALTER TABLE discrepancyRemarks ADD CreatedAt DATETIME DEFAULT GETUTCDATE();
+//        END
+
+//        COMMIT TRANSACTION;
+//    PRINT 'Table constraints updated successfully.';
+//END TRY
+//BEGIN CATCH
+//    ROLLBACK TRANSACTION;
+//        PRINT 'Error: ' + ERROR_MESSAGE();
+//        END CATCH
 
     }
 }
