@@ -367,48 +367,65 @@ namespace BankLoanMonetrySolu.Services
             }
         }
 
-        public async Task<ServiceResponseDto> AddDiscrepancyRemark(DiscrepancyRemarkDto dto)
+        public async Task<ServiceResponseDto> UpsertDiscrepancyRemark(DiscrepancyRemarkDto dto)
         {
             try
             {
-                // 1. Verify the parent application exists before adding a remark
-                var appExists = await _context.finacleDatas.AnyAsync(x => x.Id == dto.AppId);
-                if (!appExists)
+                // 1. Validation
+                if (dto.AppId == Guid.Empty)
+                    return new ServiceResponseDto { IsSuccess = false, ResponseMessage = "AppId is required." };
+
+                DiscrepancyRemark record = null;
+
+                // 2. Lookup - ONLY by ID
+                // If the ID is empty, we don't even try to find a record.
+                if (dto.Id != Guid.Empty)
                 {
-                    return new ServiceResponseDto
-                    {
-                        IsSuccess = false,
-                        ResponseMessage = "Error: The Application ID does not exist in the system."
-                    };
+                    record = await _context.discrepancyRemarks.FindAsync(dto.Id);
                 }
 
-                // 2. Always Insert a new record to maintain history
-                var newRemark = new DiscrepancyRemark
+                if (record != null)
                 {
-                    AppId = dto.AppId,
-                    Discrepancies = dto.Discrepancies,
-                    Remarks = dto.Remarks,
-                    RecomendedAction = dto.RecomendedAction,
-                    Responsibility = dto.Responsibility
-                };
+                    // --- UPDATE CASE ---
+                    _logger.LogInformation("Updating SPECIFIC row: {Id}", dto.Id);
+                    record.Remarks = dto.Remarks;
+                    record.RecomendedAction = dto.RecomendedAction;
+                    record.Responsibility = dto.Responsibility;
+                    record.Discrepancies = dto.Discrepancies;
 
-                await _context.discrepancyRemarks.AddAsync(newRemark);
+                    _context.discrepancyRemarks.Update(record);
+                }
+                else
+                {
+                    // --- INSERT CASE ---
+                    // If the code reaches here, it means:
+                    // a) dto.Id was Empty
+                    // b) OR dto.Id was provided but not found in DB
+                    _logger.LogInformation("Inserting NEW row for AppId: {AppId}", dto.AppId);
+
+                    var newRemark = new DiscrepancyRemark
+                    {
+                        Id = Guid.NewGuid(), // ALWAYS generate a fresh ID here
+                        AppId = dto.AppId,
+                        Discrepancies = dto.Discrepancies,
+                        Remarks = dto.Remarks,
+                        RecomendedAction = dto.RecomendedAction,
+                        Responsibility = dto.Responsibility,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    await _context.discrepancyRemarks.AddAsync(newRemark);
+                }
+
                 await _context.SaveChangesAsync();
-
-                return new ServiceResponseDto
-                {
-                    IsSuccess = true,
-                    ResponseMessage = "The discrepancy data saved successfully."
-                };
+                return new ServiceResponseDto { IsSuccess = true, ResponseMessage = "Success" };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to save discrepancy for AppId: {AppId}", dto.AppId);
-                return new ServiceResponseDto
-                {
-                    IsSuccess = false,
-                    ResponseMessage = "An internal error occurred while saving. Check database constraints."
-                };
+                _logger.LogError(ex, "Upsert failed");
+                // Check for InnerException to see if the DB is still complaining about a constraint
+                var msg = ex.InnerException?.Message ?? ex.Message;
+                return new ServiceResponseDto { IsSuccess = false, ResponseMessage = "Error: " + msg };
             }
         }
 
@@ -425,6 +442,7 @@ namespace BankLoanMonetrySolu.Services
                 // 2. Map the list of entities to a list of DTOs
                 return remarks.Select(remark => new DiscrepancyRemarkDto
                 {
+                    Id = remark.Id,
                     AppId = remark.AppId,
                     Discrepancies = remark.Discrepancies,
                     Remarks = remark.Remarks,
@@ -532,41 +550,7 @@ namespace BankLoanMonetrySolu.Services
         }
 
 
-//        BEGIN TRANSACTION;
 
-//        BEGIN TRY
-//    -- 1. Remove the Primary Key from AppId if it is still there
-//    -- We use a subquery to find the constraint name dynamically
-//    DECLARE @PKName NVARCHAR(200);
-//        SELECT @PKName = name FROM sys.key_constraints WHERE type = 'PK' AND parent_object_id = OBJECT_ID('discrepancyRemarks');
-
-//        IF @PKName IS NOT NULL
-//        BEGIN
-//        EXEC('ALTER TABLE discrepancyRemarks DROP CONSTRAINT ' + @PKName);
-//        END
-
-//    -- 2. Add 'Id' ONLY if it doesn't exist yet
-//    IF NOT EXISTS(SELECT* FROM sys.columns WHERE Name = 'Id' AND Object_ID = OBJECT_ID('discrepancyRemarks'))
-//    BEGIN
-//        ALTER TABLE discrepancyRemarks ADD Id INT IDENTITY(1,1);
-//        END
-
-//    -- 3. Set 'Id' as the new Primary Key
-//    ALTER TABLE discrepancyRemarks ADD CONSTRAINT PK_discrepancyRemarks_New PRIMARY KEY(Id);
-
-//    -- 4. Add 'CreatedAt' if it doesn't exist
-//    IF NOT EXISTS(SELECT* FROM sys.columns WHERE Name = 'CreatedAt' AND Object_ID = OBJECT_ID('discrepancyRemarks'))
-//    BEGIN
-//        ALTER TABLE discrepancyRemarks ADD CreatedAt DATETIME DEFAULT GETUTCDATE();
-//        END
-
-//        COMMIT TRANSACTION;
-//    PRINT 'Table constraints updated successfully.';
-//END TRY
-//BEGIN CATCH
-//    ROLLBACK TRANSACTION;
-//        PRINT 'Error: ' + ERROR_MESSAGE();
-//        END CATCH
 
     }
 }

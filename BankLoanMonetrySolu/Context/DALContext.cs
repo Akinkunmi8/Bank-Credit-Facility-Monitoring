@@ -115,12 +115,12 @@ namespace BankLoanMonetrySolu.Context
             });
             modelBuilder.Entity<DiscrepancyRemark>(entity =>
             {
-                // 1. Define AppId as the Primary Key for this table
-                entity.HasKey(e => e.AppId);
+                // 1. Set Id as the actual Primary Key
+                entity.HasKey(e => e.Id);
 
-                // 2. Set up the One-to-One relationship
+                // 2. Set up the relationship using AppId as the Foreign Key
                 entity.HasOne(d => d.FinacleData)
-                      .WithOne()                       
+                      .WithOne() // If one loan has only one set of remarks
                       .HasForeignKey<DiscrepancyRemark>(d => d.AppId)
                       .OnDelete(DeleteBehavior.Cascade);
             });

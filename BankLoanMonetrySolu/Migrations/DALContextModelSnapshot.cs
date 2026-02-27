@@ -219,8 +219,15 @@ namespace BankLoanMonetrySolu.Migrations
 
             modelBuilder.Entity("BankLoanMonetrySolu.Model.DiscrepancyRemark", b =>
                 {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("AppId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Discrepancies")
                         .HasColumnType("nvarchar(max)");
@@ -234,7 +241,10 @@ namespace BankLoanMonetrySolu.Migrations
                     b.Property<string>("Responsibility")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("AppId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppId")
+                        .IsUnique();
 
                     b.ToTable("discrepancyRemarks");
                 });
