@@ -1,12 +1,12 @@
 ﻿namespace Credit_Monitor.ViewModel
 {
-    public class SupervisorDashboardViewModel
+    public class CMSDashboardViewModel
     {
         public IEnumerable<PendingConfirmedLoanViewModel>? Confirmedloans { get; set; }
         public int TotalApprovedLoans { get; set; }
-        public int TotalConfirmedLoans { get; set; }
-        public int WithinTAT { get; set; }
-        public int BeyondTAT { get; set; }
+        public int TotalReviewedLoans { get; set; }
+        public int BeyondTATReviewed { get; set; }
+        public int BeyondTATUnreviewed { get; set; }
 
         // --- ADD THESE FOR PAGINATION & SEARCH ---
         public int CurrentPage { get; set; }

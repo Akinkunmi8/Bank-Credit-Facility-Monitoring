@@ -1,4 +1,5 @@
-﻿using Credit_Monitor.APIDto;
+﻿using System.Net.Http;
+using Credit_Monitor.APIDto;
 using Credit_Monitor.APIsDto;
 using Credit_Monitor.Interfaces;
 using Newtonsoft.Json;
@@ -14,6 +15,21 @@ namespace Credit_Monitor.APICore
         {
             _apiService = apiService;
             _logger = logger;
+        }
+
+        public async Task<List<ExistingResolutionDto>?> GetExistingRemarksByAppId(string appId)
+        {
+            // The URL from your request
+            var urlPath = $"/api/Dashboard/remarks/{appId}";
+
+            // Using your generic API service pattern
+            var result = await _apiService.GetAsync<List<ExistingResolutionDto>>(urlPath);
+
+            
+            _logger.LogInformation("Loan API: Retrieved {Count} existing remarks for AppId: {AppId}",
+                result?.Count ?? 0, appId);
+
+            return result ?? new List<ExistingResolutionDto>();
         }
 
         public async Task<List<FinacleRecord>?> GetPendingLoansByRegion(string region)

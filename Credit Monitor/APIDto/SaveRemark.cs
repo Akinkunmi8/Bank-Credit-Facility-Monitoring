@@ -2,6 +2,7 @@
 {
     public class SaveRemarkRequestDto
     {
+        public Guid? Id { get; set; }
         public Guid AppId { get; set; }
         public string Discrepancies { get; set; } = string.Empty;
         public string Remarks { get; set; } = string.Empty;

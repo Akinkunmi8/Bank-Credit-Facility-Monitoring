@@ -76,7 +76,7 @@
         </div>
 
         <div class="d-flex justify-content-end gap-2 mt-2">
-            @if (userRole == "CMS")
+            @if (userRole == "CMS" && loan!.confirmed && !loan!.approved)
             {
                 <form asp-action="UpdateStatus" asp-controller="Dashboard" method="post">
                     <input type="hidden" name="applicationId" value="@loan?.id" />
@@ -89,7 +89,7 @@
                     </button>
                 </form>
             }
-            else if(userRole == "CMO")
+            else if(userRole == "CMO" && !loan!.confirmed)
             {
                 <a asp-action="ValidateCAT"
                    asp-controller="Loan"

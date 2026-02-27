@@ -1,4 +1,4 @@
-﻿@model Credit_Monitor.ViewModel.SupervisorDashboardViewModel
+﻿@model Credit_Monitor.ViewModel.CMSDashboardViewModel
 
 <div class="card shadow-sm border-0">
 
@@ -125,7 +125,7 @@
                             <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
                                 <a class="page-link"
                                    href="javascript:void(0)"
-                                   onclick="loadTable($('#searchInput').val(), @i)">
+                                   onclick="loadTable($('#searchInput').val(), @i, currentStatus)">
                                     @i
                                 </a>
                             </li>

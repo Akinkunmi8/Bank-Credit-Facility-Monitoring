@@ -106,5 +106,10 @@ public class PendingConfirmedLoanViewModel
     public string? performancE_CLASS_DESC { get; set; }
     public string? rownumbeR_ORDERBY { get; set; }
 
+    public bool confirmed { get; set; }
+    public bool reconfirmed { get; set; }
+    public bool approved { get; set; }
+    public bool isresolved { get; set; }
+
     public Guid? LoanFileBatchId { get; set; }
 }

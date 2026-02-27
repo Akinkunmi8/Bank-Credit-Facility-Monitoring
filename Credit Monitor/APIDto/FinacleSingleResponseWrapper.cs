@@ -103,6 +103,7 @@ namespace Credit_Monitor.APIDto
         public bool confirmed { get; set; }
         public bool reconfirmed { get; set; }
         public bool approved { get; set; }
+        public bool isresolved { get; set; }
         public DateTime processedate { get; set; }
 
         public Guid customerId { get; set; }

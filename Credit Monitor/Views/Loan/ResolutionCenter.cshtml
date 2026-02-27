@@ -1,0 +1,214 @@
+﻿@model Credit_Monitor.ViewModel.ValidateCATPageViewModel
+@using Credit_Monitor.ViewModel
+@{
+    ViewData["Title"] = "Bulk Resolution";
+    int i = 0;
+
+    // Retrieve the list we mapped via AutoMapper in the Controller
+    var savedList = ViewBag.ExistingResolutions as List<ResolutionItem> ?? new List<ResolutionItem>();
+
+    // Helper to find existing data by keyword
+    ResolutionItem GetSaved(string fieldName)
+    {
+        return savedList.FirstOrDefault(r =>
+            r.Discrepancy != null &&
+            r.Discrepancy.Contains(fieldName, StringComparison.OrdinalIgnoreCase));
+    }
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-primary">Resolution Center</h4>
+            <p class="text-muted">Reviewing @Model.Discrepancies.ErrorCount mismatches for Acc: <strong>@Model.Discrepancies.AccNum</strong></p>
+        </div>
+        <a asp-action="ValidateCAT"
+           asp-controller="Loan"
+           asp-route-AccNum="@Model.FinacleData.AccountNumber"
+           class="btn btn-outline-secondary btn-sm shadow-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+       
+    </div>
+
+    <form asp-action="SubmitResolutions" asp-controller="Loan" method="post">
+        <input type="hidden" name="AppId" value="@Model.FinacleData.Id" />
+        <input type="hidden" name="AccountNum" value="@Model.FinacleData.AccountNumber" />
+
+        @* 1. Customer Name *@
+        @if (!Model.Discrepancies.CustomerName.IsValid)
+        {
+            var existing = GetSaved("Customer Name");
+            @await Html.PartialAsync("_ResolutionCard", new ResolutionItem {
+            Index = i++,
+                Label = "Customer Name",
+                FieldName = "Customer Name",
+                FinValue = Model.FinacleData.AccountName,
+                CatValue = Model.CatData.CustomerName,
+                Discrepancy = Model.Discrepancies.CustomerName.Message,
+                Id = existing?.Id ?? Guid.Empty,
+                RecommendedAction = existing?.RecommendedAction,
+                Responsibility = existing?.Responsibility,
+                Remarks = existing?.Remarks
+                })
+                }
+
+        @* 2. Facility Type *@
+        @if (!Model.Discrepancies.FacilityType.IsValid)
+        {
+            var existing = GetSaved("Facility Type");
+            @await Html.PartialAsync("_ResolutionCard", new ResolutionItem {
+            Index = i++,
+                Label = "Facility Type",
+                FieldName = "Facility Type",
+                FinValue = Model.FinacleData.FacilityType,
+                CatValue = Model.CatData.FacilityType,
+                Discrepancy = Model.Discrepancies.FacilityType.Message,
+                Id = existing?.Id ?? Guid.Empty,
+                RecommendedAction = existing?.RecommendedAction,
+                Responsibility = existing?.Responsibility,
+                Remarks = existing?.Remarks
+                })
+                }
+
+        @* 3. Approval Limit *@
+        @if (!Model.Discrepancies.ApprovalLimit.IsValid)
+        {
+            var existing = GetSaved("Limit");
+            @await Html.PartialAsync("_ResolutionCard", new ResolutionItem {
+            Index = i++,
+                Label = "Approval Limit",
+                FieldName = "Approval Limit",
+                FinValue = Model.FinacleData.SanctionLimit.ToString("N2"),
+                CatValue = Model.CatData.ApprovalLimit.ToString("N2"),
+                Discrepancy = Model.Discrepancies.ApprovalLimit.Message,
+                Id = existing?.Id ?? Guid.Empty,
+                RecommendedAction = existing?.RecommendedAction,
+                Responsibility = existing?.Responsibility,
+                Remarks = existing?.Remarks
+                })
+                }
+
+        @* 4. Interest Rate *@
+        @if (!Model.Discrepancies.Interest.IsValid)
+        {
+            var existing = GetSaved("Interest");
+            @await Html.PartialAsync("_ResolutionCard", new ResolutionItem {
+            Index = i++,
+                Label = "Interest Rate",
+                FieldName = "Interest Rate",
+                FinValue = Model.FinacleData.IntRateDisplay + "%",
+                CatValue = Model.CatData.Interest + "%",
+                Discrepancy = Model.Discrepancies.Interest.Message,
+                Id = existing?.Id ?? Guid.Empty,
+                RecommendedAction = existing?.RecommendedAction,
+                Responsibility = existing?.Responsibility,
+                Remarks = existing?.Remarks
+                })
+                }
+
+        @* 5. Maturity Date *@
+        @if (!Model.Discrepancies.MaturityDate.IsValid)
+        {
+            var existing = GetSaved("Maturity Date");
+            @await Html.PartialAsync("_ResolutionCard", new ResolutionItem {
+            Index = i++,
+                Label = "Maturity Date",
+                FieldName = "Maturity Date",
+                FinValue = Model.FinacleData.ExpiryDate.ToString("dd-MMM-yyyy"),
+                CatValue = Model.CatData.MaturityOrExpiry.ToString("dd-MMM-yyyy"),
+                Discrepancy = Model.Discrepancies.MaturityDate.Message,
+                Id = existing?.Id ?? Guid.Empty,
+                RecommendedAction = existing?.RecommendedAction,
+                Responsibility = existing?.Responsibility,
+                Remarks = existing?.Remarks
+                })
+                }
+
+        @* 6. Directorate *@
+        @if (!Model.Discrepancies.Directorate.IsValid)
+        {
+            var existing = GetSaved("Directorate");
+            @await Html.PartialAsync("_ResolutionCard", new ResolutionItem {
+            Index = i++,
+                Label = "Directorate/SBU",
+                FieldName = "Directorate/SBU",
+                FinValue = Model.FinacleData.SbuName,
+                CatValue = Model.CatData.Directorate,
+                Discrepancy = Model.Discrepancies.Directorate.Message,
+                Id = existing?.Id ?? Guid.Empty,
+                RecommendedAction = existing?.RecommendedAction,
+                Responsibility = existing?.Responsibility,
+                Remarks = existing?.Remarks
+                })
+                }
+
+        @* 7. Disbursement *@
+        @if (!Model.Discrepancies.DisbursmentRequired.IsValid)
+        {
+            var existing = GetSaved("Disbursed Amount");
+            decimal finBalance = Model.FinacleData.TotalBalanceLcy == 0 ? Model.FinacleData.TotalBalanceFcy : Model.FinacleData.TotalBalanceLcy;
+            @await Html.PartialAsync("_ResolutionCard", new ResolutionItem {
+            Index = i++,
+                Label = "Disbursed Amount",
+                FieldName = "Disbursed Amount",
+                FinValue = finBalance.ToString("N2"),
+                CatValue = Model.CatData.DisbursementRequired.ToString("N2"),
+                Discrepancy = Model.Discrepancies.DisbursmentRequired.Message,
+                Id = existing?.Id ?? Guid.Empty,
+                RecommendedAction = existing?.RecommendedAction,
+                Responsibility = existing?.Responsibility,
+                Remarks = existing?.Remarks
+                })
+                }
+
+        @* 8. Fees *@
+        @if (!Model.Discrepancies.Fee.IsValid)
+        {
+            var existing = GetSaved("Fee");
+            @await Html.PartialAsync("_ResolutionCard", new ResolutionItem {
+            Index = i++,
+                Label = "Fees",
+                FieldName = "Fees",
+                FinValue = Model.FinacleData.FxRate.ToString("N2"),
+                CatValue = Model.CatData.Fees.ToString("N2"),
+                Discrepancy = Model.Discrepancies.Fee.Message,
+                Id = existing?.Id ?? Guid.Empty,
+                RecommendedAction = existing?.RecommendedAction,
+                Responsibility = existing?.Responsibility,
+                Remarks = existing?.Remarks
+                })
+                }
+
+        @* 9. Value Date *@
+        @if (!Model.Discrepancies.ValueDate.IsValid)
+        {
+            var existing = GetSaved("Value Date");
+            @await Html.PartialAsync("_ResolutionCard", new ResolutionItem {
+            Index = i++,
+                Label = "Value Date",
+                FieldName = "Value Date",
+                FinValue = Model.FinacleData.DateGranted.ToString("dd-MMM-yyyy"),
+                CatValue = Model.CatData.ValueDate.ToString("dd-MMM-yyyy"),
+                Discrepancy = Model.Discrepancies.ValueDate.Message,
+                Id = existing?.Id ?? Guid.Empty,
+                RecommendedAction = existing?.RecommendedAction,
+                Responsibility = existing?.Responsibility,
+                Remarks = existing?.Remarks
+                })
+                }
+
+        @* Summary Footer *@
+        <div class="card bg-light border-0 shadow-sm mb-5 rounded-3">
+            <div class="card-body d-flex justify-content-between align-items-center py-4">
+                <div>
+                    <span class="text-muted fw-bold d-block">Batch Submission</span>
+                    <span class="small text-muted">You are resolving <strong>@i</strong> items simultaneously.</span>
+                </div>
+                <button type="submit" class="btn btn-success btn-lg px-5 fw-bold shadow-sm">
+                    <i class="bi bi-cloud-upload me-2"></i> Submit All Resolutions
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

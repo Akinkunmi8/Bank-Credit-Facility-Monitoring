@@ -1,0 +1,74 @@
+﻿@model Credit_Monitor.ViewModel.ResolutionItem
+
+@* Dynamic border color: Warning if previously saved, Danger if new/empty *@
+<div class="card shadow-sm border-0 mb-4 overflow-hidden border-start border-4 @(string.IsNullOrEmpty(Model.RecommendedAction) ? "border-danger" : "border-warning")">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold text-dark">Field: @Model.Label</h6>
+
+        @if (!string.IsNullOrEmpty(Model.RecommendedAction))
+        {
+            <span class="badge bg-warning text-dark rounded-pill px-3">
+                <i class="bi bi-clock-history me-1"></i> Reviewing Existing Resolution
+            </span>
+        }
+        else
+        {
+            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">Resolution Required</span>
+        }
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="p-3 bg-light rounded border">
+                    <div class="mb-3">
+                        <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size:0.65rem;">Finacle System</small>
+                        <span class="text-dark fw-bold font-monospace">@Model.FinValue</span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size:0.65rem;">CAT System</small>
+                        <span class="text-dark fw-bold font-monospace">@Model.CatValue</span>
+                    </div>
+                    <div class="text-danger small fw-medium mt-2">
+                        <i class="bi bi-exclamation-circle-fill me-1"></i> @Model.Discrepancy
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                @* This hidden FieldName is critical for the POST to know which database record to update *@
+                <input type="hidden" name="Resolutions[@Model.Index].FieldName" value="@Model.FieldName" />
+                <input type="hidden" name="Resolutions[@Model.Index].Discrepancy" value="@Model.Discrepancy" />
+                <input type="hidden" name="Resolutions[@Model.Index].Id" value="@Model.Id" />
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label small fw-bold mb-1">Recommended Action</label>
+                        @* Note: Textarea content goes BETWEEN the tags, not in a value attribute *@
+                        <textarea name="Resolutions[@Model.Index].RecommendedAction"
+                                  class="form-control form-control-sm"
+                                  rows="2"
+                                  placeholder="Describe the fix..."
+                                  required>@Model.RecommendedAction</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold mb-1">Responsibility</label>
+                        <input type="text"
+                               name="Resolutions[@Model.Index].Responsibility"
+                               class="form-control form-control-sm"
+                               value="@Model.Responsibility"
+                               placeholder="Dept or Person"
+                               required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold mb-1">Remarks</label>
+                        <input type="text"
+                               name="Resolutions[@Model.Index].Remarks"
+                               class="form-control form-control-sm"
+                               value="@Model.Remarks"
+                               placeholder="Additional notes..." />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

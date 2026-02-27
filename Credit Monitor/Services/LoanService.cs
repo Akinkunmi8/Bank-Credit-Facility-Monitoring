@@ -313,7 +313,7 @@ namespace Credit_Monitor.Services
             }
         }
 
-        public async Task<(bool isSuccess, string message)> ProcessStatusUpdate(Guid appId, string actionType)
+        public async Task<(bool isSuccess, string message)> ProcessStatusUpdate(Guid appId, string actionType, DateTime? deadline)
         {
             // 1. Log the intent with structured properties
             _logger.LogInformation("Initiating status update. Action: {ActionType}, ApplicationId: {AppId}", actionType, appId);
@@ -323,7 +323,8 @@ namespace Credit_Monitor.Services
                 var request = new StatusUpdateRequestDto
                 {
                     ApplicationId = appId.ToString(),
-                    Action = actionType
+                    Action = actionType,
+                    deadline = deadline
                 };
 
                 // 2. Call the API and capture the response
@@ -354,6 +355,63 @@ namespace Credit_Monitor.Services
             }
         }
 
+        public async Task<List<ResolutionItem>> GetSavedResolutionsMapped(Guid? appId)
+        {
+            // 1. Get raw data from API
+            var rawDtoList = await _loanAPIservice.GetExistingRemarksByAppId(appId.ToString());
+
+            if (rawDtoList == null || !rawDtoList.Any())
+                return new List<ResolutionItem>();
+
+            return _mapper.Map<List<ResolutionItem>>(rawDtoList);
+        }
+
+        public async Task<(int SuccessCount, int FailureCount)> ProcessBulkResolutionsAsync(Guid appId, List<ResolutionItem> resolutions)
+        {
+            int successCount = 0;
+            int failureCount = 0;
+
+            if (resolutions == null || !resolutions.Any()) return (0, 0);
+
+            foreach (var item in resolutions)
+            {
+                // Rule: Only process if a recommendation was provided
+                if (string.IsNullOrWhiteSpace(item.RecommendedAction)) continue;
+
+                var requestDto = new SaveRemarkRequestDto
+                {
+                    Id = item.Id,
+                    AppId = appId,
+                    Discrepancies = item.Discrepancy,
+                    Remarks = item.Remarks ?? "N/A",
+                    RecomendedAction = item.RecommendedAction,
+                    Responsibility = item.Responsibility ?? "Not Assigned"
+                };
+
+                try
+                {
+                    // Calling the API logic we built earlier
+                    var response = await _loanAPIservice.SaveDiscrepancyRemarksAsync(requestDto);
+
+                    if (response != null) // If your API returns a boolean or success property, check it here
+                    {
+                        successCount++;
+                    }
+                    else
+                    {
+                        failureCount++;
+                        _logger.LogWarning("Bulk Resolution: Failed to save {Field} for AppId {AppId}", item.FieldName, appId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    failureCount++;
+                    _logger.LogError(ex, "Bulk Resolution: Exception saving {Field}", item.FieldName);
+                }
+            }
+
+            return (successCount, failureCount);
+        }
         private ValidationResult CompareStrings(string fin, string cat, string fieldName)
         {
             bool match = string.Equals(fin?.Trim(), cat?.Trim(), StringComparison.OrdinalIgnoreCase);

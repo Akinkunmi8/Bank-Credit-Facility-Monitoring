@@ -13,5 +13,7 @@ namespace Credit_Monitor.Interfaces
         Task<List<FinacleRecord>?> GetApprovedLoansByRegion(string region);
         Task<List<FinacleRecord>?> GetRejectedLoansByRegion(string region);
         Task<List<FinacleRecord>?> GetResolvedLoansByRegion(string region);
+        Task<List<ExistingResolutionDto>?> GetExistingRemarksByAppId(string appId);
+        Task<SaveRemarkResponseDto> SaveDiscrepancyRemarksAsync(SaveRemarkRequestDto request);
     }
 }

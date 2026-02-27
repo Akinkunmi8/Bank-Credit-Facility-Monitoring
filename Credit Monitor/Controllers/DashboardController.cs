@@ -63,6 +63,30 @@ namespace Credit_Monitor.Controllers
             return View(await GetCMODashboardData(null, 1, region, status));
         }
 
+        [Authorize(Roles = "AO")]
+        public async Task<IActionResult> AODashboard(string status)
+        {
+            var region = User.FindFirst("Region")?.Value;
+            if (status == null) status = "Unresolved";
+
+            if (string.IsNullOrEmpty(region)) return View(new List<PendingConfirmedLoanViewModel>());
+
+            ViewData["Title"] = status switch
+            {
+                "Unreviewed" => "Unreviewed Loan Applications",
+                "Reviewed" => "Reviewed & Confirmed Loans",
+                "Unresolved" => "Unresolved (Rejected) Loans",
+                "Resolved" => "Resolved Applications",
+                "WithinTATUnreviewed" => "Unreviewed Loans (Within TAT)",
+                "WithinTATUnresolved" => "Unresolved Loans (Within TAT)",
+                "BeyondTATUnreviewed" => "Unreviewed Loans (Beyond TAT)",
+                "BeyondTATUnresolved" => "Unresolved Loans (Beyond TAT)",
+                _ => "Unresolved Loan Applications"
+            };
+            var loan = await _loanService.GetPendingConfirmedLoansByRegion(region);
+            return View(await GetAODashboardData(null, 1, region, status));
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetDocumentStatus(Guid batchId)
         {
@@ -151,10 +175,15 @@ namespace Credit_Monitor.Controllers
             var region = User.FindFirst("Region")?.Value;
             if (string.IsNullOrEmpty(region)) return Unauthorized();
 
-            if(role == "supervisor")
+            if(role == "CMS")
             {
-                var supervisorVM = await GetSupervisorDashboardData(searchTerm, page, region);
+                var supervisorVM = await GetCMSDashboardData(searchTerm, page, region, status);
                 return PartialView("_ConfirmedLoanTablePartial", supervisorVM);
+            }
+            if (role == "AO")
+            {
+                var AOVM = await GetAODashboardData(searchTerm, page, region, status);
+                return PartialView("_UnresolvedLoanTablePartial", AOVM);
             }
             ViewData["Title"] = status switch
             {
@@ -162,11 +191,13 @@ namespace Credit_Monitor.Controllers
                 "Reviewed" => "Reviewed & Confirmed Loans",
                 "Unresolved" => "Unresolved (Rejected) Loans",
                 "Resolved" => "Resolved Applications",
+                "Approved" => "Approved Loan Applications",
                 "WithinTATUnreviewed" => "Unreviewed Loans (Within TAT)",
                 "WithinTATUnresolved" => "Unresolved Loans (Within TAT)",
                 "BeyondTATUnreviewed" => "Unreviewed Loans (Beyond TAT)",
                 "BeyondTATUnresolved" => "Unresolved Loans (Beyond TAT)",
-                _ => " Unreviewed Loan Applications"
+                "BeyondTATReviewed" => "Reviewed Loans (Beyond TAT)",
+                _ => "Loan Applications"
             };
             var CMOVM = await GetCMODashboardData(searchTerm, page, region, status);
             return PartialView("_LoanTablePartial", CMOVM);
@@ -174,14 +205,29 @@ namespace Credit_Monitor.Controllers
 
 
         [Authorize(Roles = "CMS")]
-        public async Task<IActionResult> CMSDashboard()
+        public async Task<IActionResult> CMSDashboard(string status)
         {
             var region = User.FindFirst("Region")?.Value;
+            if (status == null) status = "Reviewed";
 
             if (string.IsNullOrEmpty(region)) return View(new List<PendingConfirmedLoanViewModel>());
 
-            var loan = await _loanService.GetConfirmedLoanByRegion(region); //1.
-            return View(await GetSupervisorDashboardData(null, 1, region));
+            ViewData["Title"] = status switch
+            {
+                "Unreviewed" => "Unreviewed Loan Applications",
+                "Reviewed" => "Reviewed & Confirmed Loans",
+                "Unresolved" => "Unresolved (Rejected) Loans",
+                "Resolved" => "Resolved Applications",
+                "Approved" => "Approved Loan Applications",
+                "WithinTATUnreviewed" => "Unreviewed Loans (Within TAT)",
+                "WithinTATUnresolved" => "Unresolved Loans (Within TAT)",
+                "BeyondTATUnreviewed" => "Unreviewed Loans (Beyond TAT)",
+                "BeyondTATUnresolved" => "Unresolved Loans (Beyond TAT)",
+                "BeyondTATReviewed" => "Reviewed Loans (Beyond TAT)",
+                _ => " Unreviewed Loan Applications"
+            };
+            var loan = await _loanService.GetConfirmedLoanByRegion(region); 
+            return View(await GetCMSDashboardData(null, 1, region, status));
         }
 
         public async Task<IActionResult> CustomerDetails(string id)
@@ -196,7 +242,7 @@ namespace Credit_Monitor.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> UpdateStatus(Guid applicationId, string actionType, string returnUrl, string returnDashboard)
+        public async Task<IActionResult> UpdateStatus(Guid applicationId, string actionType, string returnUrl, string returnDashboard, DateTime? deadline)
         {
             if (applicationId == Guid.Empty)
             {
@@ -204,7 +250,7 @@ namespace Credit_Monitor.Controllers
                 return Redirect(returnUrl);
             }
 
-            var (isSuccess, message) = await _loanService.ProcessStatusUpdate(applicationId, actionType);
+            var (isSuccess, message) = await _loanService.ProcessStatusUpdate(applicationId, actionType, deadline);
 
             if (isSuccess)
             {
@@ -301,44 +347,7 @@ namespace Credit_Monitor.Controllers
         {
             int pageSize = 10;
             IEnumerable<PendingConfirmedLoanViewModel> allLoans = new List<PendingConfirmedLoanViewModel>();
-            if (status == "Unreviewed" || status == "")
-            {
-                allLoans = await _loanService.GetPendingConfirmedLoansByRegion(region);
-
-            }
-            else if (status == "Reviewed")
-            {
-                allLoans = await _loanService.GetConfirmedLoanByRegion(region);
-            }
-            else if (status == "Unresolved")
-            {
-                allLoans = await _loanService.GetRejectedLoanByRegion(region);
-            }
-            else if (status == "Resolved")
-            {
-                allLoans = await _loanService.GetResolvedLoanByRegion(region);
-            }
-            else if (status == "WithinTATUnresolved")
-            {
-               var data = await _dashboardapi.GetWithinTATUnresolvedLoansByRegion(region);
-               allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
-            }
-            else if (status == "BeyondTATUnreviewed")
-            {
-                var data = await _dashboardapi.GetBeyondTATUnreviewedLoansByRegion(region);
-                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
-            }
-            else if(status == "BeyondTATUnresolved")
-            {
-                var data = await _dashboardapi.GetBeyondTATUnresolvedLoansByRegion(region);
-                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
-            }
-            else if (status == "WithinTATUnreviewed")
-            {
-                var data = await _dashboardapi.GetWithinTATUnreviewedLoansByRegion(region);
-                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
-            }
-
+            allLoans = await GetPendingLoanFromStatus(status, region);
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
@@ -357,7 +366,7 @@ namespace Credit_Monitor.Controllers
             return new CMODashboardViewModel
             {
                 TotalUnreviewedLoans = await _dashboardapi.GetTotalPending(region),
-                TotalReviewedLoans = await _dashboardapi.GetTotalConfirmed(region),
+                TotalReviewedLoans = await _dashboardapi.GetTotalConfirmed(region), 
                 TotalUnresolvedLoans = await _dashboardapi.GetTotalRejected(region),
                 TotalResolvedLoans = await _dashboardapi.GetTotalResolved(region),
                 WithinTATUnreviewed = await _dashboardapi.GetWithinTATUnReview(region),
@@ -373,11 +382,12 @@ namespace Credit_Monitor.Controllers
             };
         }
 
-        private async Task<SupervisorDashboardViewModel> GetSupervisorDashboardData(string searchTerm, int page, string region)
+        private async Task<CMSDashboardViewModel> GetCMSDashboardData(string searchTerm, int page, string region, string status)
         {
             int pageSize = 10;
 
-            var allLoans = await _loanService.GetConfirmedLoanByRegion(region);
+            IEnumerable<PendingConfirmedLoanViewModel> allLoans = new List<PendingConfirmedLoanViewModel>();
+            allLoans = await GetPendingLoanFromStatus(status, region);
 
             // 2. Apply Search Filter if user typed something
             if (!string.IsNullOrEmpty(searchTerm))
@@ -396,13 +406,13 @@ namespace Credit_Monitor.Controllers
                 .ToList();
 
             // 4. Populate the full ViewModel including the API counts
-            return new SupervisorDashboardViewModel
+            return new CMSDashboardViewModel
             {
                 
                 TotalApprovedLoans = await _dashboardapi.GetTotalApproved(region),
-                TotalConfirmedLoans = await _dashboardapi.GetTotalConfirmed(region),
-                WithinTAT = await _dashboardapi.GetWithinTAT(region),
-                BeyondTAT = await _dashboardapi.GetBeyondTAT(region),
+                TotalReviewedLoans = await _dashboardapi.GetTotalConfirmed(region),
+                BeyondTATUnreviewed = await _dashboardapi.GetBeyondTATUnReview(region),
+                BeyondTATReviewed = await _dashboardapi.GetBeyondTATUnApprove(region),
 
                 // Table & Pagination data
                 Confirmedloans = pagedLoans,
@@ -413,6 +423,40 @@ namespace Credit_Monitor.Controllers
             };
         }
 
+        private async Task<AODashboardViewModel> GetAODashboardData(string searchTerm, int page, string region, string status)
+        {
+            int pageSize = 10;
+            IEnumerable<PendingConfirmedLoanViewModel> allLoans = new List<PendingConfirmedLoanViewModel>();
+            allLoans = await GetPendingLoanFromStatus(status, region);
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                allLoans = allLoans.Where(l =>
+                    l.accounT_NAME.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    l.id.ToString().Contains(searchTerm)
+                ).ToList();
+            }
+
+            int totalItems = allLoans.Count();
+            var pagedLoans = allLoans
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new AODashboardViewModel
+            {
+                TotalUnresolvedLoans = await _dashboardapi.GetTotalRejected(region),
+                TotalResolvedLoans = await _dashboardapi.GetTotalResolved(region),
+                WithinTATUnresolved = await _dashboardapi.GetWithinTATUnResolve(region),
+                BeyondTATUnresolved = await _dashboardapi.GetBeyondTATUnResolve(region),
+
+                loans = pagedLoans,
+                CurrentPage = page,
+                TotalItems = totalItems,
+                TotalPages = (int)Math.Ceiling((double)totalItems / pageSize),
+                SearchTerm = searchTerm
+            };
+        }
         private string GetMimeType(string ext)
         {
             return ext switch
@@ -426,6 +470,53 @@ namespace Credit_Monitor.Controllers
                 "txt" => "text/plain",
                 _ => "application/octet-stream"
             };
+        }
+
+        private async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetPendingLoanFromStatus(string status, string region)
+        {
+            IEnumerable<PendingConfirmedLoanViewModel> allLoans = new List<PendingConfirmedLoanViewModel>();
+            if (status == "Unreviewed" || status == "")
+            {
+                allLoans = await _loanService.GetPendingConfirmedLoansByRegion(region);
+
+            }
+            else if (status == "Reviewed")
+            {
+                allLoans = await _loanService.GetConfirmedLoanByRegion(region);
+            }
+            else if (status == "Unresolved")
+            {
+                allLoans = await _loanService.GetRejectedLoanByRegion(region);
+            }
+            else if (status == "Approved")
+            {
+                allLoans = await _loanService.GetApprovedLoanByRegion(region);
+            }
+            else if (status == "Resolved")
+            {
+                allLoans = await _loanService.GetResolvedLoanByRegion(region);
+            }
+            else if (status == "WithinTATUnresolved")
+            {
+                var data = await _dashboardapi.GetWithinTATUnresolvedLoansByRegion(region);
+                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
+            }
+            else if (status == "BeyondTATUnreviewed")
+            {
+                var data = await _dashboardapi.GetBeyondTATUnreviewedLoansByRegion(region);
+                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
+            }
+            else if (status == "BeyondTATUnresolved")
+            {
+                var data = await _dashboardapi.GetBeyondTATUnresolvedLoansByRegion(region);
+                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
+            }
+            else if (status == "WithinTATUnreviewed")
+            {
+                var data = await _dashboardapi.GetWithinTATUnreviewedLoansByRegion(region);
+                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
+            }
+            return allLoans;
         }
 
 

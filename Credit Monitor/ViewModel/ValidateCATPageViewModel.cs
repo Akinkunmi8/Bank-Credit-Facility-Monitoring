@@ -25,5 +25,7 @@ namespace Credit_Monitor.ViewModel
         public string? IntRateDisplay { get; set; }
         public DateTime DateGranted { get; set; }
         public DateTime ExpiryDate { get; set; }
+
+        public bool isRejected { get; set; }
     }    
 }

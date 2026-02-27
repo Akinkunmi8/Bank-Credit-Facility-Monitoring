@@ -1,0 +1,139 @@
+﻿@model Credit_Monitor.ViewModel.AODashboardViewModel
+
+<div class="card shadow-sm border-0">
+
+    <!-- ===== Card Header ===== -->
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold text-primary">
+            <i class="bi bi-check2-square me-2"></i>Confirmed Loans
+        </h6>
+        <span class="badge bg-primary">
+            @Model?.TotalItems ?? 0
+        </span>
+    </div>
+
+    <!-- ===== Table ===== -->
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-uppercase">
+                    <tr>
+                        <th class="ps-3">Application No.</th>
+                        <th>Client Name</th>
+                        <th>Product</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Since</th>
+                        <th>Branch</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model?.loans != null && Model.loans.Any())
+                    {
+                        foreach (var loan in Model.loans)
+                        {
+                            <tr>
+                                <td class="ps-3 fw-semibold">
+                                    <a asp-action="CustomerDetails"
+                                       asp-route-id="@loan.id"
+                                       class="text-decoration-none text-primary">
+                                        @loan.id
+                                    </a>
+                                </td>
+
+                                <td class="fw-semibold text-dark">
+                                    @loan.accounT_NAME
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-secondary-subtle text-secondary border">
+                                        @loan.facilitY_TYPE
+                                    </span>
+                                </td>
+
+                                <td class="text-muted">
+                                    @loan.regioN_NAME
+                                </td>
+
+                                <td>
+                                    @if (loan.dayS_PAST_DUE > 0)
+                                    {
+                                        <span class="badge bg-danger">
+                                            Past Due · @loan.dayS_PAST_DUE days
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">
+                                            Current
+                                        </span>
+                                    }
+                                </td>
+
+                                <td class="text-muted small">
+                                    One week ago
+                                </td>
+
+                                <td class="text-muted">
+                                    @loan.brancH_NAME
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="d-flex flex-column align-items-center">
+                                    <i class="bi bi-folder-x text-muted mb-2"
+                                       style="font-size:3rem; opacity:.3;"></i>
+                                    <h6 class="fw-light text-muted mb-1">
+                                        No confirmed loans found
+                                    </h6>
+                                    <p class="small text-muted mb-2">
+                                        Try adjusting your search or refresh the page
+                                    </p>
+                                    <button class="btn btn-sm btn-outline-primary"
+                                            onclick="$('#searchInput').val(''); loadTable('', 1);">
+                                        Clear Search
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== Pagination ===== -->
+    <div class="card-footer bg-white border-top-0 py-2">
+        <div class="row align-items-center">
+            <div class="col-sm-6">
+                <small class="text-muted">
+                    Total Records:
+                    <strong>@Model?.TotalItems</strong>
+                </small>
+            </div>
+
+            <div class="col-sm-6">
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-end mb-0">
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link"
+                                   href="javascript:void(0)"
+                                   onclick="loadTable($('#searchInput').val(), @i, currentStatus)">
+                                    @i
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+</div>

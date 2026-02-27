@@ -2,9 +2,9 @@
 
 @{
     bool isValid = Model.Result.IsValid;
-    // We'll pass these values to the modal via data attributes
     string statusText = isValid ? "Synchronized" : Model.Result.Message;
-    string rowClass = isValid ? "" : "table-light";
+    // Highlight mismatched rows slightly to draw the eye
+    string rowClass = isValid ? "" : "bg-danger bg-opacity-10";
 
     string badgeClass = isValid ? "bg-success-subtle text-success border-success" : "bg-danger-subtle text-danger border-danger";
 }
@@ -22,27 +22,20 @@
     </td>
 
     <td class="text-end pe-3">
-        <button type="button"
-                class="btn btn-sm @(isValid ? "btn-outline-secondary" : "btn-primary")"
-                data-bs-toggle="modal"
-                data-bs-target="#reviewModal"
-                data-label="@Model.Label"
-                data-fin="@Model.Fin"
-                data-cat="@Model.Cat"
-                data-status="@statusText"
-                data-isvalid="@isValid.ToString().ToLower()">
-            <i class="bi @(isValid ? "bi-eye" : "bi-pencil-square") me-1"></i>
-            @(isValid ? "Details" : "Review")
-        </button>
+        @* Simple Read-Only Label or Disabled Button to indicate status without opening a modal *@
+        <div class="d-flex justify-content-end align-items-center">
+            @if (isValid)
+            {
+                <span class="text-success small fw-bold">
+                    <i class="bi bi-shield-check me-1"></i> Verified
+                </span>
+            }
+            else
+            {
+                <span class="text-danger small fw-bold animate-pulse">
+                    <i class="bi bi-x-octagon me-1"></i> Mismatch
+                </span>
+            }
+        </div>
     </td>
 </tr>
-
-@section Scripts {
-    <script>
-        // Enable Bootstrap tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
-    </script>
-}
