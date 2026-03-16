@@ -5,6 +5,16 @@
     var loan = Model.loan;
     var customer = Model.customer;
     var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
+    var activeforAOBM = "";
+    var activeForCM = " ";
+    if (userRole == "AO" || userRole == "BM")
+    {
+         activeforAOBM = "active";
+    }
+    else if (userRole == "CMO" || userRole == "CMS")
+    {
+         activeForCM = "active";
+    }
 }
 
 <style>
@@ -98,6 +108,18 @@
                     <i class="bi bi-shield-check me-1"></i> Validate CAT
                 </a>
             }
+            @if (userRole == "AO" || userRole == "BM")
+            {
+                // Show "Confirm Resolution" only if the service indicates 0 errors
+                // Note: You might need to pass ErrorCount in your main ViewModel to toggle this
+                <form asp-action="UpdateStatus" asp-controller="Dashboard" method="post" id="resolutionForm">
+                    <input type="hidden" name="applicationId" value="@loan?.id" />
+                    <input type="hidden" name="actionType" value="resolve" />
+                    <button type="submit" class="btn btn-success btn-sm fw-bold px-3 d-none" id="btnConfirmResolution">
+                        <i class="bi bi-check-all"></i> Confirm Resolution
+                    </button>
+                </form>
+            }
 
             <button onclick="history.back()" class="btn btn-outline-secondary btn-sm px-3">
                 <i class="bi bi-arrow-left"></i> Back
@@ -111,12 +133,24 @@
     <!-- ===== Tabs ===== -->
     <ul class="nav nav-tabs mb-3">
         <li class="nav-item">
-            <button class="nav-link active fw-bold small"
+            <button class="nav-link @(userRole != "AO" && userRole != "BM" ? "active" : "") fw-bold small"
                     data-bs-toggle="tab"
                     data-bs-target="#basicInfo">
                 Customer Profile
             </button>
         </li>
+
+        @if (userRole == "AO" || userRole == "BM")
+        {
+            <li class="nav-item">
+                <button class="nav-link active fw-bold small"
+                        data-bs-toggle="tab"
+                        data-bs-target="#discrepancyAnalysis"
+                        onclick="loadDiscrepancies('@loan?.accounT_NUMBER')">
+                    Discrepancy Analysis
+                </button>
+            </li>
+        }
         <li class="nav-item">
             <button class="nav-link fw-bold small"
                     data-bs-toggle="tab"
@@ -138,8 +172,7 @@
     <div class="tab-content bg-white p-4 shadow-sm profile-card">
 
         <!-- ===== BASIC INFO ===== -->
-        <div class="tab-pane fade show active" id="basicInfo">
-
+        <div class="tab-pane fade @(userRole == "CMO" || userRole == "CMS" ? "show active" : "")" id="basicInfo">
             <div class="section-title">Identity & Personal Information</div>
             <div class="row g-3 mb-4">
                 <div class="col-md-3">
@@ -205,7 +238,26 @@
             </div>
         </div>
 
+        <!-- ==== DISCREPANCY STATUS ===== -->
+        @if (userRole == "AO" || userRole == "BM")
+        {
+            <div class="tab-pane fade show active" id="discrepancyAnalysis">
+                <div id="discrepancyContainer" class="text-center py-5">
+                    <div class="spinner-border text-danger"></div>
+                    <p class="text-muted mt-2">Analyzing system mismatches…</p>
+                </div>
+                @* Auto-load since it's the active tab *@
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        loadDiscrepancies('@loan?.accounT_NUMBER');
+                    });
+                </script>
+            </div>
+        }
+
     </div>
+
+
 
     <!-- ===== LOAN DETAILS ===== -->
     <div class="mt-4">
@@ -238,6 +290,28 @@
             },
             error: function (xhr, status, error) {
                 container.html('<div class="alert alert-danger">Error: ' + error + '</div>');
+            }
+        });
+    }
+    // Discrepancies Loader
+    function loadDiscrepancies(accNum) {
+        if (!accNum) return;
+
+        const container = $('#discrepancyContainer');
+        const tabPane = $('#discrepancyAnalysis');
+
+        if (tabPane.data('loaded') === true) return;
+
+        $.ajax({
+            url: '@Url.Action("GetDiscrepancyStatus", "Dashboard")',
+            type: 'GET',
+            data: { accNum: accNum },
+            success: function (result) {
+                container.html(result);
+                tabPane.data('loaded', true);
+            },
+            error: function () {
+                container.html('<div class="alert alert-danger">Failed to load analysis.</div>');
             }
         });
     }

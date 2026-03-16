@@ -1,0 +1,217 @@
+﻿@using Credit_Monitor.ViewModel
+@model Credit_Monitor.ViewModel.ValidateCATPageViewModel
+@{
+    var remarks = ViewBag.ExistingResolutions as List<ResolutionItem> ?? new List<ResolutionItem>();
+}
+
+<style>
+    .mismatch-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        border-left: 8px solid #dc3545;
+        overflow: hidden;
+    }
+
+    .mismatch-header {
+        padding: 16px 24px;
+        background: #fffcfc;
+        border-bottom: 1px solid #fee2e2;
+    }
+
+    .data-comparison-area {
+        display: flex;
+        background: #ffffff;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .system-pane {
+        flex: 1;
+        padding: 20px 24px;
+    }
+
+        .system-pane:first-child {
+            border-right: 1px solid #f1f5f9;
+            background-color: #f8fafc;
+        }
+
+    .sys-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .sys-value {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    /* --- NEW RESOLUTION STYLES --- */
+    .resolution-tray {
+        background: #ffffff;
+        padding: 24px;
+    }
+
+    .res-section {
+        margin-bottom: 20px;
+    }
+
+        .res-section:last-child {
+            margin-bottom: 0;
+        }
+
+    .res-heading {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #0369a1;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .res-body-text {
+        font-size: 0.95rem;
+        color: #334155;
+        line-height: 1.6;
+        padding-left: 24px;
+        border-left: 2px solid #e2e8f0;
+    }
+
+    .responsibility-bar {
+        background: #f1f5f9;
+        padding: 10px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .resp-tag {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #475569;
+    }
+
+    .resp-user {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #0f172a;
+        background: #e2e8f0;
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+</style>
+
+<div class="mismatch-container mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold text-dark mb-0">System Audit Trail</h3>
+            <p class="text-muted small">Comparison of Core Banking (Finacle) vs Loan Admin (CAT)</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-danger rounded-pill px-4 py-2 fs-6">
+                @Model.Discrepancies.ErrorCount Mismatches Detected
+            </span>
+        </div>
+    </div>
+
+    @if (Model.FinacleData != null && Model.CatData != null && Model.Discrepancies != null)
+    {
+        @if (Model.Discrepancies.ErrorCount > 0)
+        {
+            async Task RenderField(string label, dynamic result, string finValue, string catValue, string remarkKey)
+            {
+                if (result != null && !result.IsValid)
+                {
+                    var r = remarks.FirstOrDefault(x =>
+                    !string.IsNullOrEmpty(x.Discrepancy) &&
+                    x.Discrepancy.Contains(remarkKey, StringComparison.OrdinalIgnoreCase)
+                    );
+
+                    <div class="mismatch-card">
+                        <div class="mismatch-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold text-dark mb-0">@label</h5>
+                                <span class="badge bg-light text-danger border border-danger">
+                                    <i class="bi bi-exclamation-octagon me-1"></i> Data Conflict
+                                </span>
+                            </div>
+                            <div class="text-danger small mt-2 fw-semibold">
+                                <i class="bi bi-info-circle-fill me-1"></i> @result.Message
+                            </div>
+                        </div>
+
+                        <div class="data-comparison-area">
+                            <div class="system-pane">
+                                <span class="sys-label">Finacle Value</span>
+                                <div class="sys-value">@(string.IsNullOrEmpty(finValue) ? "—" : finValue)</div>
+                            </div>
+                            <div class="system-pane">
+                                <span class="sys-label">CAT Value</span>
+                                <div class="sys-value text-danger">@(string.IsNullOrEmpty(catValue) ? "—" : catValue)</div>
+                            </div>
+                        </div>
+
+                        <div class="resolution-tray">
+                            <div class="res-section">
+                                <div class="res-heading">
+                                    <i class="bi bi-patch-check-fill"></i> Recommended Action
+                                </div>
+                                <div class="res-body-text fw-bold">
+                                    @(r?.RecommendedAction ?? "Waiting for AO/BM to propose a corrective action...")
+                                </div>
+                            </div>
+
+                            <div class="res-section">
+                                <div class="res-heading" style="color: #64748b;">
+                                    <i class="bi bi-chat-square-text-fill"></i> Detailed Internal Remarks
+                                </div>
+                                <div class="res-body-text text-muted fst-italic">
+                                    @(r?.Remarks ?? "No specific audit remarks have been documented for this mismatch.")
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="responsibility-bar">
+                            <span class="resp-tag text-uppercase">Primary Responsibility:</span>
+                            <span class="resp-user">
+                                <i class="bi bi-person-badge me-1"></i> @(r?.Responsibility ?? "Unassigned")
+                            </span>
+                        </div>
+                    </div>
+                }
+            }
+
+            @* Mapping logic *@
+            await RenderField("Customer Name", Model.Discrepancies.CustomerName, Model.FinacleData?.AccountName, Model.CatData?.CustomerName, "Customer Name");
+            await RenderField("Directorate/SBU", Model.Discrepancies.Directorate, Model.FinacleData?.SbuName, Model.CatData?.Directorate, "Directorate/SBU");
+            await RenderField("Facility Type", Model.Discrepancies.FacilityType, Model.FinacleData?.FacilityType, Model.CatData?.FacilityType, "Facility Type");
+            await RenderField("Approval Limit", Model.Discrepancies.ApprovalLimit, Model.FinacleData?.SanctionLimit.ToString("N2"), Model.CatData?.ApprovalLimit.ToString("N2"), "Approval Limit");
+
+            decimal finBalance = (Model.FinacleData?.TotalBalanceLcy ?? 0) == 0 ? (Model.FinacleData?.TotalBalanceFcy ?? 0) : (Model.FinacleData?.TotalBalanceLcy ?? 0);
+            await RenderField("Disbursed Amount", Model.Discrepancies.DisbursmentRequired, finBalance.ToString("N2"), Model.CatData?.DisbursementRequired.ToString("N2"), "Disbursed Amount");
+
+            await RenderField("Fees", Model.Discrepancies.Fee, Model.FinacleData?.FxRate.ToString("N2"), Model.CatData?.Fees.ToString("N2"), "Fee");
+            await RenderField("Interest Rate", Model.Discrepancies.Interest, (Model.FinacleData?.IntRateDisplay ?? "0") + "%", (Model.CatData?.Interest ?? 0) + "%", "Interest Rate");
+            await RenderField("Value Date", Model.Discrepancies.ValueDate, Model.FinacleData?.DateGranted.ToString("dd-MMM-yyyy"), Model.CatData?.ValueDate.ToString("dd-MMM-yyyy"), "Value Date");
+            await RenderField("Maturity Date", Model.Discrepancies.MaturityDate, Model.FinacleData?.ExpiryDate.ToString("dd-MMM-yyyy"), Model.CatData?.MaturityOrExpiry.ToString("dd-MMM-yyyy"), "Maturity Date");
+        }
+        else
+        {
+            <div class="empty-state text-center bg-white rounded-3 border">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                <h2 class="mt-3 fw-bold">Records Synchronized</h2>
+                <p class="text-muted fs-5">Both systems are reporting identical data for this facility.</p>
+            </div>
+        }
+    }
+</div>

@@ -343,6 +343,29 @@ namespace Credit_Monitor.Controllers
             return BadRequest("Invalid format.");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetDiscrepancyStatus(string accNum)
+        {
+            if (string.IsNullOrEmpty(accNum)) return PartialView("_DiscrepancyStatusPartial", null);
+
+            // Reuse your existing logic to get the data
+            var finnacle = await _loanService.GetPendingConfirmedLoanByAccNumAsync(accNum);
+            var cat = await _loanService.GetCustomerLoanDetailsfromCATAsync(accNum);
+            var discrepancies = await _loanService.ValidateLoanDiscrepancies(accNum);
+            var savedRemarks = await _loanService.GetSavedResolutionsMapped(finnacle!.Id);
+
+            var viewModel = new ValidateCATPageViewModel
+            {
+                FinacleData = finnacle,
+                CatData = cat,
+                Discrepancies = discrepancies
+            };
+
+            // Pass remarks to partial via ViewBag
+            ViewBag.ExistingResolutions = savedRemarks;
+
+            return PartialView("_DiscrepancyStatusPartial", viewModel);
+        }
         private async Task<CMODashboardViewModel> GetCMODashboardData(string searchTerm, int page, string region, string status)
         {
             int pageSize = 10;

@@ -2,7 +2,7 @@
 @using System.Security.Claims;
 @{
     var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
-    ViewData["Title"] = "Supervisor Dashboard";
+    ViewData["Title"] = "CMS Dashboard";
 }
 
 <style>
