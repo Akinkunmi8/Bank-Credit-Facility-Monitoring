@@ -111,10 +111,10 @@
     }
 </style>
 
-<div class="mismatch-container mt-3">
+<div>
     <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
         <div>
-            <h3 class="fw-bold text-dark mb-0">System Audit Trail</h3>
+            <h3 class="fw-bold text-dark mb-0">Discrepancy Report</h3>
             <p class="text-muted small">Comparison of Core Banking (Finacle) vs Loan Admin (CAT)</p>
         </div>
         <div class="text-end">
@@ -207,10 +207,31 @@
         }
         else
         {
-            <div class="empty-state text-center bg-white rounded-3 border">
-                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-                <h2 class="mt-3 fw-bold">Records Synchronized</h2>
-                <p class="text-muted fs-5">Both systems are reporting identical data for this facility.</p>
+            <div class="text-center py-2 bg-white rounded-3 border shadow-sm">
+                <div class="mb-3">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4.5rem;"></i>
+                </div>
+
+                <h2 class="fw-bold text-dark">Data Match Confirmed</h2>
+                <p class="text-muted fs-5 mb-4">
+                    No discrepancies found between Finacle and CAT.
+                </p>
+
+                <div class="pt-3 border-top mx-auto" style="max-width: 400px;">
+                    <form asp-action="UpdateStatus" asp-controller="Dashboard" method="post" id="resolutionForm">
+                        <input type="hidden" name="applicationId" value="@Model.FinacleData.Id" />
+                        <input type="hidden" name="actionType" value="resolve" />
+                        <input type="hidden" name="returnDashboard" value="AODashboard" />
+
+                        <button type="submit"
+                                class="btn btn-success btn-lg w-100 fw-bold py-3 shadow"
+                                id="btnConfirmResolution"
+                                style="font-size: 1.25rem; letter-spacing: 0.5px;">
+                            <i class="bi bi-check-all me-2"></i> MARK AS RESOLVED
+                        </button>
+                    </form>
+                    <p class="small text-muted mt-3">Clicking confirm will finalize the audit for this facility.</p>
+                </div>
             </div>
         }
     }

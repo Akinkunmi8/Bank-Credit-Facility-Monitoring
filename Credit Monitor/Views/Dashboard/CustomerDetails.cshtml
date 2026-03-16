@@ -108,19 +108,6 @@
                     <i class="bi bi-shield-check me-1"></i> Validate CAT
                 </a>
             }
-            @if (userRole == "AO" || userRole == "BM")
-            {
-                // Show "Confirm Resolution" only if the service indicates 0 errors
-                // Note: You might need to pass ErrorCount in your main ViewModel to toggle this
-                <form asp-action="UpdateStatus" asp-controller="Dashboard" method="post" id="resolutionForm">
-                    <input type="hidden" name="applicationId" value="@loan?.id" />
-                    <input type="hidden" name="actionType" value="resolve" />
-                    <button type="submit" class="btn btn-success btn-sm fw-bold px-3 d-none" id="btnConfirmResolution">
-                        <i class="bi bi-check-all"></i> Confirm Resolution
-                    </button>
-                </form>
-            }
-
             <button onclick="history.back()" class="btn btn-outline-secondary btn-sm px-3">
                 <i class="bi bi-arrow-left"></i> Back
             </button>
@@ -169,7 +156,7 @@
         </li>
     </ul>
 
-    <div class="tab-content bg-white p-4 shadow-sm profile-card">
+    <div class="tab-content bg-white p-3 shadow-sm profile-card">
 
         <!-- ===== BASIC INFO ===== -->
         <div class="tab-pane fade @(userRole == "CMO" || userRole == "CMS" ? "show active" : "")" id="basicInfo">
@@ -224,7 +211,7 @@
 
         <!-- ===== DOCUMENT STATUS ===== -->
         <div class="tab-pane fade" id="docStatus">
-            <div id="docStatusContainer" class="text-center py-5">
+            <div id="docStatusContainer" class="text-center">
                 <div class="spinner-border text-primary"></div>
                 <p class="text-muted mt-2">Loading document status…</p>
             </div>
@@ -232,7 +219,7 @@
 
         <!-- ===== COVENANT STATUS ===== -->
         <div class="tab-pane fade" id="covenantStatus">
-            <div id="covenantStatusContainer" class="text-center py-5">
+            <div id="covenantStatusContainer" class="text-center">
                 <div class="spinner-border text-success"></div>
                 <p class="text-muted mt-2">Loading covenant tracker…</p>
             </div>
@@ -242,7 +229,7 @@
         @if (userRole == "AO" || userRole == "BM")
         {
             <div class="tab-pane fade show active" id="discrepancyAnalysis">
-                <div id="discrepancyContainer" class="text-center py-5">
+                <div id="discrepancyContainer" class="text-center">
                     <div class="spinner-border text-danger"></div>
                     <p class="text-muted mt-2">Analyzing system mismatches…</p>
                 </div>
@@ -299,6 +286,10 @@
 
         const container = $('#discrepancyContainer');
         const tabPane = $('#discrepancyAnalysis');
+        const confirmBtn = $('#btnConfirmResolution');
+
+        // Pass the C# variable to a JS constant
+        const currentUserRole = '@userRole';
 
         if (tabPane.data('loaded') === true) return;
 
@@ -309,6 +300,7 @@
             success: function (result) {
                 container.html(result);
                 tabPane.data('loaded', true);
+
             },
             error: function () {
                 container.html('<div class="alert alert-danger">Failed to load analysis.</div>');
