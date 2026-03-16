@@ -23,6 +23,10 @@ namespace BankLoanMonetrySolu.IServices
         Task<FincaleCompareDataDto> GetFinacleCompareData(string acctNum);
         //Task<Guid>SaveFilesAsync(string appId, List<IFormFile> files, LoanDocumentType fileType);
         Task<Guid> SaveFilesAsync(UploadFilesDto dto);
+        Task<string> AddFile(FileViewDto file);
+        Task<List<FileEditDto>> GetFileByAppIdAsync(Guid AppId);
+        Task<List<FileEditDto>> EditFileByAppIdAsync(Guid appId, FileEditDto updateDto);
+        Task<bool> UpdateFileStatus(Guid fileId, bool verify);
         Task<List<FileViewDto>> GetAllFilesByBatchIdAsync(Guid batchId);
 
 

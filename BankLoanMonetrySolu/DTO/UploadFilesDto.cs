@@ -11,7 +11,8 @@ namespace BankLoanMonetrySolu.DTO
         OfferLetter,
         ApprovalMail,
         InsuranceCert,
-        CashCollateral
+        CashCollateral,
+        Other
     }
 
 
@@ -31,10 +32,27 @@ namespace BankLoanMonetrySolu.DTO
 
     public class FileViewDto
     {
-        public Guid? FileId { get; set; }
+        public Guid? AppId { get; set; }
         public string? FileName { get; set; }
         public string? DocType { get; set; }
         public string? ContentType  { get; set; }
+        public bool IsVeriFied { get; set; }
+    }
+
+    public class FileStatusUpdateDto
+    {
+        public Guid FileId { get; set; }
+        public bool IsVerified { get; set; }
+    }
+
+    public class FileEditDto
+    {
+        public Guid? Id { get; set; }
+        public Guid? AppId { get; set; }
+        public string? FileName { get; set; }
+        public string? DocType { get; set; }
+        public string? ContentType { get; set; }
+        public bool IsVeriFied { get; set; }
     }
 
 }

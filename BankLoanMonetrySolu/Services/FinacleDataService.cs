@@ -529,7 +529,7 @@ namespace BankLoanMonetrySolu.Services
             var files = await _context.LoanFileItem.Where(f => f.FileBatchId == batchId).ToListAsync();
             return files.Select(f => new FileViewDto
             {
-                FileId = f.Id,
+                AppId = f.Id,
                 FileName = f.FileName,
                 DocType = f.DocumentType.ToString(),
                 ContentType = GetMimeType(f.FileFormat),
@@ -550,7 +550,99 @@ namespace BankLoanMonetrySolu.Services
         }
 
 
+        public async Task<string> AddFile(FileViewDto file)
+        {
+            if (file.AppId == null || string.IsNullOrEmpty(file.FileName))
+                return "Invalid file data.";
 
+            var newFile = new LoanFileItem
+            {
+                Id = Guid.NewGuid(),
+                FileBatchId = file.AppId.Value,
+                FileName = file.FileName,
+                FileFormat = file.ContentType ?? "unknown",
+                IsFileVerified = file.IsVeriFied
+            };
 
+            // Logic: Try to match the Enum. If no match, use 'Other' and save the string.
+            if (Enum.TryParse<LoanDocumentType>(file.DocType, true, out var matchedType))
+            {
+                newFile.DocumentType = matchedType;
+            }
+            else
+            {
+                newFile.DocumentType = LoanDocumentType.Other;
+                newFile.CustomDocumentType = file.DocType; // Save the user's custom input
+            }
+
+            _context.LoanFileItem.Add(newFile);
+            await _context.SaveChangesAsync();
+
+            return newFile.Id.ToString();
+        }
+
+        public async Task<List<FileEditDto>> GetFileByAppIdAsync(Guid appId)
+        {
+            return await _context.LoanFileItem
+                .Where(x => x.FileBatchId == appId)
+                .Select(f => new FileEditDto
+                {
+                    Id = f.Id,
+                    AppId = f.FileBatchId,
+                    FileName = f.FileName,
+                    // If it's 'Other', show the custom string; otherwise show the Enum name
+                    DocType = f.DocumentType == LoanDocumentType.Other
+                              ? f.CustomDocumentType
+                              : f.DocumentType.ToString(),
+                    ContentType = f.FileFormat,
+                    IsVeriFied = f.IsFileVerified
+                })
+                .ToListAsync();
+        }
+
+        public async Task<bool> UpdateFileStatus(Guid fileId, bool verify)
+        {
+            var file = await _context.LoanFileItem.FindAsync(fileId);
+            if (file == null) return false;
+
+            file.IsFileVerified = verify;
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<List<FileEditDto>> EditFileByAppIdAsync(Guid appId, FileEditDto updateDto)
+        {
+            // 1. Find the specific file by its unique ID
+            var existingFile = await _context.LoanFileItem
+                .FirstOrDefaultAsync(x => x.Id == updateDto.Id && x.FileBatchId == appId);
+
+            if (existingFile == null)
+            {
+                throw new Exception("File record not found.");
+            }
+
+            // 2. Update properties
+            existingFile.FileName = updateDto.FileName ?? existingFile.FileName;
+            existingFile.FileFormat = updateDto.ContentType ?? existingFile.FileFormat;
+            existingFile.IsFileVerified = updateDto.IsVeriFied;
+
+            // 3. Handle the Enum/Custom Type Logic
+            if (Enum.TryParse<LoanDocumentType>(updateDto.DocType, true, out var matchedType))
+            {
+                existingFile.DocumentType = matchedType;
+                existingFile.CustomDocumentType = matchedType == LoanDocumentType.Other
+                                                  ? updateDto.DocType : null;
+            }
+            else
+            {
+                existingFile.DocumentType = LoanDocumentType.Other;
+                existingFile.CustomDocumentType = updateDto.DocType;
+            }
+
+            // 4. Save changes
+            await _context.SaveChangesAsync();
+
+            // 5. Return the refreshed list for the AppId
+            return await GetFileByAppIdAsync(appId);
+        }
     }
 }

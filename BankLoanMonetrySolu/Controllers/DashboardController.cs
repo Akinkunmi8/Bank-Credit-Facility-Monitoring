@@ -186,6 +186,72 @@ namespace BankLoanMonetrySolu.Controllers
 
             return BadRequest(result);
         }
+
+        [HttpPost("add-file")]
+        public async Task<IActionResult> AddFile([FromBody] FileViewDto dto)
+        {
+            var fileId = await _finacleService.AddFile(dto);
+
+            if (string.IsNullOrEmpty(fileId) || fileId.Contains("Invalid"))
+                return BadRequest(new { success = false, message = fileId });
+
+            return Ok(new
+            {
+                success = true,
+                message = "File properties saved successfully",
+                data = new { id = fileId }
+            });
+        }
+
+        [HttpGet("get-by-app/{appId}")]
+        public async Task<IActionResult> GetFilesByApp(Guid appId)
+        {
+            var files = await _finacleService.GetFileByAppIdAsync(appId);
+
+            if (files == null || !files.Any())
+                return NotFound(new { success = false, message = "No files found for this application" });
+
+            return Ok(new
+            {
+                success = true,
+                data = files
+            });
+        }
+
+        [HttpPut("edit-file/{appId}")]
+        public async Task<IActionResult> EditFile(Guid appId, [FromBody] FileEditDto dto)
+        {
+            try
+            {
+                var updatedFiles = await _finacleService.EditFileByAppIdAsync(appId, dto);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "File updated successfully",
+                    data = updatedFiles
+                });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPatch("update-file-verify")]
+        public async Task<IActionResult> UpdateFileVerify([FromBody] FileStatusUpdateDto dto)
+        {
+            var result = await _finacleService.UpdateFileStatus(dto.FileId, dto.IsVerified);
+
+            if (!result)
+                return NotFound(new { success = false, message = "File record not found" });
+
+            return Ok(new
+            {
+                success = true,
+                message = $"Verification status updated to {dto.IsVerified}"
+            });
+        }
     }
 
 }

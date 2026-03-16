@@ -614,6 +614,9 @@ namespace BankLoanMonetrySolu.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("CustomDocumentType")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("DocumentType")
                         .HasColumnType("int");
 
@@ -627,6 +630,9 @@ namespace BankLoanMonetrySolu.Migrations
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsFileVerified")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
