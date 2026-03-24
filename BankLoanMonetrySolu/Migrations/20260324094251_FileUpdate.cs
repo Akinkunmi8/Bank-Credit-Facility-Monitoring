@@ -1,12 +1,11 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace BankLoanMonetrySolu.Migrations
 {
     /// <inheritdoc />
-    public partial class LoanFileItem : Migration
+    public partial class FileUpdate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -35,17 +34,7 @@ namespace BankLoanMonetrySolu.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_LoanFileItem_finacleDatas_AppId",
-                table: "LoanFileItem");
-
-            migrationBuilder.DropIndex(
-                name: "IX_LoanFileItem_AppId",
-                table: "LoanFileItem");
-
-            migrationBuilder.DropColumn(
-                name: "AppId",
-                table: "LoanFileItem");
+           
         }
     }
 }

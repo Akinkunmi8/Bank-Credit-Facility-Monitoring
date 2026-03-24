@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankLoanMonetrySolu.Migrations
 {
     [DbContext(typeof(DALContext))]
-    [Migration("20260317143646_LoanFileItem")]
-    partial class LoanFileItem
+    [Migration("20260324094251_FileUpdate")]
+    partial class FileUpdate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
