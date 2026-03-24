@@ -49,15 +49,23 @@ namespace BankLoanMonetrySolu.Context
                 .HasIndex(x => x.AppId)
                 .IsUnique();
 
-            // LoanFileBatch ↔ LoanFileItem (1–Many)
-            modelBuilder.Entity<LoanFileItem>()
-                .HasOne(x => x.FileBatch)
-                .WithMany(x => x.Files)
-                .HasForeignKey(x => x.FileBatchId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //// LoanFileBatch ↔ LoanFileItem (1–Many)
+            //modelBuilder.Entity<LoanFileItem>()
+            //    .HasOne(x => x.FileBatch)
+            //    .WithMany(x => x.Files)
+            //    .HasForeignKey(x => x.FileBatchId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
-            // FinacleData ↔ LoanFileBatch
-            modelBuilder.Entity<FinacleData>()
+    
+            modelBuilder.Entity<LoanFileItem>()
+                .HasOne(f => f.FinacleRecord)       // LoanFileItem has one FinacleRecord
+                .WithMany()                        // FinacleRecord can have many files
+                .HasForeignKey(f => f.AppId)       // The Foreign Key is AppId
+                .OnDelete(DeleteBehavior.Cascade); // If Finacle record is deleted, delete files too
+        
+
+        // FinacleData ↔ LoanFileBatch
+        modelBuilder.Entity<FinacleData>()
                 .HasOne(f => f.LoanFileBatch)
                 .WithMany()
                 .HasForeignKey(f => f.LoanFileBatchId)

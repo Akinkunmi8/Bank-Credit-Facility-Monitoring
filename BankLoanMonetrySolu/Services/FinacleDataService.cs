@@ -558,22 +558,17 @@ namespace BankLoanMonetrySolu.Services
             var newFile = new LoanFileItem
             {
                 Id = Guid.NewGuid(),
-                FileBatchId = file.AppId.Value,
+                AppId = file.AppId.Value, // direct relationship
                 FileName = file.FileName,
                 FileFormat = file.ContentType ?? "unknown",
-                IsFileVerified = file.IsVeriFied
+                IsFileVerified = file.IsVeriFied,
+                DocumentType = Enum.TryParse<LoanDocumentType>(file.DocType, true, out var matchedType)
+                                ? matchedType
+                                : LoanDocumentType.Other,
+                CustomDocumentType = Enum.TryParse<LoanDocumentType>(file.DocType, true, out _)
+                                    ? null
+                                    : file.DocType
             };
-
-            // Logic: Try to match the Enum. If no match, use 'Other' and save the string.
-            if (Enum.TryParse<LoanDocumentType>(file.DocType, true, out var matchedType))
-            {
-                newFile.DocumentType = matchedType;
-            }
-            else
-            {
-                newFile.DocumentType = LoanDocumentType.Other;
-                newFile.CustomDocumentType = file.DocType; // Save the user's custom input
-            }
 
             _context.LoanFileItem.Add(newFile);
             await _context.SaveChangesAsync();
@@ -584,11 +579,11 @@ namespace BankLoanMonetrySolu.Services
         public async Task<List<FileEditDto>> GetFileByAppIdAsync(Guid appId)
         {
             return await _context.LoanFileItem
-                .Where(x => x.FileBatchId == appId)
+                .Where(x => x.AppId == appId)
                 .Select(f => new FileEditDto
                 {
                     Id = f.Id,
-                    AppId = f.FileBatchId,
+                    AppId = f.AppId,
                     FileName = f.FileName,
                     // If it's 'Other', show the custom string; otherwise show the Enum name
                     DocType = f.DocumentType == LoanDocumentType.Other

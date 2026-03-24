@@ -611,6 +611,9 @@ namespace BankLoanMonetrySolu.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("AppId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -635,6 +638,8 @@ namespace BankLoanMonetrySolu.Migrations
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AppId");
 
                     b.HasIndex("FileBatchId");
 
@@ -878,6 +883,12 @@ namespace BankLoanMonetrySolu.Migrations
 
             modelBuilder.Entity("BankLoanMonetrySolu.Model.LoanFileItem", b =>
                 {
+                    b.HasOne("BankLoanMonetrySolu.Model.FinacleData", "FinacleRecord")
+                        .WithMany()
+                        .HasForeignKey("AppId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BankLoanMonetrySolu.Model.LoanFileBatch", "FileBatch")
                         .WithMany("Files")
                         .HasForeignKey("FileBatchId")
@@ -885,6 +896,8 @@ namespace BankLoanMonetrySolu.Migrations
                         .IsRequired();
 
                     b.Navigation("FileBatch");
+
+                    b.Navigation("FinacleRecord");
                 });
 
             modelBuilder.Entity("BankLoanMonetrySolu.Model.NonFinancialCovenant", b =>
