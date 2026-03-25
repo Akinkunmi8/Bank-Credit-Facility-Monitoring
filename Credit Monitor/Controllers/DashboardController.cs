@@ -88,14 +88,86 @@ namespace Credit_Monitor.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetDocumentStatus(Guid batchId)
+        public async Task<IActionResult> GetDocumentStatus(Guid appId)
         {
-            if (batchId == Guid.Empty)
-            {
-                return PartialView("_DocumentStatusPartial", new List<DocumentDetailsViewModel>());
-            }
-            var documents = await _fileService.GetCustomerDocumentsAsync(batchId);
+            // Ensure we are using the correct Service Method
+            var documents = await _fileService.GetCustomerDocumentsAsync(appId);
+
+            // Return the partial view we refactored earlier
             return PartialView("_DocumentStatusPartial", documents);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateVerification(Guid fileId, bool status)
+        {
+            var success = await _fileService.ToggleVerificationAsync(fileId, status);
+            if (success) return Ok();
+            return BadRequest("Could not update status.");
+        }
+
+        [HttpPost]
+        [HttpPost]
+        public async Task<IActionResult> AddFileProperties(Guid appId, string fileName, string docType, string contentType)
+        {
+            if (appId == Guid.Empty || string.IsNullOrEmpty(fileName))
+            {
+                return BadRequest("Missing required file information.");
+            }
+
+            var model = new FileItemDto
+            {
+                AppId = appId,
+                FileName = fileName,
+                DocType = docType,
+                ContentType = contentType,
+                isVeriFied = false
+            };
+
+            try
+            {
+                // 1. Save the new file
+                var newId = await _fileService.UploadDocumentAsync(model);
+
+                if (newId != null)
+                {
+                    // 2. CRITICAL: Fetch the updated list immediately
+                    var updatedList = await _fileService.GetCustomerDocumentsAsync(appId);
+
+                    // 3. Return the HTML of the table, not just a JSON success message
+                    return PartialView("_DocumentStatusPartial", updatedList);
+                }
+
+                return BadRequest("The API service could not save the record.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditFileProperties(FileItemDto model)
+        {
+            // Without [FromBody], ASP.NET binds the form data to the model properties automatically
+            if (model == null || model.Id == Guid.Empty)
+            {
+                return BadRequest("Invalid file data received.");
+            }
+
+            try
+            {
+                // 1. Update the record via your Service
+                // This should hit your EditFile(appId, fileDto) API method
+                var refreshedList = await _fileService.UpdateDocumentAsync(model.AppId, model);
+
+                // 2. Return the Partial View to refresh the UI table
+                return PartialView("_DocumentStatusPartial", refreshedList);
+            }
+            catch (Exception ex)
+            {
+              
+                return StatusCode(500, "Update failed on the server.");
+            }
         }
 
         [HttpGet]

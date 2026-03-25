@@ -6,8 +6,24 @@ public class DocumentMappingProfile : Profile
 {
     public DocumentMappingProfile()
     {
-        CreateMap<FileDetailDto, DocumentDetailsViewModel>()
-            .ForMember(dest => dest.Extension, opt => opt.MapFrom(src => GetExtensionFromMime(src.ContentType)));
+        CreateMap<FileItemDto, DocumentDetailsViewModel>()
+             // Map Id to FileId
+             .ForMember(dest => dest.FileId, opt => opt.MapFrom(src => src.Id))
+
+             // Map AppId to BatchId (since BatchId is what your VM uses)
+             .ForMember(dest => dest.BatchId, opt => opt.MapFrom(src => src.AppId))
+
+             // Extract the Extension from FileName
+             .ForMember(dest => dest.Extension, opt => opt.MapFrom(src =>
+                 !string.IsNullOrEmpty(src.FileName) && src.FileName.Contains(".")
+                     ? Path.GetExtension(src.FileName).ToLower()
+                     : "unknown"))
+
+             // Ensure strings are handled if null (optional but safer)
+             .ForMember(dest => dest.FileName, opt => opt.MapFrom(src => src.FileName ?? "Untitled"))
+             .ForMember(dest => dest.ContentType, opt => opt.MapFrom(src => src.ContentType))
+            .ForMember(dest => dest.IsVerified, opt => opt.MapFrom(src => src.isVeriFied))
+             .ForMember(dest => dest.DocType, opt => opt.MapFrom(src => src.DocType));
     }
     private string GetExtensionFromMime(string mime)
     {

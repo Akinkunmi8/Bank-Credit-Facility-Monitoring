@@ -6,5 +6,7 @@
         public Task<T> PostAsync<T>(object payload, string endpoint);
         public Task<T> PutAsync<T>(object payload, string endpoint);
 
+        public Task<T> PatchAsync<T>(object payload, string endpoint);
+
     }
 }

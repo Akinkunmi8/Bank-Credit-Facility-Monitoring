@@ -8,6 +8,7 @@
         public string ContentType { get; set; }
         public string DocType { get; set; } // e.g. "CAT", "CACOM"
         public string Extension { get; set; }
+        public bool IsVerified { get; set; }
 
         // UI Helper for Bootstrap Icons based on your specific MimeTypes
         public string DisplayIcon => (ContentType ?? "").ToLower() switch

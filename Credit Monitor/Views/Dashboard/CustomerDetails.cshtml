@@ -142,7 +142,7 @@
             <button class="nav-link fw-bold small"
                     data-bs-toggle="tab"
                     data-bs-target="#docStatus"
-                    onclick="loadDocuments('@loan?.LoanFileBatchId')">
+                    onclick="loadDocuments('@loan?.id')">
                 Document Status
             </button>
         </li>
@@ -257,26 +257,48 @@
 
 
 <script>
-    // Existing Document Loader
-    function loadDocuments(batchId) {
-        if (!batchId || batchId === '00000000-0000-0000-0000-000000000000') {
-            console.error("Invalid Batch ID");
+       function loadDocuments(appId) {
+        // 1. Guard against null/empty GUIDs
+        if (!appId || appId === '00000000-0000-0000-0000-000000000000' || appId === '') {
+            console.warn("File API: No AppId provided for document lookup.");
+            $('#docStatusContainer').html(`
+                <div class="text-center py-4">
+                    <i class="bi bi-exclamation-circle text-warning fs-2"></i>
+                    <p class="text-muted mt-2">No application ID associated with this record.</p>
+                </div>`);
             return;
         }
+
         const container = $('#docStatusContainer');
         const tabPane = $('#docStatus');
+
+        // 2. Prevent redundant API calls if data is already there
         if (tabPane.data('loaded') === true) return;
 
         $.ajax({
             url: '@Url.Action("GetDocumentStatus", "Dashboard")',
             type: 'GET',
-            data: { batchId: batchId },
+            data: { appId: appId }, 
+            beforeSend: function () {
+                // Show the spinner while waiting
+                container.html(`
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="text-muted mt-2">Checking for documents...</p>
+                    </div>`);
+            },
             success: function (result) {
-                container.html(result);
+                // result will be the HTML from the Partial View
+                container.hide().html(result).fadeIn(300);
                 tabPane.data('loaded', true);
             },
             error: function (xhr, status, error) {
-                container.html('<div class="alert alert-danger">Error: ' + error + '</div>');
+                tabPane.data('loaded', false); // Allow retry
+                container.html(`
+                    <div class="alert alert-danger d-flex align-items-center m-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <div>Error loading documents: ${error}</div>
+                    </div>`);
             }
         });
     }

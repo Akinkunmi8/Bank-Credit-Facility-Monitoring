@@ -66,7 +66,14 @@
                 <div class="collapse navbar-collapse" id="subNavbar">
                     <ul class="navbar-nav me-auto align-items-center">
                         <li class="nav-item"> 
-                            <a asp-controller="Dashboard" asp-action="@dashboard" class="nav-link active fw-bold border-bottom border-primary border-3"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                            @if(User.Identity.IsAuthenticated)
+                            {
+                                <a asp-controller="Dashboard" asp-action="@dashboard" class="nav-link active fw-bold border-bottom border-primary border-3"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Home" asp-action="Login" class="nav-link active fw-bold border-bottom border-primary border-3"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                            }
                         </li>
 
                         @if (User.Identity.IsAuthenticated)
@@ -125,6 +132,17 @@
             </div>
         </div>
     </footer>
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+        <div id="liveToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i id="toastIcon" class="bi me-2"></i>
+                    <span id="toastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
     <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060">
         @if (TempData["SuccessMessage"] != null)
         {

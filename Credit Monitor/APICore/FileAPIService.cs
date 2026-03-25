@@ -15,33 +15,81 @@ namespace Credit_Monitor.APICore
             _logger = logger;
         }
 
-        public async Task<List<FileDetailDto>> GetBatchFileMetaData(Guid batchId)
+        public async Task<List<FileItemDto>> GetCustomerFileMetaData(Guid appId)
         {
-            var urlPath = $"/api/Finacle/GetAllFilesInfo?batchId={batchId}";
-
-            _logger.LogInformation("File API: Requesting metadata for Batch {BatchId} via {Url}", batchId, urlPath);
+            var urlPath = $"/api/Dashboard/get-by-app/{appId}";
 
             try
             {
-                var result = await _apiService.GetAsync<List<FileDetailDto>>(urlPath);
+                var result = await _apiService.GetAsync<FileResponseDto>(urlPath);
 
-                if (result == null || !result.Any())
+                // Check 'Values' directly now
+                if (result == null || result.Values == null || !result.Values.Any())
                 {
-                    _logger.LogWarning("File API: No files found or result was null for Batch {BatchId}", batchId);
-                    return new List<FileDetailDto>();
+                    _logger.LogWarning("File API: No files found or result was null for AppId {appId}", appId);
+                    return new List<FileItemDto>();
                 }
 
-                _logger.LogInformation("File API: Successfully retrieved {Count} files for Batch {BatchId}", result.Count, batchId);
-
-                var jsonSample = JsonConvert.SerializeObject(result, Formatting.Indented);
-                _logger.LogInformation("File API: Raw Metadata Content: {Json}", jsonSample);
-
-                return result;
+                return result.Values;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "File API: Error occurred while fetching metadata for Batch {BatchId}", batchId);
-                return new List<FileDetailDto>();
+                _logger.LogError(ex, "File API: Error occurred for AppId {AppId}", appId);
+                return new List<FileItemDto>();
+            }
+        }
+
+        public async Task<Guid?> AddFile(FileItemDto fileDto)
+        {
+            var urlPath = "/api/Dashboard/add-file";
+            try
+            {
+                var result = await _apiService.PostAsync<SingleFileResponseDto>(fileDto, urlPath);
+                if (result != null && result.Success)
+                {
+                    return result.Data.Id;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "File API: Error adding file {FileName}", fileDto.FileName);
+                return null;
+            }
+        }
+
+        public async Task<List<FileItemDto>> EditFile(Guid appId, FileItemDto fileDto)
+        {
+            var urlPath = $"/api/Dashboard/edit-file/{appId}";
+            try
+            {
+                // The edit endpoint returns the updated list of files
+                var result = await _apiService.PutAsync<FileResponseDto>(fileDto, urlPath);
+                return result?.Values ?? new List<FileItemDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "File API: Error editing file {FileId}", fileDto.Id);
+                return new List<FileItemDto>();
+            }
+        }
+
+        public async Task<bool> UpdateFileVerification(Guid fileId, bool isVerified)
+        {
+            var urlPath = "/api/Dashboard/update-file-verify";
+            var payload = new VerifyFileRequest { FileId = fileId, IsVerified = isVerified };
+
+            try
+            {
+                // Based on your example, this might be a POST or GET with body. 
+                // If it's a GET with body, ensure your _apiService supports it.
+                var result = await _apiService.PostAsync<FileResponseDto>(payload, urlPath);
+                return result?.Success ?? false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "File API: Error updating verification for {FileId}", fileId);
+                return false;
             }
         }
     }
