@@ -608,7 +608,7 @@ namespace BankLoanMonetrySolu.Services
         {
             // 1. Find the specific file by its unique ID
             var existingFile = await _context.LoanFileItem
-                .FirstOrDefaultAsync(x => x.Id == updateDto.Id && x.FileBatchId == appId);
+                .FirstOrDefaultAsync(x => x.Id == updateDto.Id && x.AppId == appId);
 
             if (existingFile == null)
             {
