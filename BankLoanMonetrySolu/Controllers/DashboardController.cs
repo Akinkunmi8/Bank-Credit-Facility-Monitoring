@@ -240,7 +240,7 @@ namespace BankLoanMonetrySolu.Controllers
             }
         }
 
-        [HttpPatch("update-file-verify")]
+        [HttpPost("update-file-verify")]
         public async Task<IActionResult> UpdateFileVerify([FromBody] FileStatusUpdateDto dto)
         {
             var result = await _finacleService.UpdateFileStatus(dto.FileId, dto.IsVerified);
