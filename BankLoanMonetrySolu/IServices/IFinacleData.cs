@@ -28,6 +28,7 @@ namespace BankLoanMonetrySolu.IServices
         Task<List<FileEditDto>> EditFileByAppIdAsync(Guid appId, FileEditDto updateDto);
         Task<bool> UpdateFileStatus(Guid fileId, bool verify);
         Task<List<FileViewDto>> GetAllFilesByBatchIdAsync(Guid batchId);
+        Task<string> DeleteFileByFileId(Guid appId, Guid FileId);
 
 
     }

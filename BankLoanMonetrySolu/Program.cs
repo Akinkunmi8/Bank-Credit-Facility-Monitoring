@@ -56,6 +56,7 @@ try
     builder.Services.AddScoped<IEmailServices, EmailService>();
     builder.Services.AddScoped<IAuditLookupService, AuditLookupService>();
     builder.Services.AddScoped<IConventTracker, ConventTracker>();
+    builder.Services.AddScoped<IReportService, ReportService>();
     builder.Services.AddHttpContextAccessor();
 
     // Identity

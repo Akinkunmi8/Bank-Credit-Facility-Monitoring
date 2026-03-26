@@ -608,7 +608,7 @@ namespace BankLoanMonetrySolu.Services
         {
             // 1. Find the specific file by its unique ID
             var existingFile = await _context.LoanFileItem
-                .FirstOrDefaultAsync(x => x.Id == updateDto.Id && x.FileBatchId == appId);
+                .FirstOrDefaultAsync(x => x.Id == updateDto.Id && x.AppId == appId);
 
             if (existingFile == null)
             {
@@ -638,6 +638,25 @@ namespace BankLoanMonetrySolu.Services
 
             // 5. Return the refreshed list for the AppId
             return await GetFileByAppIdAsync(appId);
+        }
+        public async Task<string> DeleteFileByFileId(Guid appId, Guid fileId)
+        {
+            // 1. Find the specific file by its unique ID and ensure it belongs to the AppId
+            var existingFile = await _context.LoanFileItem
+                .FirstOrDefaultAsync(x => x.Id == fileId && x.AppId == appId);
+
+            if (existingFile == null)
+            {
+                return "File record not found.";
+            }
+
+            // 2. Remove from the specific DbSet
+            _context.LoanFileItem.Remove(existingFile);
+
+            // 3. Save changes
+            await _context.SaveChangesAsync();
+
+            return "The file was deleted successfully.";
         }
     }
 }

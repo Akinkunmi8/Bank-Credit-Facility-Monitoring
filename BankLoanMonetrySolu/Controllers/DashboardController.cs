@@ -1,5 +1,6 @@
 ﻿using BankLoanMonetrySolu.DTO;
 using BankLoanMonetrySolu.IServices;
+using BankLoanMonetrySolu.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,13 +14,14 @@ namespace BankLoanMonetrySolu.Controllers
     {
         private readonly IFinacleData _finacleService;
         private readonly ITAT _tatService;
-
+        private readonly IReportService _reportService;
         public DashboardController(
             IFinacleData finacleService,
-            ITAT tatService)
+            ITAT tatService,IReportService reportService)
         {
             _finacleService = finacleService;
             _tatService = tatService;
+            _reportService = reportService;
         }
         [HttpGet("finacle/pending")]
         public async Task<IActionResult> GetAllFinacleData(string region)
@@ -251,6 +253,60 @@ namespace BankLoanMonetrySolu.Controllers
                 success = true,
                 message = $"Verification status updated to {dto.IsVerified}"
             });
+        }
+
+        [HttpDelete("delete-file/{appId}/{fileId}")]
+        public async Task<IActionResult> DeleteFile(Guid appId, Guid fileId)
+        {
+            var result = await _finacleService.DeleteFileByFileId(appId, fileId);
+
+            if (result == "File record not found.")
+                return NotFound(new { success = false, message = result });
+
+            return Ok(new
+            {
+                success = true,
+                message = result
+            });
+        }
+
+        [HttpGet("download-full-report")]
+        public async Task<IActionResult> DownloadFullReport([FromQuery] ReportRequestDto request)
+        {
+            try
+            {
+                // 1. Generate the file bytes from the service
+                byte[] fileBytes = await _reportService.GenerateFullReport(request);
+
+                if (fileBytes == null || fileBytes.Length == 0)
+                {
+                    return NotFound("No data found for the selected criteria.");
+                }
+
+                // 2. Determine file metadata based on the format
+                string fileName = $"{request.Role}_FullReport_{DateTime.Now:yyyyMMdd_HHmm}";
+                string contentType;
+                string extension;
+
+                if (request.Format.ToUpper() == "EXCEL")
+                {
+                    contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    extension = "xlsx";
+                }
+                else
+                {
+                    contentType = "application/pdf";
+                    extension = "pdf";
+                }
+
+                // 3. Return the file result
+                return File(fileBytes, contentType, $"{fileName}.{extension}");
+            }
+            catch (Exception ex)
+            {
+                // Log the exception in a real banking environment
+                return StatusCode(500, $"Internal server error during report generation: {ex.Message}");
+            }
         }
     }
 
