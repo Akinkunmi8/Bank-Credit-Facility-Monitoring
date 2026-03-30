@@ -92,5 +92,31 @@ namespace Credit_Monitor.APICore
                 return false;
             }
         }
+
+        public async Task<bool> DeleteFile(Guid appId, Guid fileId)
+        {
+            // The data is already here in the string
+            var urlPath = $"/api/Dashboard/delete-file/{appId}/{fileId}";
+
+            try
+            {
+                // Pass 'null' or 'new {}' because the API reads from the PATH, not the BODY
+                var result = await _apiService.DeleteAsync<DeleteFileResponseDto>(urlPath);
+
+                if (result != null && result.Success)
+                {
+                    _logger.LogInformation("File API: Successfully deleted {FileId}", fileId);
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "File API: Delete Error for {FileId}", fileId);
+                return false;
+            }
+        }
+
     }
 }

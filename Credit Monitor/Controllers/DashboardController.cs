@@ -170,6 +170,34 @@ namespace Credit_Monitor.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteFile(Guid appId, Guid fileId)
+        {
+            if (appId == Guid.Empty || fileId == Guid.Empty)
+            {
+                return BadRequest("Invalid identifiers for deletion.");
+            }
+
+            try
+            {
+
+                var success = await _fileService.DeleteDocumentAsync(appId, fileId);
+
+                if (success)
+                {
+                    // Fetch the updated list to refresh the table UI
+                    var updatedList = await _fileService.GetCustomerDocumentsAsync(appId);
+                    return PartialView("_DocumentStatusPartial", updatedList);
+                }
+
+                return BadRequest("The file could not be deleted from the system.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error during deletion.");
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetCovenantStatus(Guid appId)
         {

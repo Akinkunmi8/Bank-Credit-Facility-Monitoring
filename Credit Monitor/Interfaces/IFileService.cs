@@ -9,5 +9,6 @@ namespace Credit_Monitor.Interfaces
         Task<Guid?> UploadDocumentAsync(FileItemDto fileDto);
         Task<List<DocumentDetailsViewModel>> UpdateDocumentAsync(Guid appId, FileItemDto fileDto);
         Task<bool> ToggleVerificationAsync(Guid fileId, bool status);
+        Task<bool> DeleteDocumentAsync(Guid appId, Guid fileId);
     }
 }

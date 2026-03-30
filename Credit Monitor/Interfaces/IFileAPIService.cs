@@ -8,5 +8,6 @@ namespace Credit_Monitor.Interfaces
         public Task<bool> UpdateFileVerification(Guid fileId, bool isVerified);
         public Task<List<FileItemDto>> EditFile(Guid appId, FileItemDto fileDto);
         public Task<Guid?> AddFile(FileItemDto fileDto);
+        Task<bool> DeleteFile(Guid appId, Guid fileId);
     }
 }

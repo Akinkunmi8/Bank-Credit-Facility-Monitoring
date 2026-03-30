@@ -90,6 +90,24 @@
                                     </select>
                                 </div>
                             </li>
+
+                            <li class="nav-item dropdown ms-md-3">
+                                <a class="nav-link dropdown-toggle fw-bold text-primary" href="#" id="reportDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-file-earmark-arrow-down me-1"></i> Generate Report
+                                </a>
+                                <ul class="dropdown-menu shadow border-0" aria-labelledby="reportDropdown">
+                                    <li>
+                                        <a class="dropdown-item py-2" asp-controller="Dashboard" asp-action="ExportPdf">
+                                            <i class="bi bi-file-earmark-pdf text-danger me-2"></i> Download as PDF
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item py-2" asp-controller="Dashboard" asp-action="ExportExcel">
+                                            <i class="bi bi-file-earmark-excel text-success me-2"></i> Download as Excel
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
                         }
                     </ul>
 

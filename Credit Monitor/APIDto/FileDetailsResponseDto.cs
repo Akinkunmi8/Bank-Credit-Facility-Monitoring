@@ -46,4 +46,11 @@ namespace Credit_Monitor.APIDto
         [JsonPropertyName("isVeriFied")]
         public bool isVeriFied { get; set; }
     }
+
+    public class DeleteFileResponseDto
+    {  
+        public bool Success { get; set; }
+        public string? Message { get; set; }
+
+    }
 }

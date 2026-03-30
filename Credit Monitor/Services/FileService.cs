@@ -85,5 +85,15 @@ namespace Credit_Monitor.Services
             }
             return success;
         }
+
+        public async Task<bool> DeleteDocumentAsync(Guid appId, Guid fileId)
+        {
+            _logger.LogInformation("Attempting to delete document {FileId} for App {AppId}", fileId, appId);
+
+            var success = await _fileAPIService.DeleteFile(appId, fileId);
+
+            return success;
+        }
+
     }
 }

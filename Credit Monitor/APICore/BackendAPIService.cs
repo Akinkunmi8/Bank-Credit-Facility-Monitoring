@@ -92,6 +92,28 @@ namespace Credit_Monitor.APICore
             return result;
         }
 
+        public async Task<T> DeleteAsync<T>(string endpoint)
+        {
+            AddAuthorizationHeader();
+            IgnoreSSL();
+
+            // Send the DELETE request to the endpoint
+            var response = await _httpClient.DeleteAsync(endpoint);
+
+            // Use your existing error handler to catch 404, 405, or 500 errors
+            await HandleErrors(response);
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+
+            // Deserialize using your existing Newtonsoft settings (handles $id/$values)
+            var result = JsonConvert.DeserializeObject<T>(jsonResponse, _newtonsoftSettings);
+
+            if (result is null)
+                throw new InvalidOperationException("API response content was null during deletion.");
+
+            return result;
+        }
+
         public async Task<T> PatchAsync<T>(object payload, string endpoint)
         {
             AddAuthorizationHeader();
