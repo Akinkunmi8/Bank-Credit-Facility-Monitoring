@@ -21,6 +21,7 @@ namespace Credit_Monitor.Controllers
         private readonly IFileService _fileService;
         private readonly ICovenantTrackerService _covenantService;
         private string _storagePath;
+        private readonly IBackendAPIService _apiService;
         private readonly IMapper _mapper;
 
         public DashboardController(
@@ -29,12 +30,14 @@ namespace Credit_Monitor.Controllers
             IFileService fileService,
             ICovenantTrackerService covenantService,
             IConfiguration configuration,
+            IBackendAPIService apiService,
             IMapper mapper) 
         {
             _loanService = loanService;
             _dashboardapi = dashboardapi;
             _fileService = fileService;
             _covenantService = covenantService;
+            _apiService = apiService;
             _storagePath = configuration["FileSettings:StoragePath"];
             _mapper = mapper;
         }
@@ -465,6 +468,53 @@ namespace Credit_Monitor.Controllers
             ViewBag.ExistingResolutions = savedRemarks;
 
             return PartialView("_DiscrepancyStatusPartial", viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportReport(string format, string region, string role)
+        {
+            try
+            {
+                // 1. Sanitize inputs (ensure they aren't null)
+                string selectedFormat = (format ?? "PDF").ToUpper();
+                string selectedRegion = region ?? "Global";
+                string selectedRole = role ?? "Guest";
+
+                // 2. Construct the Exact API URL your backend expects
+                // Format: http://localhost:5221/api/Dashboard/download-full-report?Role=cmo&Region=south&Format=excel
+                var queryParams = new Dictionary<string, string>
+        {
+            { "Role", selectedRole },
+            { "Region", selectedRegion },
+            { "Format", selectedFormat },
+        };
+
+                var queryString = string.Join("&", queryParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
+                string apiUrl = $"/api/Dashboard/download-full-report?{queryString}";
+
+                // 3. Proxy the request to the Backend API
+                byte[] fileBytes = await _apiService.GetRawBytesAsync(apiUrl);
+
+                if (fileBytes == null || fileBytes.Length == 0)
+                {
+                    return NotFound("No data found for the selected criteria.");
+                }
+
+                // 4. Setup File Metadata
+                string contentType = selectedFormat == "EXCEL"
+                    ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    : "application/pdf";
+
+                string extension = selectedFormat == "EXCEL" ? "xlsx" : "pdf";
+                string fileName = $"{selectedRole}_Report_{DateTime.Now:yyyyMMdd_HHmm}.{extension}";
+
+                return File(fileBytes, contentType, fileName);
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "Export failed");
+                return StatusCode(500, "Internal server error during report generation.");
+            }
         }
         private async Task<CMODashboardViewModel> GetCMODashboardData(string searchTerm, int page, string region, string status)
         {

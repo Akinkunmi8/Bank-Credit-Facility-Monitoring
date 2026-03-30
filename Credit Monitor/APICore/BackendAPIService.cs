@@ -92,6 +92,21 @@ namespace Credit_Monitor.APICore
             return result;
         }
 
+        public async Task<byte[]> GetRawBytesAsync(string endpoint)
+        {
+            AddAuthorizationHeader(); // Ensure the JWT is attached
+            IgnoreSSL();
+
+            var response = await _httpClient.GetAsync(endpoint);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+
+            return null;
+        }
+
         public async Task<T> DeleteAsync<T>(string endpoint)
         {
             AddAuthorizationHeader();

@@ -8,6 +8,7 @@
 
         public Task<T> PatchAsync<T>(object payload, string endpoint);
         public Task<T> DeleteAsync<T>(string endpoint);
+        public Task<byte[]> GetRawBytesAsync(string endpoint);
 
     }
 }
