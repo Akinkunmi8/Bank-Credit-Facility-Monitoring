@@ -220,7 +220,7 @@ namespace BankLoanMonetrySolu.Services
             await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.APPROVED == false && f.RECONFIRMED == false && f.ISRESOLVED == false);
 
         public async Task<int> GetTotalConfirmedCount(string region) =>
-            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == false && f.ISRESOLVED == false);
+            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == false );
 
         public async Task<int> GetTotalReConfirmedCount(string region) =>
             await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false && f.ISRESOLVED == false);
@@ -286,6 +286,7 @@ namespace BankLoanMonetrySolu.Services
                         break;
                     case "resolve":
                         record.ISRESOLVED = true;
+                        record.RECONFIRMED = false;
                         break;
                 }
 
