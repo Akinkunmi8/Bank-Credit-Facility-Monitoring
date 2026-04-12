@@ -95,17 +95,32 @@ namespace Credit_Monitor.Controllers
         {
             // Ensure we are using the correct Service Method
             var documents = await _fileService.GetCustomerDocumentsAsync(appId);
+            ViewBag.AppId = appId;
 
             // Return the partial view we refactored earlier
             return PartialView("_DocumentStatusPartial", documents);
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateVerification(Guid fileId, bool status)
+        public async Task<IActionResult> UpdateVerification(Guid appId, Guid fileId, bool status)
         {
+            if (status)
+            {
+                string folderPath = Path.Combine(_storagePath, appId.ToString());
+
+                // Check if file exists on disk
+                bool fileExists = Directory.Exists(folderPath) &&
+                                 Directory.EnumerateFiles(folderPath, $"{fileId}.*").Any();
+
+                if (!fileExists)
+                {
+                    // This string is what 'response.text()' picks up in JS
+                    return BadRequest("Verification Failed, File does not exist.");
+                }
+            }
+
             var success = await _fileService.ToggleVerificationAsync(fileId, status);
-            if (success) return Ok();
-            return BadRequest("Could not update status.");
+            return success ? Ok() : BadRequest("Database update failed.");
         }
 
         [HttpPost]
@@ -174,6 +189,7 @@ namespace Credit_Monitor.Controllers
         }
 
         [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> DeleteFile(Guid appId, Guid fileId)
         {
             if (appId == Guid.Empty || fileId == Guid.Empty)
@@ -183,17 +199,44 @@ namespace Credit_Monitor.Controllers
 
             try
             {
-
+                // 1. Remove from Database/Service first
                 var success = await _fileService.DeleteDocumentAsync(appId, fileId);
 
                 if (success)
                 {
-                    // Fetch the updated list to refresh the table UI
+                    // 2. Physical Cleanup: Remove from Storage
+                    string folderPath = Path.Combine(_storagePath, appId.ToString());
+
+                    if (Directory.Exists(folderPath))
+                    {
+                        // Find any file that matches the ID (any extension)
+                        var filesToDelete = Directory.EnumerateFiles(folderPath, $"{fileId}.*");
+
+                        foreach (var filePath in filesToDelete)
+                        {
+                            try
+                            {
+                                System.IO.File.Delete(filePath);
+                            }
+                            catch (IOException ioEx)
+                            {
+                                // Log this: File might be in use or locked
+                                // We don't necessarily want to fail the whole request if the DB part worked
+                            }
+                        }
+                        if (!Directory.EnumerateFileSystemEntries(folderPath).Any())
+                        {
+                            Directory.Delete(folderPath);
+                        }
+                    }
+
+                    // 3. Refresh the UI
+                    ViewBag.AppId = appId; // Keep your table logic working
                     var updatedList = await _fileService.GetCustomerDocumentsAsync(appId);
                     return PartialView("_DocumentStatusPartial", updatedList);
                 }
 
-                return BadRequest("The file could not be deleted from the system.");
+                return BadRequest("The record could not be deleted from the database.");
             }
             catch (Exception ex)
             {
@@ -249,27 +292,36 @@ namespace Credit_Monitor.Controllers
         }
 
         [HttpGet]
-        public IActionResult ViewDocument(Guid batchId, string category, string ext)
+        public IActionResult ViewDocument(string appId, string fileId, string fileName)
         {
-            // 1. Sanitize the extension (remove leading dots if any)
-            string cleanExt = ext.Replace(".", "").ToLower();
+            // 1. Get the folder path where the files live
+            string folderPath = Path.Combine(_storagePath, appId);
 
-            // 2. Build the full path securely
-            // Structure: C:\CreditMonitorFiles\MainFolder\ID_Cards\da3c8...pdf
-            string filePath = Path.Combine(_storagePath, category, $"{batchId}.{cleanExt}");
+            // 2. Find any file that starts with the fileId
+            // This looks for "GUID.*" and takes the first one it finds
+            string filePath = Directory.EnumerateFiles(folderPath, $"{fileId}.*").FirstOrDefault();
 
-            // 3. Verify file existence on disk
-            if (!System.IO.File.Exists(filePath))
+            // 3. If no file was found on the disk
+            if (string.IsNullOrEmpty(filePath))
             {
-                return NotFound($"The requested document is not available in storage.\nPath: {filePath}");
+                return Content($@"
+            <script>
+                if (window.opener && !window.opener.closed) {{
+                    window.opener.showNotification('Document {fileId} not found in storage.', 'error');
+                    window.opener.focus(); 
+                }}
+                window.close();
+            </script>", "text/html");
             }
 
-            string contentType = GetMimeType(cleanExt);
+            // 4. Get the actual extension from the file we found
+            string actualExt = Path.GetExtension(filePath).Replace(".", "").ToLower();
+            string contentType = GetMimeType(actualExt);
+            string downloadName = $"Document_{fileName}.{actualExt}";
 
-            // Use FileStream with 'FileOptions.Asynchronous' for better performance
+            // 5. Open and return the file
             var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
-
-            return File(fileStream, contentType);
+            return File(fileStream, contentType, downloadName);
         }
 
         // GET: Dashboard/FilterLoans (The AJAX call)

@@ -39,23 +39,38 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="form-check form-switch d-inline-block">
-                                        <input class="form-check-input cursor-pointer" type="checkbox"
+                                        <input class="form-check-input" type="checkbox"
                                                @(doc.IsVerified ? "checked" : "")
-                                               onchange="toggleVerification('@doc.FileId', this.checked)">
+                                               onchange="toggleVerification('@doc.FileId', '@ViewBag.AppId', this.checked, this)">
                                     </div>
                                 </td>
                                 <td class="text-end pe-3">
                                     <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                onclick="viewDocument('@ViewBag.AppId', '@doc.FileId', '@doc.FileName')"
+                                                title="View Document">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+
                                         <button class="btn btn-sm btn-outline-secondary"
                                                 onclick="openEditModal('@doc.FileId', '@doc.FileName', '@doc.DocType', '@doc.ContentType', '@doc.IsVerified')">
-                                            <i class="bi bi-pencil me-1"></i> Edit
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+
+                                        <button class="btn btn-sm btn-outline-success"
+                                                onclick="triggerUpload('@doc.FileId')"
+                                                title="Upload New Version">
+                                            <i class="bi bi-upload"></i>
                                         </button>
 
                                         <button class="btn btn-sm btn-outline-danger"
                                                 onclick="deleteDocument('@doc.BatchId', '@doc.FileId')">
-                                            <i class="bi bi-trash me-1"></i> Delete
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
+
+                                    <input type="file" id="uploadInput_@doc.FileId" class="d-none"
+                                           onchange="handleFileUpload(this, '@doc.BatchId', '@doc.FileId')" />
                                 </td>
                             </tr>
                         }
@@ -74,7 +89,7 @@
 
     <div class="card-footer bg-light border-0 py-3">
         <button class="btn btn-primary w-100" onclick="openAddModal()">
-            <i class="bi bi-plus-circle me-2"></i>Add New Document
+            <i class="bi bi-plus-circle me-2"></i>Request New Document
         </button>
     </div>
 </div>
@@ -194,21 +209,29 @@
         </div>
     </div>
 </div>
+
 <script>
-    // 1. Toggle Verification
-    function toggleVerification(fileId, isChecked) {
-        fetch(`/Dashboard/UpdateVerification?fileId=${fileId}&status=${isChecked}`, {
+        async function toggleVerification(fileId, appId, isChecked, element) {
+        const response = await fetch(`/Dashboard/UpdateVerification?appId=${appId}&fileId=${fileId}&status=${isChecked}`, {
             method: 'POST'
-        }).then(response => {
-            if (response.ok) {
-            showNotification("Verification status updated!");
-            } else {
-                showNotification("Failed to update verification.", "error");
-            }
         });
+
+        if (response.ok) {
+            showNotification("Verification status updated!", "success");
+        } else {
+            // 1. Grab the specific error message
+            const errorMsg = await response.text();
+
+            // 2. Show the error notification
+            showNotification(errorMsg, "error");
+
+            // 3. AUTO-TOGGLE BACK:
+            // If it was checked, uncheck it. If it was unchecked, check it back.
+            element.checked = !isChecked;
+        }
     }
 
-        function openEditModal(id, name, type, format, isVerified) {
+    function openEditModal(id, name, type, format, isVerified) {
         document.getElementById('editFileId').value = id;
         document.getElementById('editFileName').value = name;
         document.getElementById('editDocFormat').value = format;
@@ -232,7 +255,7 @@
         myModal.show();
     }
 
-        function submitFileEdit() {
+    function submitFileEdit() {
         let finalDocType = $('#editDocType').val();
 
         if (finalDocType === 'Other') {
@@ -267,7 +290,6 @@
         });
     }
 
-        // Function to show the modal
     function openAddModal() {
         // Clear previous values
         $('#addFileName').val('');
@@ -277,7 +299,6 @@
         var myModal = new bootstrap.Modal(document.getElementById('addFileModal'));
         myModal.show();
     }
-
 
     function submitNewFile() {
         // Attempt to get AppId from the URL as a fallback
@@ -327,6 +348,18 @@
         });
     }
 
+    function viewDocument(appId, fileId, fileName) {
+        if (!appId || !fileId) {
+            showNotification("Missing file identifiers. Refresh Page", "error");
+            return;
+        }
+
+        // Ensure these keys match the Controller parameters: appId, fileId, extension
+        const url = `/Dashboard/ViewDocument?appId=${encodeURIComponent(appId)}&fileId=${encodeURIComponent(fileId)}&fileName=${encodeURIComponent(fileName)}`;
+
+        window.open(url, '_blank');
+    }
+
     function toggleOtherInput() {
         const select = document.getElementById('addDocType');
         const container = document.getElementById('otherTypeContainer');
@@ -371,7 +404,6 @@
         toast.show();
     }
 
-         // Step 1: Open the modal and store the IDs
     function deleteDocument(appId, fileId) {
         // Set the hidden inputs in the delete modal
         $('#deleteAppId').val(appId);
@@ -382,7 +414,6 @@
         deleteModal.show();
     }
 
-    // Step 2: Actually run the AJAX call
     function executeDelete() {
         const appId = $('#deleteAppId').val();
         const fileId = $('#deleteFileId').val();
