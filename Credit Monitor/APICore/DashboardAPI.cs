@@ -282,18 +282,18 @@ namespace Credit_Monitor.APICore
             try
             {
                 // Use the wrapper DTO because of the $values JSON structure
-                var result = await _apiService.GetAsync<FinacleFileListWrapper>(urlPath);
+                var result = await _apiService.GetAsync<List<FinacleFileResponse>>(urlPath);
 
-                if (result == null || result.Values == null)
+                if (result == null)
                 {
                     _logger.LogWarning("Finacle API: No file data returned for region {Region} at {Url}", region, urlPath);
                     return new List<FinacleFileResponse>();
                 }
 
                 _logger.LogInformation("Finacle API: Successfully retrieved {Count} files for region {Region}",
-                    result.Values.Count, region);
+                    result.Count, region);
 
-                return result.Values;
+                return result;
             }
             catch (Exception ex)
             {

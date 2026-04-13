@@ -60,7 +60,9 @@ namespace Credit_Monitor.APIDto
         public int TotalUnsaved { get; set; }
     }
 
-    public class FinacleFileResponse
+   
+
+public class FinacleFileResponse
     {
         public Guid AppId { get; set; }
         public string FileName { get; set; } = string.Empty;
@@ -72,9 +74,10 @@ namespace Credit_Monitor.APIDto
         public string? RequesterUsername { get; set; }
     }
 
-    // Wrapper to handle the $values JSON structure
     public class FinacleFileListWrapper
     {
+        // This tells the deserializer to look for the "$values" key
+        [JsonProperty("$values")]
         public List<FinacleFileResponse> Values { get; set; } = new();
     }
 }
