@@ -29,6 +29,8 @@ namespace BankLoanMonetrySolu.IServices
         Task<bool> UpdateFileStatus(Guid fileId, bool verify);
         Task<List<FileViewDto>> GetAllFilesByBatchIdAsync(Guid batchId);
         Task<string> DeleteFileByFileId(Guid appId, Guid FileId);
+        Task<List<FileViewDto>> GetAllFilesByRegiondAsync(string region);
+        Task<int> GetTotalUnsaveFileCount(string region);
 
 
     }

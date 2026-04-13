@@ -60,12 +60,14 @@ namespace BankLoanMonetrySolu.Context
             modelBuilder.Entity<LoanFileItem>()
                 .HasOne(f => f.FinacleRecord)       // LoanFileItem has one FinacleRecord
                 .WithMany()                        // FinacleRecord can have many files
-                .HasForeignKey(f => f.AppId)       // The Foreign Key is AppId
+                .HasForeignKey(f => f.AppId) // The Foreign Key is AppId
                 .OnDelete(DeleteBehavior.Cascade); // If Finacle record is deleted, delete files too
-        
 
-        // FinacleData ↔ LoanFileBatch
-        modelBuilder.Entity<FinacleData>()
+            modelBuilder.Entity<LoanFileItem>()
+                .HasIndex(f => new { f.Region, f.IsFileExitOnServer })
+                .HasDatabaseName("IX_LoanFileItem_Region_ServerStatus");
+            // FinacleData ↔ LoanFileBatch
+            modelBuilder.Entity<FinacleData>()
                 .HasOne(f => f.LoanFileBatch)
                 .WithMany()
                 .HasForeignKey(f => f.LoanFileBatchId)

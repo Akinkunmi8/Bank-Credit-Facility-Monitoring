@@ -81,5 +81,51 @@ namespace BankLoanMonetrySolu.Controllers
             }
             return BadRequest(new { error = result });
         }
+
+        [HttpPost("add-finacia-covenant/{appId}")]
+        public async Task<IActionResult> AddFinaciaCovenant(string appId, [FromBody] ConventFinacialDto addDto)
+        {
+            if (addDto == null)
+                return BadRequest("Request body cannot be null.");
+
+            var result = await _conventService.AddFinacialConvenatTracker(appId, addDto);
+
+            // FIX: Changed '=' to '==' to properly check the boolean
+            if (result.isSuccess)
+            {
+                return Ok(new
+                {
+                    message = "Financial Covenant added successfully.",
+                    data = result.Financials // Returning the added record for your table
+                });
+            }
+
+            return BadRequest(new { error = result.Message });
+        }
+
+        [HttpPost("bulk-upload-covenants")]
+        public async Task<IActionResult> BulkUploadCovenants(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Please upload a valid Excel file.");
+
+            var result = await _conventService.UploadFinancialCovenantExcel(file);
+
+            if (result.isSuccess)
+            {
+                return Ok(new
+                {
+                    message = result.Message,
+                    data = result.uploadedDatas, // The list for your frontend table
+                    errors = result.Errors       // Any row-specific warnings
+                });
+            }
+
+            return BadRequest(new
+            {
+                message = result.Message,
+                errors = result.Errors
+            });
+        }
     }
 }

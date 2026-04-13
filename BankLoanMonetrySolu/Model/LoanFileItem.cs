@@ -17,7 +17,12 @@ namespace BankLoanMonetrySolu.Model
         public string FileFormat { get; set; } = null!;
         public LoanDocumentType DocumentType { get; set; }
         public bool IsFileVerified { get; set; } = false;
+
+        public bool IsFileExitOnServer { get; set; } = false;
+
         public string? CustomDocumentType { get; set; }
+        public string? Region { get; set; }
+        public string?RequesterUsername { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public LoanFileBatch FileBatch { get; set; } = null!;

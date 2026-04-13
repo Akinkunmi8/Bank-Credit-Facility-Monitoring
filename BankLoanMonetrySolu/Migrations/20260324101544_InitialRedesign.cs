@@ -11,35 +11,35 @@ namespace BankLoanMonetrySolu.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "LoanFileItem",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FileBatchId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AppId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FileFormat = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DocumentType = table.Column<int>(type: "int", nullable: false),
-                    IsFileVerified = table.Column<bool>(type: "bit", nullable: false),
-                    CustomDocumentType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LoanFileItem", x => x.Id);                   
-                    table.ForeignKey(
-                        name: "FK_LoanFileItem_finacleDatas_AppId",
-                        column: x => x.AppId,
-                        principalTable: "finacleDatas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+            //migrationBuilder.CreateTable(
+            //    name: "LoanFileItem",
+            //    columns: table => new
+            //    {
+            //        Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+            //        FileBatchId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+            //        AppId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+            //        FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+            //        FileFormat = table.Column<string>(type: "nvarchar(max)", nullable: false),
+            //        DocumentType = table.Column<int>(type: "int", nullable: false),
+            //        IsFileVerified = table.Column<bool>(type: "bit", nullable: false),
+            //        CustomDocumentType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+            //        CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+            //    },
+            //    constraints: table =>
+            //    {
+            //        table.PrimaryKey("PK_LoanFileItem", x => x.Id);                   
+            //        table.ForeignKey(
+            //            name: "FK_LoanFileItem_finacleDatas_AppId",
+            //            column: x => x.AppId,
+            //            principalTable: "finacleDatas",
+            //            principalColumn: "Id",
+            //            onDelete: ReferentialAction.Cascade);
+            //    });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_LoanFileItem_AppId",
-                table: "LoanFileItem",
-                column: "AppId");
+            //migrationBuilder.CreateIndex(
+            //    name: "IX_LoanFileItem_AppId",
+            //    table: "LoanFileItem",
+            //    column: "AppId");
 
         }
 

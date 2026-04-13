@@ -14,11 +14,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
-using System.Text.Json.Serialization;
 // Added NLog namespaces
 using NLog;
 using NLog.Web;
+using OfficeOpenXml;
+using System.Text;
+using System.Text.Json.Serialization;
 
 // 1. Initialize NLog early to catch startup errors
 var logger = LogManager.Setup().LoadConfigurationFromFile("nlog.config").GetCurrentClassLogger();
@@ -59,6 +60,7 @@ try
     builder.Services.AddScoped<IReportService, ReportService>();
     builder.Services.AddHttpContextAccessor();
 
+    ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
     // Identity
     builder.Services.AddIdentity<AppUsers, IdentityRole>(options =>
     {

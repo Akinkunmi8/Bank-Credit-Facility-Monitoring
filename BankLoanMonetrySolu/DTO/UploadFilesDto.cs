@@ -37,6 +37,9 @@ namespace BankLoanMonetrySolu.DTO
         public string? DocType { get; set; }
         public string? ContentType  { get; set; }
         public bool IsVeriFied { get; set; }
+        public bool IsFileExitOnServer { get; set; } = false;
+        public string? Region { get; set; }
+        public string? RequesterUsername { get; set; }
     }
 
     public class FileStatusUpdateDto

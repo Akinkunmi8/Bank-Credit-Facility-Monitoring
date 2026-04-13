@@ -133,7 +133,32 @@ namespace BankLoanMonetrySolu.Controllers
             return Ok(files);
         }
 
+        [HttpGet("GetFilesByRegion/{region}")]
+        public async Task<IActionResult> GetFilesByRegion(string region)
+        {
+            if (string.IsNullOrWhiteSpace(region))
+                return BadRequest("Region is required.");
 
+            // This uses the "Solid" refactored method we created earlier
+            var files = await _finacleData.GetAllFilesByRegiondAsync(region);
+
+            if (files == null || !files.Any())
+                return NotFound($"No files found for region: {region}");
+
+            return Ok(files);
+        }
+
+        [HttpGet("GetUnsavedFileCount/{region}")]
+        public async Task<IActionResult> GetUnsavedFileCount(string region)
+        {
+            if (string.IsNullOrWhiteSpace(region))
+                return BadRequest("Region is required.");
+
+            // This returns the integer count for your dashboard badges/notifiers
+            var count = await _finacleData.GetTotalUnsaveFileCount(region);
+
+            return Ok(new { region = region, totalUnsaved = count });
+        }
 
     }
 }

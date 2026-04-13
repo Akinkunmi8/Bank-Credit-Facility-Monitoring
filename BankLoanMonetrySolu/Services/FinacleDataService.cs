@@ -231,6 +231,7 @@ namespace BankLoanMonetrySolu.Services
         public async Task<int> GetTotalResolvedCount(string region) =>
             await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false && f.ISRESOLVED == true);
 
+        
         public async Task<bool> UpdateFinacleStatus(FinacleStatusUpdateDto dto)
         {
             var httpContext = _httpContextAccessor.HttpContext;
@@ -507,6 +508,7 @@ namespace BankLoanMonetrySolu.Services
                         FileName = Path.GetFileNameWithoutExtension(item.File.FileName),
                         FileFormat = extension,
                         DocumentType = item.DocType
+
                     });
                 }
 
@@ -537,6 +539,24 @@ namespace BankLoanMonetrySolu.Services
             }).ToList();
         }
 
+        public async Task<List<FileViewDto>> GetAllFilesByRegiondAsync(string region)
+        {
+            _logger.LogInformation("Retrieving file list that are not on server for Region: {region}", region);
+            var files = await _context.LoanFileItem.Where(f => f.Region == region && f.IsFileExitOnServer == false).ToListAsync();
+            return files.Select(f => new FileViewDto
+            {
+                AppId = f.AppId,
+                FileName = f.FileName,
+                DocType = f.DocumentType.ToString(),
+                ContentType = GetMimeType(f.FileFormat),
+                RequesterUsername = f.RequesterUsername,
+            }).ToList();
+        }
+
+        public async Task<int> GetTotalUnsaveFileCount(string region) =>
+            await _context.LoanFileItem
+                .AsNoTracking()
+                .CountAsync(f => f.Region == region && !f.IsFileExitOnServer);
         private string GetMimeType(string extension)
         {
             extension = extension?.TrimStart('.').ToLower();
@@ -563,6 +583,9 @@ namespace BankLoanMonetrySolu.Services
                 FileName = file.FileName,
                 FileFormat = file.ContentType ?? "unknown",
                 IsFileVerified = file.IsVeriFied,
+                IsFileExitOnServer = file.IsFileExitOnServer,
+                RequesterUsername = file.RequesterUsername,
+                Region = file.Region,
                 DocumentType = Enum.TryParse<LoanDocumentType>(file.DocType, true, out var matchedType)
                                 ? matchedType
                                 : LoanDocumentType.Other,
@@ -591,7 +614,8 @@ namespace BankLoanMonetrySolu.Services
                               ? f.CustomDocumentType
                               : f.DocumentType.ToString(),
                     ContentType = f.FileFormat,
-                    IsVeriFied = f.IsFileVerified
+                    IsVeriFied = f.IsFileVerified,
+                    
                 })
                 .ToListAsync();
         }
@@ -599,10 +623,28 @@ namespace BankLoanMonetrySolu.Services
         public async Task<bool> UpdateFileStatus(Guid fileId, bool verify)
         {
             var file = await _context.LoanFileItem.FindAsync(fileId);
+
+            // 1. Guard clause
             if (file == null) return false;
 
+            // 2. Update verification status
             file.IsFileVerified = verify;
-            return await _context.SaveChangesAsync() > 0;
+
+            if (verify)
+            {
+                file.IsFileExitOnServer = true;
+            }
+
+            // 4. Save changes
+            try
+            {
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating file status for FileId: {fileId}", fileId);
+                return false;
+            }
         }
 
         public async Task<List<FileEditDto>> EditFileByAppIdAsync(Guid appId, FileEditDto updateDto)
