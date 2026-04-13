@@ -4,6 +4,7 @@ using System.Security.Claims;
 using AutoMapper;
 using Credit_Monitor.APIDto;
 using Credit_Monitor.Interfaces;
+using Credit_Monitor.Models;
 using Credit_Monitor.Services;
 using Credit_Monitor.ViewModel;
 using Credit_Monitor.ViewModels;
@@ -85,10 +86,75 @@ namespace Credit_Monitor.Controllers
                 "WithinTATUnresolved" => "Unresolved Loans (Within TAT)",
                 "BeyondTATUnreviewed" => "Unreviewed Loans (Beyond TAT)",
                 "BeyondTATUnresolved" => "Unresolved Loans (Beyond TAT)",
+                "TotalLoandocumentRequest" => "Total Loan Dcocument Request",
                 _ => "Unresolved Loan Applications"
             };
             var loan = await _loanService.GetPendingConfirmedLoansByRegion(region);
             return View(await GetAODashboardData(null, 1, region, status));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> FilterDocumentRequests(string searchTerm, int page = 1)
+        {
+            string region = User.FindFirst("Region")?.Value ?? "Global";
+
+            try
+            {
+                // Use the helper method to get the full state
+                var viewModel = await GetDocumentRequestDashboardData(searchTerm, page, region);
+
+                // Required for UI button visibility (Toggle/Delete)
+                ViewBag.Role = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
+                ViewBag.CurrentRegion = region;
+
+                return PartialView("_RequestedDocumentsTablePartial", viewModel);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while retrieving document data.");
+            }
+        }
+
+        private async Task<AODashboardViewModel> GetDocumentRequestDashboardData(string searchTerm, int page, string region)
+        {
+            int pageSize = 10;
+
+            // 1. Fetch the data from service
+            var allFiles = await _dashboardapi.GetFilesByRegion(region) ?? new List<FinacleFileResponse>();
+
+            // 2. Apply Search Filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                allFiles = allFiles.Where(f =>
+                    f.FileName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    f.DocType.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    f.AppId.ToString().Contains(searchTerm)
+                ).ToList();
+            }
+
+            // 3. Calculate Pagination
+            int totalItems = allFiles.Count();
+            var pagedFiles = allFiles
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // 4. Return populated ViewModel
+            return new AODashboardViewModel
+            {
+                // KPI Counters - Ensuring cards update correctly
+                TotalLoanDocumentRequest = await _dashboardapi.GetUnsavedFileCountByRegion(region),
+                TotalUnresolvedLoans = await _dashboardapi.GetTotalRejected(region),
+                WithinTATUnresolved = await _dashboardapi.GetWithinTATUnResolve(region),
+                BeyondTATUnresolved = await _dashboardapi.GetBeyondTATUnResolve(region),
+
+                // Document Table Data
+                RequestedDocuments = pagedFiles, // Ensure this property exists in your ViewModel
+                CurrentPage = page,
+                TotalItems = totalItems,
+                TotalPages = (int)Math.Ceiling((double)totalItems / pageSize),
+                SearchTerm = searchTerm
+            };
         }
 
         [HttpGet]
@@ -169,6 +235,7 @@ namespace Credit_Monitor.Controllers
         [HttpPost]
         public async Task<IActionResult> EditFileProperties(FileItemDto model)
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
             // Without [FromBody], ASP.NET binds the form data to the model properties automatically
             if (model == null || model.Id == Guid.Empty)
             {
@@ -180,7 +247,7 @@ namespace Credit_Monitor.Controllers
                 // 1. Update the record via your Service
                 // This should hit your EditFile(appId, fileDto) API method
                 var refreshedList = await _fileService.UpdateDocumentAsync(model.AppId, model);
-
+                ViewBag.Role = userRole;
                 // 2. Return the Partial View to refresh the UI table
                 return PartialView("_DocumentStatusPartial", refreshedList);
             }
@@ -195,6 +262,7 @@ namespace Credit_Monitor.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteFile(Guid appId, Guid fileId)
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
             if (appId == Guid.Empty || fileId == Guid.Empty)
             {
                 return BadRequest("Invalid identifiers for deletion.");
@@ -235,6 +303,7 @@ namespace Credit_Monitor.Controllers
 
                     // 3. Refresh the UI
                     ViewBag.AppId = appId; // Keep your table logic working
+                    ViewBag.Role = userRole;
                     var updatedList = await _fileService.GetCustomerDocumentsAsync(appId);
                     return PartialView("_DocumentStatusPartial", updatedList);
                 }
@@ -727,7 +796,7 @@ namespace Credit_Monitor.Controllers
             return new AODashboardViewModel
             {
                 TotalUnresolvedLoans = await _dashboardapi.GetTotalRejected(region),
-                TotalResolvedLoans = await _dashboardapi.GetTotalResolved(region),
+                TotalLoanDocumentRequest = await _dashboardapi.GetUnsavedFileCountByRegion(region),
                 WithinTATUnresolved = await _dashboardapi.GetWithinTATUnResolve(region),
                 BeyondTATUnresolved = await _dashboardapi.GetBeyondTATUnResolve(region),
 

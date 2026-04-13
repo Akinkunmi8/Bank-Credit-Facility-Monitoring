@@ -53,4 +53,28 @@ namespace Credit_Monitor.APIDto
         public string? Message { get; set; }
 
     }
+
+    public class UnsavedFileCountResponse
+    {
+        public string Region { get; set; } = string.Empty;
+        public int TotalUnsaved { get; set; }
+    }
+
+    public class FinacleFileResponse
+    {
+        public Guid AppId { get; set; }
+        public string FileName { get; set; } = string.Empty;
+        public string DocType { get; set; } = string.Empty;
+        public string ContentType { get; set; } = string.Empty;
+        public bool IsVeriFied { get; set; }
+        public bool IsFileExitOnServer { get; set; }
+        public string? Region { get; set; }
+        public string? RequesterUsername { get; set; }
+    }
+
+    // Wrapper to handle the $values JSON structure
+    public class FinacleFileListWrapper
+    {
+        public List<FinacleFileResponse> Values { get; set; } = new();
+    }
 }

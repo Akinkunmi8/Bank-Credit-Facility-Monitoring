@@ -73,7 +73,7 @@
     </div>
 
     <ul class="nav nav-pills row g-3 mb-4 border-0" id="kpiNav">
-        <li class="nav-item col-xl-4 col-md-6">
+        <li class="nav-item col-xl-3 col-md-6">
             <button class="nav-link active p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'Unresolved')">
                 <div class="stat-card accent-danger p-3 h-100 text-start">
                     <div class="d-flex justify-content-between align-items-center">
@@ -89,23 +89,9 @@
             </button>
         </li>
 
-        @* <li class="nav-item col-xl-4 col-md-6">
-            <button class="nav-link p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'Resolved')">
-                <div class="stat-card accent-info p-3 h-100 text-start">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <small class="text-muted text-uppercase">Resolved</small>
-                            <h3 class="fw-bold mb-0 text-dark">@Model.TotalResolvedLoans</h3>
-                        </div>
-                        <div class="stat-icon bg-info bg-opacity-10 text-info">
-                            <i class="bi bi-patch-check-fill"></i>
-                        </div>
-                    </div>
-                </div>
-            </button>
-        </li> *@
+         
 
-        <li class="nav-item col-xl-4 col-md-6">
+        <li class="nav-item col-xl-3 col-md-6">
             <button class="nav-link p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'WithinTATUnresolved')">
                 <div class="stat-card accent-warning p-3 h-100 text-start">
                     <div class="d-flex justify-content-between align-items-center">
@@ -121,7 +107,7 @@
             </button>
         </li>
 
-        <li class="nav-item col-xl-4 col-md-6">
+        <li class="nav-item col-xl-3 col-md-6">
             <button class="nav-link p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'BeyondTATUnresolved')">
                 <div class="stat-card accent-danger p-3 h-100 text-start" style="border-left-width: 8px;">
                     <div class="d-flex justify-content-between align-items-center">
@@ -131,6 +117,22 @@
                         </div>
                         <div class="stat-icon bg-danger bg-opacity-25 text-danger">
                             <i class="bi bi-alarm-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </button>
+        </li>
+
+        <li class="nav-item col-xl-3 col-md-6">
+            <button class="nav-link p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadDocumentTable('', 1, 'TotalLoandocumentRequest')">
+                <div class="stat-card accent-info p-3 h-100 text-start">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted text-uppercase">Total Requested Documents</small>
+                            <h3 class="fw-bold mb-0 text-dark">@Model.TotalLoanDocumentRequest</h3>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 text-info">
+                            <i class="bi bi-patch-check-fill"></i>
                         </div>
                     </div>
                 </div>
@@ -228,6 +230,30 @@
                     alert("Failed to load your records.");
                     loader.removeClass('d-flex').hide();
                     $("#tableContainer table").css("opacity", "1");
+                }
+            });
+        }
+
+        function loadDocumentTable(search, page, status) {
+            currentStatus = status; // Track that we are now in 'Document' mode
+            const loader = $(".table-loader");
+
+            loader.addClass('d-flex').show();
+            $("#tableContainer").css("opacity", "0.3");
+
+            $.ajax({
+                url: '@Url.Action("FilterDocumentRequests", "Dashboard")', // New Endpoint
+                type: 'GET',
+                data: { searchTerm: search, page: page, status: status },
+                success: function (result) {
+                    $('#tableContainer').html(result);
+                    loader.removeClass('d-flex').hide();
+                    $("#tableContainer").css("opacity", "1");
+                },
+                error: function () {
+                    alert("Failed to load document requirements.");
+                    loader.removeClass('d-flex').hide();
+                    $("#tableContainer").css("opacity", "1");
                 }
             });
         }

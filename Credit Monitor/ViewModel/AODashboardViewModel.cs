@@ -1,10 +1,13 @@
-﻿namespace Credit_Monitor.ViewModel
+﻿using Credit_Monitor.APIDto;
+
+namespace Credit_Monitor.ViewModel
 {
     public class AODashboardViewModel
     {
         public IEnumerable<PendingConfirmedLoanViewModel>? loans { get; set; }
+        public List<FinacleFileResponse> RequestedDocuments { get; set; } = new();
         public int TotalUnresolvedLoans { get; set; }
-        public int TotalResolvedLoans { get; set; }
+        public int TotalLoanDocumentRequest { get; set; }
         public int WithinTATUnresolved { get; set; }
         public int BeyondTATUnresolved { get; set; }
 

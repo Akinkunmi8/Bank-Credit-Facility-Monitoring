@@ -20,9 +20,11 @@ namespace Credit_Monitor.Interfaces
         public Task<List<TATOutputResponse>?> GetWithinTATUnresolvedLoansByRegion(string region);
         public Task<List<TATOutputResponse>?> GetBeyondTATUnreviewedLoansByRegion(string region);
         public Task<List<TATOutputResponse>?> GetBeyondTATUnresolvedLoansByRegion(string region);
+        public Task<int> GetUnsavedFileCountByRegion(string region);
         public Task<List<TATOutputResponse>?> GetWithinTATUnreviewedLoansByRegion(string region);
         public Task<string?> GetDiscrepancyRemarks(Guid appId);
         public Task<int> GetBeyondTAT(string region);
+        public Task<List<FinacleFileResponse>> GetFilesByRegion(string region);
 
     }
 }

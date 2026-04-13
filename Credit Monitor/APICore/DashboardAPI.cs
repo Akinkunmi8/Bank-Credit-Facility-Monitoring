@@ -245,6 +245,63 @@ namespace Credit_Monitor.APICore
             }
         }
 
+        public async Task<int> GetUnsavedFileCountByRegion(string region)
+        {
+            // The specific URL for the Finacle API
+            var urlPath = $"/api/Finacle/GetUnsavedFileCount/{region}";
+
+            try
+            {
+                // Calling the wrapper for the single DTO response
+                var result = await _apiService.GetAsync<UnsavedFileCountResponse>(urlPath);
+
+                if (result == null)
+                {
+                    _logger.LogWarning("Finacle API: No data returned for region {Region} at {Url}", region, urlPath);
+                    return 0;
+                }
+
+                _logger.LogInformation("Finacle API: Successfully retrieved {Count} unsaved files for {Region}",
+                    result.TotalUnsaved, region);
+
+                return result.TotalUnsaved;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Finacle API: Error fetching unsaved file count for {Region}", region);
+                // Returning 0 on error to avoid breaking the dashboard UI
+                return 0;
+            }
+        }
+
+        public async Task<List<FinacleFileResponse>> GetFilesByRegion(string region)
+        {
+            // The specific URL for the Finacle Files API
+            var urlPath = $"/api/Finacle/GetFilesByRegion/{region}";
+
+            try
+            {
+                // Use the wrapper DTO because of the $values JSON structure
+                var result = await _apiService.GetAsync<FinacleFileListWrapper>(urlPath);
+
+                if (result == null || result.Values == null)
+                {
+                    _logger.LogWarning("Finacle API: No file data returned for region {Region} at {Url}", region, urlPath);
+                    return new List<FinacleFileResponse>();
+                }
+
+                _logger.LogInformation("Finacle API: Successfully retrieved {Count} files for region {Region}",
+                    result.Values.Count, region);
+
+                return result.Values;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Finacle API: Error fetching files for region {Region}", region);
+                return new List<FinacleFileResponse>();
+            }
+        }
+
         public async Task<List<TATOutputResponse>?> GetBeyondTATUnresolvedLoansByRegion(string region)
         {
             // The specific URL from your requirement
