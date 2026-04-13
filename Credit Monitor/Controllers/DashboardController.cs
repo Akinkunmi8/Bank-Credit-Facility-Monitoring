@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Data;
+using System.Linq;
 using System.Security.Claims;
 using AutoMapper;
 using Credit_Monitor.APIDto;
@@ -91,11 +92,12 @@ namespace Credit_Monitor.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetDocumentStatus(Guid appId)
+        public async Task<IActionResult> GetDocumentStatus(Guid appId, string role)
         {
             // Ensure we are using the correct Service Method
             var documents = await _fileService.GetCustomerDocumentsAsync(appId);
             ViewBag.AppId = appId;
+            ViewBag.Role = role;
 
             // Return the partial view we refactored earlier
             return PartialView("_DocumentStatusPartial", documents);
@@ -127,6 +129,7 @@ namespace Credit_Monitor.Controllers
         [HttpPost]
         public async Task<IActionResult> AddFileProperties(Guid appId, string fileName, string docType, string contentType)
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
             if (appId == Guid.Empty || string.IsNullOrEmpty(fileName))
             {
                 return BadRequest("Missing required file information.");
@@ -150,7 +153,7 @@ namespace Credit_Monitor.Controllers
                 {
                     // 2. CRITICAL: Fetch the updated list immediately
                     var updatedList = await _fileService.GetCustomerDocumentsAsync(appId);
-
+                    ViewBag.Role = userRole;
                     // 3. Return the HTML of the table, not just a JSON success message
                     return PartialView("_DocumentStatusPartial", updatedList);
                 }
@@ -241,6 +244,60 @@ namespace Credit_Monitor.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, "Internal server error during deletion.");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddFile(Guid appId, Guid fileId, IFormFile file)
+        {
+            // 1. Basic Validation
+            if (appId == Guid.Empty || fileId == Guid.Empty || file == null)
+            {
+                return BadRequest("Missing required file or identifiers.");
+            }
+
+            // 2. Constraint: File Size (e.g., 10MB limit)
+            const long MaxFileSize = 10 * 1024 * 1024; // 10MB in bytes
+            if (file.Length > MaxFileSize)
+            {
+                return BadRequest("File size exceeds the 10MB limit.");
+            }
+
+            try
+            {
+                // 3. Ensure Folder Exists
+                string folderPath = Path.Combine(_storagePath, appId.ToString());
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                }
+
+                // 4. Clean up existing file with this ID (regardless of extension)
+                var existingFiles = Directory.EnumerateFiles(folderPath, $"{fileId}.*");
+                foreach (var existingFile in existingFiles)
+                {
+                    System.IO.File.Delete(existingFile);
+                }
+
+                // 5. Save New File
+                // Get extension from the uploaded file (e.g., .pdf)
+                string extension = Path.GetExtension(file.FileName).ToLower();
+                string fileName = $"{fileId}{extension}";
+                string fullPath = Path.Combine(folderPath, fileName);
+
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // 6. Refresh UI (Matching your Delete logic)
+                ViewBag.AppId = appId;
+                var updatedList = await _fileService.GetCustomerDocumentsAsync(appId);
+                return PartialView("_DocumentStatusPartial", updatedList);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while saving the file.");
             }
         }
 
@@ -357,7 +414,6 @@ namespace Credit_Monitor.Controllers
             var CMOVM = await GetCMODashboardData(searchTerm, page, region, status);
             return PartialView("_LoanTablePartial", CMOVM);
         }
-
 
         [Authorize(Roles = "CMS")]
         public async Task<IActionResult> CMSDashboard(string status)

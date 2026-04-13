@@ -51,26 +51,31 @@
                                                 title="View Document">
                                             <i class="bi bi-eye"></i>
                                         </button>
+                                        @if(ViewBag.Role == "CMO")
+                                        {
+                                            <button class="btn btn-sm btn-outline-secondary"
+                                                    onclick="openEditModal('@doc.FileId', '@doc.FileName', '@doc.DocType', '@doc.ContentType', '@doc.IsVerified')">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
 
-                                        <button class="btn btn-sm btn-outline-secondary"
-                                                onclick="openEditModal('@doc.FileId', '@doc.FileName', '@doc.DocType', '@doc.ContentType', '@doc.IsVerified')">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    onclick="deleteDocument('@doc.BatchId', '@doc.FileId')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        }
 
-                                        <button class="btn btn-sm btn-outline-success"
-                                                onclick="triggerUpload('@doc.FileId')"
-                                                title="Upload New Version">
-                                            <i class="bi bi-upload"></i>
-                                        </button>
-
-                                        <button class="btn btn-sm btn-outline-danger"
-                                                onclick="deleteDocument('@doc.BatchId', '@doc.FileId')">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
+                                        @if (ViewBag.Role == "AO")
+                                        {
+                                            <button class="btn btn-sm btn-outline-success"
+                                            onclick="triggerUpload('@doc.FileId')"
+                                            title="Upload New Version">
+                                                <i class="bi bi-upload"></i>
+                                            </button>
+                                        }
                                     </div>
 
                                     <input type="file" id="uploadInput_@doc.FileId" class="d-none"
-                                           onchange="handleFileUpload(this, '@doc.BatchId', '@doc.FileId')" />
+                                           onchange="handleFileUpload(this, '@ViewBag.AppId', '@doc.FileId')" />
                                 </td>
                             </tr>
                         }
@@ -87,11 +92,14 @@
         }
     </div>
 
-    <div class="card-footer bg-light border-0 py-3">
-        <button class="btn btn-primary w-100" onclick="openAddModal()">
-            <i class="bi bi-plus-circle me-2"></i>Request New Document
-        </button>
-    </div>
+    @if(ViewBag.Role == "CMO")
+    {
+        <div class="card-footer bg-light border-0 py-3">
+            <button class="btn btn-primary w-100" onclick="openAddModal()">
+                <i class="bi bi-plus-circle me-2"></i>Request New Document
+            </button>
+        </div>
+    }
 </div>
 
 <div class="modal fade" id="editFileModal" tabindex="-1" aria-hidden="true">
@@ -211,7 +219,7 @@
 </div>
 
 <script>
-        async function toggleVerification(fileId, appId, isChecked, element) {
+    async function toggleVerification(fileId, appId, isChecked, element) {
         const response = await fetch(`/Dashboard/UpdateVerification?appId=${appId}&fileId=${fileId}&status=${isChecked}`, {
             method: 'POST'
         });
@@ -228,6 +236,52 @@
             // 3. AUTO-TOGGLE BACK:
             // If it was checked, uncheck it. If it was unchecked, check it back.
             element.checked = !isChecked;
+        }
+    }
+
+    function triggerUpload(fileId) {
+        document.getElementById(`uploadInput_${fileId}`).click();
+    }
+
+    async function handleFileUpload(input, appId, fileId) {
+        const file = input.files[0];
+        if (!file) return;
+
+        // 1. Visual Feedback: Change button to a spinner
+        const btn = input.closest('td').querySelector('.btn-outline-success');
+        const originalIcon = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        btn.disabled = true;
+
+        const formData = new FormData();
+        formData.append("appId", appId);
+        formData.append("fileId", fileId);
+        formData.append("file", file);
+
+        try {
+            const response = await fetch('/Dashboard/AddFile', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const html = await response.text();
+                // 2. Refresh the table snippet
+                document.getElementById('docStatusContainer').innerHTML = html;
+                showNotification("Document updated successfully!", "success");
+            } else {
+                const errorText = await response.text();
+                showNotification(errorText || "Upload failed", "error");
+                // Reset button if failed
+                btn.innerHTML = originalIcon;
+                btn.disabled = false;
+            }
+        } catch (error) {
+            showNotification("Connection error", "error");
+            btn.innerHTML = originalIcon;
+            btn.disabled = false;
+        } finally {
+            input.value = ""; // Clear input so the same file can be re-uploaded if needed
         }
     }
 

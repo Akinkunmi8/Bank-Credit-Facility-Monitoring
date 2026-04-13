@@ -142,7 +142,7 @@
             <button class="nav-link fw-bold small"
                     data-bs-toggle="tab"
                     data-bs-target="#docStatus"
-                    onclick="loadDocuments('@loan?.id')">
+                    onclick="loadDocuments('@loan?.id','@userRole')">
                 Document Status
             </button>
         </li>
@@ -244,8 +244,6 @@
 
     </div>
 
-
-
     <!-- ===== LOAN DETAILS ===== -->
     <div class="mt-4">
         @if (loan != null)
@@ -257,7 +255,7 @@
 
 
 <script>
-       function loadDocuments(appId) {
+    function loadDocuments(appId, role) {
         // 1. Guard against null/empty GUIDs
         if (!appId || appId === '00000000-0000-0000-0000-000000000000' || appId === '') {
             console.warn("File API: No AppId provided for document lookup.");
@@ -278,7 +276,7 @@
         $.ajax({
             url: '@Url.Action("GetDocumentStatus", "Dashboard")',
             type: 'GET',
-            data: { appId: appId }, 
+            data: { appId: appId, role : role }, 
             beforeSend: function () {
                 // Show the spinner while waiting
                 container.html(`
