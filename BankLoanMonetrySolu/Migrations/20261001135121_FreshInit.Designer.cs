@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankLoanMonetrySolu.Migrations
 {
     [DbContext(typeof(DALContext))]
-    [Migration("20260324101544_InitialRedesign")]
-    partial class InitialRedesign
+    [Migration("20261001135121_FreshInit")]
+    partial class FreshInit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -637,14 +637,26 @@ namespace BankLoanMonetrySolu.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsFileExitOnServer")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsFileVerified")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Region")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RequesterUsername")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AppId");
 
                     b.HasIndex("FileBatchId");
+
+                    b.HasIndex("Region", "IsFileExitOnServer")
+                        .HasDatabaseName("IX_LoanFileItem_Region_ServerStatus");
 
                     b.ToTable("LoanFileItem");
                 });

@@ -1,13 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 18
-VisualStudioVersion = 18.2.11408.102 d18.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37531.7 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankLoanMonetrySolu", "BankLoanMonetrySolu\BankLoanMonetrySolu.csproj", "{B08309EC-5E36-4E00-A930-2068DFE0B904}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts", "Contracts\Contracts.csproj", "{B149CFE0-D3D4-4EB7-85E6-4E48064409FF}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Credit Monitor", "..\FrontendSolu\Bank-Credit-Facility-Monitoring\Credit Monitor\Credit Monitor.csproj", "{5C12FAF5-B7C3-5D3A-3516-424AFDA55B68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +21,6 @@ Global
 		{B149CFE0-D3D4-4EB7-85E6-4E48064409FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B149CFE0-D3D4-4EB7-85E6-4E48064409FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B149CFE0-D3D4-4EB7-85E6-4E48064409FF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5C12FAF5-B7C3-5D3A-3516-424AFDA55B68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5C12FAF5-B7C3-5D3A-3516-424AFDA55B68}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5C12FAF5-B7C3-5D3A-3516-424AFDA55B68}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5C12FAF5-B7C3-5D3A-3516-424AFDA55B68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

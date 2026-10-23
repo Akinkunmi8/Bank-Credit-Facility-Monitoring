@@ -5,14 +5,18 @@
 namespace BankLoanMonetrySolu.Migrations
 {
     /// <inheritdoc />
-    public partial class AddIndexToFileTable : Migration
+    public partial class FixDiscrepancyRemarkOneToMany : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropIndex(
+                name: "IX_discrepancyRemarks_AppId",
+                table: "discrepancyRemarks");
+
             migrationBuilder.AlterColumn<string>(
-                name: "Region",
-                table: "LoanFileItem",
+                name: "Discrepancies",
+                table: "discrepancyRemarks",
                 type: "nvarchar(450)",
                 nullable: true,
                 oldClrType: typeof(string),
@@ -20,26 +24,34 @@ namespace BankLoanMonetrySolu.Migrations
                 oldNullable: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_LoanFileItem_Region_ServerStatus",
-                table: "LoanFileItem",
-                columns: new[] { "Region", "IsFileExitOnServer" });
+                name: "IX_discrepancyRemarks_AppId_Discrepancies",
+                table: "discrepancyRemarks",
+                columns: new[] { "AppId", "Discrepancies" },
+                unique: true,
+                filter: "[Discrepancies] IS NOT NULL");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(
-                name: "IX_LoanFileItem_Region_ServerStatus",
-                table: "LoanFileItem");
+                name: "IX_discrepancyRemarks_AppId_Discrepancies",
+                table: "discrepancyRemarks");
 
             migrationBuilder.AlterColumn<string>(
-                name: "Region",
-                table: "LoanFileItem",
+                name: "Discrepancies",
+                table: "discrepancyRemarks",
                 type: "nvarchar(max)",
                 nullable: true,
                 oldClrType: typeof(string),
                 oldType: "nvarchar(450)",
                 oldNullable: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_discrepancyRemarks_AppId",
+                table: "discrepancyRemarks",
+                column: "AppId",
+                unique: true);
         }
     }
 }

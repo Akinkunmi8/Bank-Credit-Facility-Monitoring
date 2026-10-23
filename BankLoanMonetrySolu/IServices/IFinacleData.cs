@@ -8,9 +8,13 @@ namespace BankLoanMonetrySolu.IServices
         Task<FinacleResponseDto> GetAllPendingConfirmationByRegion(string region);
         Task<FinacleResponseDto> GetAllConfirmedFinacleData( string region);
         Task<FinacleResponseDto> GetAllReConfirmedFinacleDataByRegion(string region);
+        Task<FinacleResponseDto> GetCMOReviewByRegion(string region);
         Task<FinacleResponseDto> GetAllAprovedFinacleData(string region);
         Task<FinacleResponseDto> GetResolvedFinacleData(string region);
         Task<ServiceResponseDto> UpsertDiscrepancyRemark(DiscrepancyRemarkDto dto);
+        Task<ServiceResponseDto> ResolveDiscrepancy(ResolveDiscrepancyDto dto);
+        Task<ServiceResponseDto> SubmitDiscrepancyResponseAsync(SubmitDiscrepancyResponseDto dto);
+        Task<ServiceResponseDto> SubmitResolutionForReviewAsync(Guid appId);
         Task<List<DiscrepancyRemarkDto>> GetRemarkByAppId(Guid appId);
         Task<int> GetTotalPendingCount(string region);
         Task<int> GetTotalConfirmedCount(string region);

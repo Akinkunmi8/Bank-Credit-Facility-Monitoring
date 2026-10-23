@@ -167,7 +167,7 @@ try
                   .AllowCredentials(); 
         });
     });
-
+    builder.Services.AddHealthChecks();
     var app = builder.Build();
 
     // --------------------- Middleware ---------------------
@@ -187,7 +187,22 @@ try
     app.UseAuthorization();
 
     app.MapControllers();
-
+    // Ensure roles are automatically seeded on startup
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        try
+        {
+            // This will create the roles in the database automatically on boot
+            await DbInitializer.SeedRolesAndAdminAsync(services);
+        }
+        catch (Exception ex)
+        {
+            //logger = services.GetRequiredService<ILogger<Program>>();
+            logger.Error(ex, "An error occurred while seeding the database roles.");
+        }
+    }
+    app.MapHealthChecks("/health");
     app.Run();
 }
 catch (Exception exception)

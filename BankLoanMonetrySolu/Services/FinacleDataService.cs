@@ -145,8 +145,14 @@ namespace BankLoanMonetrySolu.Services
             {
                 _logger.LogInformation("Fetching re-confirmed records for Region: {Region}", region);
                 var data = await _context.finacleDatas
-                    .Where(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false && f.ISRESOLVED == false)
-                    .ToListAsync();
+                .Where(f =>
+                    f.REGION == region &&
+                    f.CONFIRMED == false &&
+                    f.RECONFIRMED == true &&
+                    f.APPROVED == false &&
+                    f.ISRESOLVED == false &&
+                    f.RESOLUTIONSUBMITTED == false)
+                .ToListAsync();
 
                 var dto = _mapper.Map<List<FinacleDataDto>>(data);
                 return new FinacleResponseDto
@@ -163,6 +169,50 @@ namespace BankLoanMonetrySolu.Services
             }
         }
 
+        // Get the Resolution review befor submited 
+
+        public async Task<FinacleResponseDto> GetCMOReviewByRegion(string region)
+        {
+            try
+            {
+                _logger.LogInformation(
+                    "Fetching CMO resolution review records for Region: {Region}",
+                    region);
+
+                var data = await _context.finacleDatas
+                    .AsNoTracking()
+                    .Where(f =>
+                        f.REGION == region &&
+                        f.RECONFIRMED == true&&
+                        !f.APPROVED == false&&
+                        !f.ISRESOLVED  == false&&
+                        f.RESOLUTIONSUBMITTED == true)
+                    .ToListAsync();
+
+                var dto = _mapper.Map<List<FinacleDataDto>>(data);
+
+                return new FinacleResponseDto
+                {
+                    IsSuccess = true,
+                    ResponseMessage =
+                        $"{data.Count} CMO resolution review record(s) retrieved",
+                    DataList = dto
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error fetching CMO resolution review data for Region: {Region}",
+                    region);
+
+                return new FinacleResponseDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = ex.Message
+                };
+            }
+        }
         public async Task<FinacleResponseDto> GetAllPendingConfirmationByRegion(string region)
         {
             if (string.IsNullOrWhiteSpace(region))
@@ -226,7 +276,7 @@ namespace BankLoanMonetrySolu.Services
             await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false && f.ISRESOLVED == false);
 
         public async Task<int> GetTotalApproveCount(string region) =>
-            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == true && f.ISRESOLVED == false);
+            await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == true && f.RECONFIRMED == false && f.APPROVED == true && f.ISRESOLVED == false && f.RESOLUTIONSUBMITTED == false);
 
         public async Task<int> GetTotalResolvedCount(string region) =>
             await _context.finacleDatas.AsNoTracking().CountAsync(f => f.REGION == region && f.CONFIRMED == false && f.RECONFIRMED == true && f.APPROVED == false && f.ISRESOLVED == true);
@@ -275,6 +325,10 @@ namespace BankLoanMonetrySolu.Services
                         break;
                     case "reject":
                         record.RECONFIRMED = true;
+                        record.ISRESOLVED = false;
+
+                        // New resolution cycle
+                        record.RESOLUTIONSUBMITTED = false;
                         // Assign the deadline from the DTO if provided
                         if (dto.Deadline.HasValue)
                         {
@@ -287,8 +341,40 @@ namespace BankLoanMonetrySolu.Services
                         break;
                     case "resolve":
                         record.ISRESOLVED = true;
-                        record.RECONFIRMED = false;
+                        record.RECONFIRMED = true;
                         break;
+
+                    case "return-resolution":
+
+                        record.RECONFIRMED = true;
+                        record.RESOLUTIONSUBMITTED = false;
+                        record.ISRESOLVED = false;
+
+                        if (dto.Deadline.HasValue)
+                        {
+                            record.DEADLINE = dto.Deadline.Value;
+                        }
+                        else
+                        {
+                            _logger.LogWarning(
+                                "CMO returned application {AppId} without a resolution deadline.",
+                                appGuid);
+                        }
+
+                        break;
+
+
+                    case "accept-resolution":
+
+                        record.RECONFIRMED = false;
+                        record.CONFIRMED = true;
+                        record.RESOLUTIONSUBMITTED = false;
+                        record.ISRESOLVED = true;
+                        record.APPROVED = false;
+                        record.DEADLINE = null;
+
+                        break;
+
                 }
 
                 record.PROCESSEDATE = actionTime;
@@ -375,87 +461,344 @@ namespace BankLoanMonetrySolu.Services
             {
                 // 1. Validation
                 if (dto.AppId == Guid.Empty)
-                    return new ServiceResponseDto { IsSuccess = false, ResponseMessage = "AppId is required." };
+                {
+                    return new ServiceResponseDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage = "AppId is required."
+                    };
+                }
 
-                DiscrepancyRemark record = null;
+                if (string.IsNullOrWhiteSpace(dto.Discrepancies))
+                {
+                    return new ServiceResponseDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage = "Discrepancy is required."
+                    };
+                }
 
-                // 2. Lookup - ONLY by ID
-                // If the ID is empty, we don't even try to find a record.
+                DiscrepancyRemark? record = null;
+
+                // 2. First choice: find exact record by Id
                 if (dto.Id != Guid.Empty)
                 {
-                    record = await _context.discrepancyRemarks.FindAsync(dto.Id);
+                    record = await _context.discrepancyRemarks
+                        .FirstOrDefaultAsync(x =>
+                            x.Id == dto.Id &&
+                            x.AppId == dto.AppId);
+                }
+
+                // 3. Fallback:
+                // First CMO submission may not have an Id yet.
+                // Find the same discrepancy belonging to the same application.
+                if (record == null)
+                {
+                    record = await _context.discrepancyRemarks
+                        .FirstOrDefaultAsync(x =>
+                            x.AppId == dto.AppId &&
+                            x.Discrepancies == dto.Discrepancies);
                 }
 
                 if (record != null)
                 {
-                    // --- UPDATE CASE ---
-                    _logger.LogInformation("Updating SPECIFIC row: {Id}", dto.Id);
+                    // UPDATE
+                    _logger.LogInformation(
+                        "Updating discrepancy remark {Id} for AppId {AppId}",
+                        record.Id,
+                        dto.AppId);
+
                     record.Remarks = dto.Remarks;
                     record.RecomendedAction = dto.RecomendedAction;
                     record.Responsibility = dto.Responsibility;
                     record.Discrepancies = dto.Discrepancies;
-
-                    _context.discrepancyRemarks.Update(record);
                 }
                 else
                 {
-                    // --- INSERT CASE ---
-                    // If the code reaches here, it means:
-                    // a) dto.Id was Empty
-                    // b) OR dto.Id was provided but not found in DB
-                    _logger.LogInformation("Inserting NEW row for AppId: {AppId}", dto.AppId);
-
+                    // INSERT
                     var newRemark = new DiscrepancyRemark
                     {
-                        Id = Guid.NewGuid(), // ALWAYS generate a fresh ID here
+                        Id = Guid.NewGuid(),
                         AppId = dto.AppId,
                         Discrepancies = dto.Discrepancies,
                         Remarks = dto.Remarks,
                         RecomendedAction = dto.RecomendedAction,
                         Responsibility = dto.Responsibility,
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow
                     };
 
                     await _context.discrepancyRemarks.AddAsync(newRemark);
+
+                    _logger.LogInformation(
+                        "Creating discrepancy remark {Id} for AppId {AppId}: {Discrepancy}",
+                        newRemark.Id,
+                        dto.AppId,
+                        dto.Discrepancies);
                 }
 
                 await _context.SaveChangesAsync();
-                return new ServiceResponseDto { IsSuccess = true, ResponseMessage = "Success" };
+
+                return new ServiceResponseDto
+                {
+                    IsSuccess = true,
+                    ResponseMessage = "Discrepancy remark saved successfully."
+                };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Upsert failed");
-                // Check for InnerException to see if the DB is still complaining about a constraint
-                var msg = ex.InnerException?.Message ?? ex.Message;
-                return new ServiceResponseDto { IsSuccess = false, ResponseMessage = "Error: " + msg };
+                _logger.LogError(
+                    ex,
+                    "Failed to save discrepancy remark for AppId {AppId}",
+                    dto.AppId);
+
+                var message = ex.InnerException?.Message ?? ex.Message;
+
+                return new ServiceResponseDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = "Error: " + message
+                };
+            }
+        }
+        
+
+        public async Task<ServiceResponseDto> ResolveDiscrepancy(ResolveDiscrepancyDto dto)
+        {
+            var userName =
+                _httpContextAccessor.HttpContext?.User
+                    .FindFirst(ClaimTypes.Name)?.Value
+                ??
+                _httpContextAccessor.HttpContext?.User
+                    .FindFirst(ClaimTypes.Email)?.Value
+                ?? "Unknown";
+
+            var record = await _context.discrepancyRemarks
+                .FirstOrDefaultAsync(x =>
+                    x.Id == dto.Id &&
+                    x.AppId == dto.AppId);
+
+            if (record == null)
+            {
+                return new ServiceResponseDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = "Discrepancy record not found."
+                };
+            }
+
+            record.ResolutionAction = dto.ResolutionAction;
+            record.ResolutionRemarks = dto.ResolutionRemarks;
+            record.RespondedBy = userName;
+            record.RespondedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponseDto
+            {
+                IsSuccess = true,
+                ResponseMessage = "Resolution submitted successfully."
+            };
+        }
+
+        public async Task<ServiceResponseDto> SubmitDiscrepancyResponseAsync(SubmitDiscrepancyResponseDto dto)
+        {
+            try
+            {
+                if (dto.Id == Guid.Empty || dto.AppId == Guid.Empty)
+                {
+                    return new ServiceResponseDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage = "Invalid discrepancy information."
+                    };
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.ResolutionAction))
+                {
+                    return new ServiceResponseDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage = "Resolution action is required."
+                    };
+                }
+
+                var record = await _context.discrepancyRemarks
+                    .FirstOrDefaultAsync(x =>
+                        x.Id == dto.Id &&
+                        x.AppId == dto.AppId);
+
+                if (record == null)
+                {
+                    return new ServiceResponseDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage = "Discrepancy record was not found."
+                    };
+                }
+
+                var httpContext = _httpContextAccessor.HttpContext;
+
+                var respondedBy =
+                    httpContext?.User.FindFirst(ClaimTypes.Name)?.Value
+                    ?? httpContext?.User.FindFirst(ClaimTypes.Email)?.Value
+                    ?? httpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? "Unknown";
+
+                record.ResolutionAction = dto.ResolutionAction.Trim();
+                record.ResolutionRemarks = dto.ResolutionRemarks?.Trim();
+                record.RespondedBy = respondedBy;
+                record.RespondedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                return new ServiceResponseDto
+                {
+                    IsSuccess = true,
+                    ResponseMessage = "Response saved successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to save RM response for discrepancy {Id}",
+                    dto.Id);
+
+                return new ServiceResponseDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = "Unable to save discrepancy response."
+                };
             }
         }
 
+        public async Task<ServiceResponseDto> SubmitResolutionForReviewAsync(Guid appId)
+        {
+            try
+            {
+                var loan = await _context.finacleDatas
+                    .FirstOrDefaultAsync(x => x.Id == appId);
+
+                if (loan == null)
+                {
+                    return new ServiceResponseDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage = "Loan application not found."
+                    };
+                }
+
+                // It must actually have been returned by CMO
+                if (!loan.RECONFIRMED || loan.ISRESOLVED)
+                {
+                    return new ServiceResponseDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage =
+                            "This application is not awaiting RM resolution."
+                    };
+                }
+
+                var discrepancies = await _context.discrepancyRemarks
+                    .Where(x => x.AppId == appId)
+                    .ToListAsync();
+
+                if (discrepancies.Count == 0)
+                {
+                    return new ServiceResponseDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage =
+                            "No discrepancy records were found."
+                    };
+                }
+
+                var unanswered = discrepancies
+                    .Where(x =>
+                        string.IsNullOrWhiteSpace(x.ResolutionAction))
+                    .ToList();
+
+                if (unanswered.Count > 0)
+                {
+                    return new ServiceResponseDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage =
+                            $"{unanswered.Count} discrepancy response(s) are still outstanding."
+                    };
+                }
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * DO NOT SET:
+                 * loan.ISRESOLVED = true;
+                 *
+                 * RM has only submitted responses.
+                 */
+                loan.RESOLUTIONSUBMITTED = true;
+                loan.PROCESSEDATE = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                return new ServiceResponseDto
+                {
+                    IsSuccess = true,
+                    ResponseMessage =
+                        "Resolution response submitted for CMO re-review."
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed submitting resolution for CMO review. AppId {AppId}",
+                    appId);
+
+                return new ServiceResponseDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage =
+                        "Unable to submit the resolution for review."
+                };
+            }
+        }
         public async Task<List<DiscrepancyRemarkDto>> GetRemarkByAppId(Guid appId)
         {
             try
             {
-                // 1. Filter the table for all records matching the AppId
                 var remarks = await _context.discrepancyRemarks
                     .AsNoTracking()
                     .Where(x => x.AppId == appId)
                     .ToListAsync();
 
-                // 2. Map the list of entities to a list of DTOs
                 return remarks.Select(remark => new DiscrepancyRemarkDto
                 {
                     Id = remark.Id,
                     AppId = remark.AppId,
                     Discrepancies = remark.Discrepancies,
+
+                    // CMO instruction
                     Remarks = remark.Remarks,
                     RecomendedAction = remark.RecomendedAction,
-                    Responsibility = remark.Responsibility
+                    Responsibility = remark.Responsibility,
+
+                    // AO/RM response
+                    ResolutionAction = remark.ResolutionAction,
+                    ResolutionRemarks = remark.ResolutionRemarks,
+                    RespondedBy = remark.RespondedBy,
+                    RespondedAt = remark.RespondedAt
+
                 }).ToList();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving remarks list for AppId: {AppId}", appId);
-                return new List<DiscrepancyRemarkDto>(); // Return empty list on error
+                _logger.LogError(
+                    ex,
+                    "Error retrieving remarks list for AppId: {AppId}",
+                    appId);
+
+                return new List<DiscrepancyRemarkDto>();
             }
         }
         public async Task<Guid> SaveFilesAsync(UploadFilesDto dto)
@@ -573,28 +916,76 @@ namespace BankLoanMonetrySolu.Services
 
         public async Task<string> AddFile(FileViewDto file)
         {
-            if (file.AppId == null || string.IsNullOrEmpty(file.FileName))
+            if (file.AppId == null || string.IsNullOrWhiteSpace(file.FileName))
                 return "Invalid file data.";
+
+            var appId = file.AppId.Value;
+
+            // Confirm that the application exists
+            var applicationExists = await _context.finacleDatas
+                .AnyAsync(x => x.Id == appId);
+
+            if (!applicationExists)
+                return "Loan application not found.";
+
+            // LoanFileBatch.AppId is stored as nvarchar
+            var appIdString = appId.ToString();
+
+            // Find an existing batch for this application
+            var batch = await _context.LoanFileBatch
+                .FirstOrDefaultAsync(x => x.AppId == appIdString);
+
+            // Manually seeded/demo applications may not have a batch yet
+            if (batch == null)
+            {
+                batch = new LoanFileBatch
+                {
+                    Id = Guid.NewGuid(),
+                    AppId = appIdString,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.LoanFileBatch.Add(batch);
+            }
+
+            // Parse document type only once
+            var isKnownDocumentType = Enum.TryParse<LoanDocumentType>(
+                file.DocType,
+                true,
+                out var documentType);
 
             var newFile = new LoanFileItem
             {
                 Id = Guid.NewGuid(),
-                AppId = file.AppId.Value, // direct relationship
+
+                // FK -> finacleDatas.Id
+                AppId = appId,
+
+                // FK -> LoanFileBatch.Id
+                FileBatchId = batch.Id,
+
                 FileName = file.FileName,
                 FileFormat = file.ContentType ?? "unknown",
+
+                DocumentType = isKnownDocumentType
+                    ? documentType
+                    : LoanDocumentType.Other,
+
+                CustomDocumentType = isKnownDocumentType
+                    ? null
+                    : file.DocType,
+
                 IsFileVerified = file.IsVeriFied,
                 IsFileExitOnServer = file.IsFileExitOnServer,
+
                 RequesterUsername = file.RequesterUsername,
                 Region = file.Region,
-                DocumentType = Enum.TryParse<LoanDocumentType>(file.DocType, true, out var matchedType)
-                                ? matchedType
-                                : LoanDocumentType.Other,
-                CustomDocumentType = Enum.TryParse<LoanDocumentType>(file.DocType, true, out _)
-                                    ? null
-                                    : file.DocType
+
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.LoanFileItem.Add(newFile);
+
             await _context.SaveChangesAsync();
 
             return newFile.Id.ToString();

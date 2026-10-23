@@ -72,6 +72,34 @@ namespace BankLoanMonetrySolu.Controllers
             return Ok(response);
         }
 
+        // Get all applications submitted by RM/AO
+        // and waiting for CMO re-review
+        [HttpGet("cmo-review/by-region/{region}")]
+        public async Task<IActionResult> GetCMOReviewByRegion(string region)
+        {
+            if (string.IsNullOrWhiteSpace(region))
+            {
+                return BadRequest(new
+                {
+                    isSuccess = false,
+                    responseMessage = "Region is required."
+                });
+            }
+
+
+
+            var response = await _finacleData.GetCMOReviewByRegion(region);
+
+            if (!response.IsSuccess)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+
+
+        }
+
         // 5️⃣ Get ALL approved Finacle data
         [HttpGet("approved")]
         public async Task<IActionResult> GetAllApprovedFinacleData(string region)

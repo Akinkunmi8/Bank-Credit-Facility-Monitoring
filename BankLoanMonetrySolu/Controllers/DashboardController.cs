@@ -1,5 +1,6 @@
 ﻿using BankLoanMonetrySolu.DTO;
 using BankLoanMonetrySolu.IServices;
+using BankLoanMonetrySolu.Model;
 using BankLoanMonetrySolu.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -17,7 +18,7 @@ namespace BankLoanMonetrySolu.Controllers
         private readonly IReportService _reportService;
         public DashboardController(
             IFinacleData finacleService,
-            ITAT tatService,IReportService reportService)
+            ITAT tatService, IReportService reportService)
         {
             _finacleService = finacleService;
             _tatService = tatService;
@@ -189,6 +190,71 @@ namespace BankLoanMonetrySolu.Controllers
             return BadRequest(result);
         }
 
+        [HttpPost("remarks/resolve")]
+        public async Task<IActionResult> ResolveRemark([FromBody] ResolveDiscrepancyDto dto)
+        {
+            if (dto == null ||
+                dto.Id == Guid.Empty ||
+                dto.AppId == Guid.Empty)
+            {
+                return BadRequest(new ServiceResponseDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = "Invalid resolution data."
+                });
+            }
+
+            var result = await _finacleService.ResolveDiscrepancy(dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPost("remarks/respond")]
+        public async Task<IActionResult> SubmitDiscrepancyResponse([FromBody] SubmitDiscrepancyResponseDto dto)
+        {
+            if (dto == null)
+            {
+                return BadRequest(new ServiceResponseDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = "Invalid request."
+                });
+            }
+
+            var result =
+                await _finacleService.SubmitDiscrepancyResponseAsync(dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPost("remarks/submit-resolution")]
+        public async Task<IActionResult> SubmitResolutionApplication([FromBody] SubmitResolutionForReviewDto dto)
+        {
+            if (dto == null || dto.AppId == Guid.Empty)
+            {
+                return BadRequest(new ServiceResponseDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = "Invalid application."
+                });
+            }
+
+            var result =
+                await _finacleService
+                    .SubmitResolutionForReviewAsync(dto.AppId);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
         [HttpPost("add-file")]
         public async Task<IActionResult> AddFile([FromBody] FileViewDto dto)
         {
@@ -306,6 +372,26 @@ namespace BankLoanMonetrySolu.Controllers
             {
                 // Log the exception in a real banking environment
                 return StatusCode(500, $"Internal server error during report generation: {ex.Message}");
+            }
+        }
+
+        [HttpGet("full-report-preview")]
+        public async Task<IActionResult> GetFullReportPreview([FromQuery] ReportRequestDto request)
+        {
+            try
+            {
+                var reportData =
+                    await _reportService.GetFullReportData(request);
+
+                return Ok(reportData);
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, new
+                {
+                    message = "Unable to generate report preview."
+                });
             }
         }
     }

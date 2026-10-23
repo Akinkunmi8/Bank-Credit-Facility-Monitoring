@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankLoanMonetrySolu.Migrations
 {
     [DbContext(typeof(DALContext))]
-    [Migration("20260413114122_AddIndexToFileTable")]
-    partial class AddIndexToFileTable
+    [Migration("20261003111031_AddRMDiscrepancyResponse")]
+    partial class AddRMDiscrepancyResponse
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -239,6 +239,18 @@ namespace BankLoanMonetrySolu.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Remarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResolutionAction")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResolutionRemarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RespondedBy")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Responsibility")

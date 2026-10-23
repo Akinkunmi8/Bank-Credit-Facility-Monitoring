@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankLoanMonetrySolu.Migrations
 {
     [DbContext(typeof(DALContext))]
-    [Migration("20260413110042_UpdateFileTable")]
-    partial class UpdateFileTable
+    [Migration("20261006032612_FixDiscrepancyRemarkOneToMany")]
+    partial class FixDiscrepancyRemarkOneToMany
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -233,7 +233,7 @@ namespace BankLoanMonetrySolu.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Discrepancies")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RecomendedAction")
                         .HasColumnType("nvarchar(max)");
@@ -241,13 +241,26 @@ namespace BankLoanMonetrySolu.Migrations
                     b.Property<string>("Remarks")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ResolutionAction")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResolutionRemarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RespondedBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Responsibility")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppId")
-                        .IsUnique();
+                    b.HasIndex("AppId", "Discrepancies")
+                        .IsUnique()
+                        .HasFilter("[Discrepancies] IS NOT NULL");
 
                     b.ToTable("discrepancyRemarks");
                 });
@@ -480,6 +493,9 @@ namespace BankLoanMonetrySolu.Migrations
                     b.Property<string>("REGION_NAME")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("RESOLUTIONSUBMITTED")
+                        .HasColumnType("bit");
+
                     b.Property<string>("RISKRATING")
                         .HasColumnType("nvarchar(max)");
 
@@ -644,7 +660,7 @@ namespace BankLoanMonetrySolu.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Region")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RequesterUsername")
                         .HasColumnType("nvarchar(max)");
@@ -654,6 +670,9 @@ namespace BankLoanMonetrySolu.Migrations
                     b.HasIndex("AppId");
 
                     b.HasIndex("FileBatchId");
+
+                    b.HasIndex("Region", "IsFileExitOnServer")
+                        .HasDatabaseName("IX_LoanFileItem_Region_ServerStatus");
 
                     b.ToTable("LoanFileItem");
                 });
@@ -859,8 +878,8 @@ namespace BankLoanMonetrySolu.Migrations
             modelBuilder.Entity("BankLoanMonetrySolu.Model.DiscrepancyRemark", b =>
                 {
                     b.HasOne("BankLoanMonetrySolu.Model.FinacleData", "FinacleData")
-                        .WithOne()
-                        .HasForeignKey("BankLoanMonetrySolu.Model.DiscrepancyRemark", "AppId")
+                        .WithMany()
+                        .HasForeignKey("AppId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

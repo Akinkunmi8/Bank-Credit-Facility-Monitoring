@@ -21,35 +21,69 @@ namespace BankLoanMonetrySolu.Services
 
         public async Task<byte[]> GenerateFullReport(ReportRequestDto request)
         {
+            var reportData = await GetFullReportData(request);
+
+            return request.Format.ToUpper() == "EXCEL"
+                ? await ExportToExcel(reportData, request.Role)
+                : await ExportToPdf(reportData, request.Role);
+        }
+        public async Task<FullDashboardReportData> GetFullReportData(ReportRequestDto request)
+        {
             var reportData = new FullDashboardReportData();
 
-            // 1. Data Aggregation
             if (request.Role == "CMS" || request.Role == "CMO")
             {
-                reportData.Unreviewed = await _finacleService.GetAllPendingConfirmationByRegion(request.Region);
-                reportData.WithinTATUnreviewed = await _tatService.GetDataWithinTATForUnReview(request.Region);
-                reportData.BeyondTATUnreviewed = await _tatService.GetDataBeyondTATForUnReview(request.Region);
-                reportData.Reviewed = await _finacleService.GetAllConfirmedFinacleData(request.Region);
+                reportData.Unreviewed =
+                    await _finacleService
+                        .GetAllPendingConfirmationByRegion(request.Region);
+
+                reportData.WithinTATUnreviewed =
+                    await _tatService
+                        .GetDataWithinTATForUnReview(request.Region);
+
+                reportData.BeyondTATUnreviewed =
+                    await _tatService
+                        .GetDataBeyondTATForUnReview(request.Region);
+
+                reportData.Reviewed =
+                    await _finacleService
+                        .GetAllConfirmedFinacleData(request.Region);
             }
 
-            if (request.Role == "CMS" || request.Role == "CMO" || request.Role == "AO" || request.Role == "BO")
+            if (request.Role == "CMS" ||
+                request.Role == "CMO" ||
+                request.Role == "AO" ||
+                request.Role == "BO")
             {
-                reportData.Resolved = await _finacleService.GetResolvedFinacleData(request.Region);
-                reportData.UnResoved = await _finacleService.GetAllReConfirmedFinacleDataByRegion(request.Region);
-                reportData.WithinTATUnresolve = await _tatService.GetDataWithinTATForUnResolved(request.Region);
-                reportData.BeyondTATUnresolve = await _tatService.GetDataBeyondTATForUnResolved(request.Region);
+                reportData.Resolved =
+                    await _finacleService
+                        .GetResolvedFinacleData(request.Region);
+
+                reportData.UnResoved =
+                    await _finacleService
+                        .GetAllReConfirmedFinacleDataByRegion(request.Region);
+
+                reportData.WithinTATUnresolve =
+                    await _tatService
+                        .GetDataWithinTATForUnResolved(request.Region);
+
+                reportData.BeyondTATUnresolve =
+                    await _tatService
+                        .GetDataBeyondTATForUnResolved(request.Region);
             }
 
             if (request.Role == "CMS")
             {
-                reportData.Approve = await _finacleService.GetAllAprovedFinacleData(request.Region);
-                reportData.BeyondTATReview = await _tatService.GetBeyondTATForReviewedforApproval(request.Region);
+                reportData.Approve =
+                    await _finacleService
+                        .GetAllAprovedFinacleData(request.Region);
+
+                reportData.BeyondTATReview =
+                    await _tatService
+                        .GetBeyondTATForReviewedforApproval(request.Region);
             }
 
-            // 2. Routing
-            return request.Format.ToUpper() == "EXCEL"
-                ? await ExportToExcel(reportData, request.Role)
-                : await ExportToPdf(reportData, request.Role);
+            return reportData;
         }
 
         private async Task<byte[]> ExportToExcel(FullDashboardReportData data, string role)

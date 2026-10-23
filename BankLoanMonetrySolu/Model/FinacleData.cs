@@ -93,6 +93,7 @@ namespace BankLoanMonetrySolu.Model
         public bool RECONFIRMED { get; set; }
         public bool APPROVED { get; set; }
         public bool ISRESOLVED { get; set; }
+        public bool RESOLUTIONSUBMITTED { get; set; }
         public DateTime? DEADLINE { get; set; }
         public DateTime? PROCESSEDATE { get; set; }
         public Guid? CustomerId { get; set; }
