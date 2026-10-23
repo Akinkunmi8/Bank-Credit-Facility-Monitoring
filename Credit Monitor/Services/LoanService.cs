@@ -13,7 +13,7 @@ namespace Credit_Monitor.Services
         private readonly IMapper _mapper;
         private readonly ILoanAPIService _loanAPIservice;
         private readonly ICatAPIService _catAPIservice;
-        private readonly ILogger<LoanService> _logger; // 1. Add logger field
+        private readonly ILogger<LoanService> _logger;
 
         public LoanService(
             ILoanRepository loanRepository,
@@ -357,15 +357,75 @@ namespace Credit_Monitor.Services
 
         public async Task<List<ResolutionItem>> GetSavedResolutionsMapped(Guid? appId)
         {
-            // 1. Get raw data from API
-            var rawDtoList = await _loanAPIservice.GetExistingRemarksByAppId(appId.ToString());
-
-            if (rawDtoList == null || !rawDtoList.Any())
+            if (!appId.HasValue || appId.Value == Guid.Empty)
                 return new List<ResolutionItem>();
 
-            return _mapper.Map<List<ResolutionItem>>(rawDtoList);
-        }
+            var remarks =
+                await _loanAPIservice.GetExistingRemarksByAppId(
+                    appId.Value.ToString());
 
+            if (remarks == null)
+                return new List<ResolutionItem>();
+
+            return remarks.Select(x => new ResolutionItem
+            {
+                Id = x.Id.GetValueOrDefault(),
+
+                Discrepancy = x.Discrepancies,
+
+                // CMO
+                RecommendedAction = x.RecomendedAction,
+                Remarks = x.Remarks,
+                Responsibility = x.Responsibility,
+
+                // RM/AO
+                ResolutionAction = x.ResolutionAction,
+                ResolutionRemarks = x.ResolutionRemarks,
+                RespondedBy = x.RespondedBy,
+                RespondedAt = x.RespondedAt
+
+            }).ToList();
+        }
+        public async Task<IEnumerable<PendingConfirmedLoanViewModel>>GetCMOReviewLoanByRegion(string region)
+        {
+            _logger.LogInformation(
+                "Requesting CMO resolution review queue for Region: {Region}",
+                region);
+
+            try
+            {
+                var loans =
+                    await _loanAPIservice.GetCMOReviewByRegion(region);
+
+                if (loans == null)
+                {
+                    _logger.LogWarning(
+                        "No CMO review records returned for Region: {Region}",
+                        region);
+
+                    return Enumerable.Empty<PendingConfirmedLoanViewModel>();
+                }
+
+                var mappedLoans =
+                    _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(loans);
+
+                _logger.LogInformation(
+                    "Retrieved {Count} CMO review record(s) for Region: {Region}",
+                    mappedLoans.Count(),
+                    region);
+
+                return mappedLoans;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error retrieving CMO review queue for Region: {Region}",
+                    region);
+
+                throw;
+            }
+        }
         public async Task<(int SuccessCount, int FailureCount)> ProcessBulkResolutionsAsync(Guid appId, List<ResolutionItem> resolutions)
         {
             int successCount = 0;
@@ -411,6 +471,163 @@ namespace Credit_Monitor.Services
             }
 
             return (successCount, failureCount);
+        }
+
+        public async Task<(int SuccessCount, int FailureCount)>ProcessBulkResolutionResponsesAsync(
+        Guid appId,
+        List<ResolutionItem> resolutions)
+        {
+            int successCount = 0;
+            int failureCount = 0;
+
+            if (resolutions == null || !resolutions.Any())
+                return (0, 0);
+
+            foreach (var item in resolutions)
+            {
+                // AO/RM must provide corrective action
+                if (string.IsNullOrWhiteSpace(item.ResolutionAction))
+                {
+                    failureCount++;
+
+                    _logger.LogWarning(
+                        "Resolution response missing for discrepancy {Field} - AppId {AppId}",
+                        item.FieldName,
+                        appId);
+
+                    continue;
+                }
+
+                // Existing discrepancy record must exist
+                if (item.Id == Guid.Empty)
+                {
+                    failureCount++;
+
+                    _logger.LogWarning(
+                        "Resolution response has no discrepancy Id for {Field} - AppId {AppId}",
+                        item.FieldName,
+                        appId);
+
+                    continue;
+                }
+
+                var request = new SubmitDiscrepancyResponseDto
+                {
+                    Id = item.Id,
+                    AppId = appId,
+                    ResolutionAction = item.ResolutionAction.Trim(),
+                    ResolutionRemarks = item.ResolutionRemarks?.Trim()
+                };
+
+                try
+                {
+                    var response =
+                        await _loanAPIservice
+                            .SubmitDiscrepancyResponseAsync(request);
+
+                    if (response != null && response.IsSuccess)
+                    {
+                        successCount++;
+                    }
+                    else
+                    {
+                        failureCount++;
+
+                        _logger.LogWarning(
+                            "Failed saving AO/RM response for {Field}. AppId {AppId}. Message: {Message}",
+                            item.FieldName,
+                            appId,
+                            response?.ResponseMessage);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    failureCount++;
+
+                    _logger.LogError(
+                        ex,
+                        "Exception saving AO/RM response for {Field}. AppId {AppId}",
+                        item.FieldName,
+                        appId);
+                }
+            }
+
+            return (successCount, failureCount);
+        }
+
+        public async Task<ServiceResponseDto>SubmitResolutionForReviewAsync(Guid appId)
+        {
+            if (appId == Guid.Empty)
+            {
+                return new ServiceResponseDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage = "Invalid loan application."
+                };
+            }
+
+            try
+            {
+                var request = new SubmitResolutionForReviewDto
+                {
+                    AppId = appId
+                };
+
+                var response =
+                    await _loanAPIservice
+                        .SubmitResolutionForReviewAsync(request);
+
+                if (response == null)
+                {
+                    return new ServiceResponseDto
+                    {
+                        IsSuccess = false,
+                        ResponseMessage =
+                            "No response was received while submitting the application for CMO review."
+                    };
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error submitting resolution application for CMO review. AppId {AppId}",
+                    appId);
+
+                return new ServiceResponseDto
+                {
+                    IsSuccess = false,
+                    ResponseMessage =
+                        "Unable to submit the application for CMO review."
+                };
+            }
+        }
+
+        public async Task<FullDashboardReportDataDto?> GetFullReportPreview(string region,string role)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(region))
+                    return null;
+
+                if (string.IsNullOrWhiteSpace(role))
+                    return null;
+
+                return await _loanAPIservice
+                    .GetFullReportPreview(region, role);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error retrieving full report preview. Region: {Region}, Role: {Role}",
+                    region,
+                    role);
+
+                return null;
+            }
         }
         private ValidationResult CompareStrings(string fin, string cat, string fieldName)
         {

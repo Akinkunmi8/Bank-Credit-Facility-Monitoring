@@ -1,39 +1,95 @@
 ﻿@model Credit_Monitor.ViewModel.ValidateCATPageViewModel
 @using Credit_Monitor.ViewModel
+@using System.Security.Claims
+
 @{
-    ViewData["Title"] = "Bulk Resolution";
+    ViewData["Title"] = "Resolution Center";
     int i = 0;
 
-    // Retrieve the list we mapped via AutoMapper in the Controller
-    var savedList = ViewBag.ExistingResolutions as List<ResolutionItem> ?? new List<ResolutionItem>();
+    var savedList =
+        ViewBag.ExistingResolutions as List<ResolutionItem>
+        ?? new List<ResolutionItem>();
 
-    // Helper to find existing data by keyword
-    ResolutionItem GetSaved(string fieldName)
+    var userRole =
+        User.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
+
+    bool isCMO =
+        userRole.Equals("CMO", StringComparison.OrdinalIgnoreCase);
+
+    bool isAOorRM =
+        userRole.Equals("AO", StringComparison.OrdinalIgnoreCase) ||
+        userRole.Equals("RM", StringComparison.OrdinalIgnoreCase);
+
+    ResolutionItem? GetSaved(string fieldName)
     {
         return savedList.FirstOrDefault(r =>
-            r.Discrepancy != null &&
-            r.Discrepancy.Contains(fieldName, StringComparison.OrdinalIgnoreCase));
+            !string.IsNullOrWhiteSpace(r.Discrepancy) &&
+            r.Discrepancy.Contains(
+                fieldName,
+                StringComparison.OrdinalIgnoreCase));
     }
 }
 
 <div class="container py-4">
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="fw-bold mb-1 text-primary">Resolution Center</h4>
-            <p class="text-muted">Reviewing @Model.Discrepancies.ErrorCount mismatches for Acc: <strong>@Model.Discrepancies.AccNum</strong></p>
+            <h4 class="fw-bold mb-1 text-primary">
+                Resolution Center
+            </h4>
+
+            <p class="text-muted mb-0">
+                Reviewing @Model.Discrepancies.ErrorCount mismatches
+                for Acc:
+                <strong>@Model.Discrepancies.AccNum</strong>
+            </p>
         </div>
+
         <a asp-action="ValidateCAT"
            asp-controller="Loan"
            asp-route-AccNum="@Model.FinacleData.AccountNumber"
            class="btn btn-outline-secondary btn-sm shadow-sm">
-            <i class="bi bi-arrow-left me-1"></i> Back
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Back
         </a>
-       
     </div>
 
-    <form asp-action="SubmitResolutions" asp-controller="Loan" method="post">
-        <input type="hidden" name="AppId" value="@Model.FinacleData.Id" />
-        <input type="hidden" name="AccountNum" value="@Model.FinacleData.AccountNumber" />
+    @if (isAOorRM && savedList.Any())
+    {
+        <div class="alert alert-primary border-0 shadow-sm mb-4">
+            <div class="d-flex align-items-start">
+
+                <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+
+                <div>
+                    <strong>Corrective Action Required</strong>
+
+                    <div class="small mt-1">
+                        This application was returned for resolution.
+                        Review the CMO instructions below, provide your
+                        corrective response for every returned discrepancy,
+                        then submit the application back to CMO.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    }
+
+   <form asp-action="@(isCMO ? "SubmitResolutions" : "SubmitResolutionResponses")"
+      asp-controller="Loan"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+        <input type="hidden"
+           name="AppId"
+           value="@Model.FinacleData.Id" />
+
+        <input type="hidden"
+           name="AccountNum"
+           value="@Model.FinacleData.AccountNumber" />
 
         @* 1. Customer Name *@
         @if (!Model.Discrepancies.CustomerName.IsValid)
@@ -49,7 +105,12 @@
                 Id = existing?.Id ?? Guid.Empty,
                 RecommendedAction = existing?.RecommendedAction,
                 Responsibility = existing?.Responsibility,
-                Remarks = existing?.Remarks
+                Remarks = existing?.Remarks,
+                ResolutionAction = existing?.ResolutionAction,
+                ResolutionRemarks = existing?.ResolutionRemarks,
+                RespondedBy = existing?.RespondedBy,
+                RespondedAt = existing?.RespondedAt,
+                IsCMO = isCMO
                 })
                 }
 
@@ -67,7 +128,12 @@
                 Id = existing?.Id ?? Guid.Empty,
                 RecommendedAction = existing?.RecommendedAction,
                 Responsibility = existing?.Responsibility,
-                Remarks = existing?.Remarks
+                Remarks = existing?.Remarks,
+                ResolutionAction = existing?.ResolutionAction,
+                ResolutionRemarks = existing?.ResolutionRemarks,
+                RespondedBy = existing?.RespondedBy,
+                RespondedAt = existing?.RespondedAt,
+                IsCMO = isCMO
                 })
                 }
 
@@ -85,7 +151,12 @@
                 Id = existing?.Id ?? Guid.Empty,
                 RecommendedAction = existing?.RecommendedAction,
                 Responsibility = existing?.Responsibility,
-                Remarks = existing?.Remarks
+                Remarks = existing?.Remarks,
+                ResolutionAction = existing?.ResolutionAction,
+                ResolutionRemarks = existing?.ResolutionRemarks,
+                RespondedBy = existing?.RespondedBy,
+                RespondedAt = existing?.RespondedAt,
+                IsCMO = isCMO
                 })
                 }
 
@@ -103,7 +174,12 @@
                 Id = existing?.Id ?? Guid.Empty,
                 RecommendedAction = existing?.RecommendedAction,
                 Responsibility = existing?.Responsibility,
-                Remarks = existing?.Remarks
+                Remarks = existing?.Remarks,
+                ResolutionAction = existing?.ResolutionAction,
+                ResolutionRemarks = existing?.ResolutionRemarks,
+                RespondedBy = existing?.RespondedBy,
+                RespondedAt = existing?.RespondedAt,
+                IsCMO = isCMO
                 })
                 }
 
@@ -121,7 +197,12 @@
                 Id = existing?.Id ?? Guid.Empty,
                 RecommendedAction = existing?.RecommendedAction,
                 Responsibility = existing?.Responsibility,
-                Remarks = existing?.Remarks
+                Remarks = existing?.Remarks,
+                ResolutionAction = existing?.ResolutionAction,
+                ResolutionRemarks = existing?.ResolutionRemarks,
+                RespondedBy = existing?.RespondedBy,
+                RespondedAt = existing?.RespondedAt,
+                IsCMO = isCMO
                 })
                 }
 
@@ -139,7 +220,12 @@
                 Id = existing?.Id ?? Guid.Empty,
                 RecommendedAction = existing?.RecommendedAction,
                 Responsibility = existing?.Responsibility,
-                Remarks = existing?.Remarks
+                Remarks = existing?.Remarks,
+                ResolutionAction = existing?.ResolutionAction,
+                ResolutionRemarks = existing?.ResolutionRemarks,
+                RespondedBy = existing?.RespondedBy,
+                RespondedAt = existing?.RespondedAt,
+                IsCMO = isCMO
                 })
                 }
 
@@ -158,7 +244,12 @@
                 Id = existing?.Id ?? Guid.Empty,
                 RecommendedAction = existing?.RecommendedAction,
                 Responsibility = existing?.Responsibility,
-                Remarks = existing?.Remarks
+                Remarks = existing?.Remarks,
+                ResolutionAction = existing?.ResolutionAction,
+                ResolutionRemarks = existing?.ResolutionRemarks,
+                RespondedBy = existing?.RespondedBy,
+                RespondedAt = existing?.RespondedAt,
+                IsCMO = isCMO
                 })
                 }
 
@@ -176,7 +267,12 @@
                 Id = existing?.Id ?? Guid.Empty,
                 RecommendedAction = existing?.RecommendedAction,
                 Responsibility = existing?.Responsibility,
-                Remarks = existing?.Remarks
+                Remarks = existing?.Remarks,
+                ResolutionAction = existing?.ResolutionAction,
+                ResolutionRemarks = existing?.ResolutionRemarks,
+                RespondedBy = existing?.RespondedBy,
+                RespondedAt = existing?.RespondedAt,
+                IsCMO = isCMO
                 })
                 }
 
@@ -194,21 +290,70 @@
                 Id = existing?.Id ?? Guid.Empty,
                 RecommendedAction = existing?.RecommendedAction,
                 Responsibility = existing?.Responsibility,
-                Remarks = existing?.Remarks
+                Remarks = existing?.Remarks,
+                ResolutionAction = existing?.ResolutionAction,
+                ResolutionRemarks = existing?.ResolutionRemarks,
+                RespondedBy = existing?.RespondedBy,
+                RespondedAt = existing?.RespondedAt,
+                IsCMO = isCMO
                 })
                 }
 
         @* Summary Footer *@
         <div class="card bg-light border-0 shadow-sm mb-5 rounded-3">
-            <div class="card-body d-flex justify-content-between align-items-center py-4">
-                <div>
-                    <span class="text-muted fw-bold d-block">Batch Submission</span>
-                    <span class="small text-muted">You are resolving <strong>@i</strong> items simultaneously.</span>
-                </div>
-                <button type="submit" class="btn btn-success btn-lg px-5 fw-bold shadow-sm">
-                    <i class="bi bi-cloud-upload me-2"></i> Submit All Resolutions
-                </button>
-            </div>
+    <div class="card-body d-flex justify-content-between
+                align-items-center py-4">
+
+        <div>
+
+            @if (isCMO)
+            {
+                <span class="text-muted fw-bold d-block">
+                    Batch Submission
+                </span>
+
+                <span class="small text-muted">
+                    You are resolving
+                    <strong>@i</strong>
+                    items simultaneously.
+                </span>
+            }
+            else
+            {
+                <span class="text-muted fw-bold d-block">
+                    Resolution Response
+                </span>
+
+                <span class="small text-muted">
+                    Complete all
+                    <strong>@i</strong>
+                    returned discrepancies before submitting to CMO.
+                </span>
+            }
+
         </div>
-    </form>
+
+        @if (isCMO)
+        {
+            <button type="submit"
+                    class="btn btn-success btn-lg px-5
+                           fw-bold shadow-sm">
+
+                <i class="bi bi-cloud-upload me-2"></i>
+                Submit All Resolutions
+            </button>
+        }
+        else
+        {
+            <button type="submit"
+                    class="btn btn-primary btn-lg px-5
+                           fw-bold shadow-sm">
+
+                <i class="bi bi-send me-2"></i>
+                Submit All Responses to CMO
+            </button>
+        }
+
+    </div>
 </div>
+</form>

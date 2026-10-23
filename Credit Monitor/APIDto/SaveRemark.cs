@@ -10,6 +10,11 @@
         // Kept with one 'm' to match your request snippet
         public string RecomendedAction { get; set; } = string.Empty;
         public string Responsibility { get; set; } = string.Empty;
+
+        public string? ResolutionAction { get; set; }
+        public string? ResolutionRemarks { get; set; }
+        public string? RespondedBy { get; set; }
+        public DateTime? RespondedAt { get; set; }
     }
 
     public class SaveRemarkResponseDto

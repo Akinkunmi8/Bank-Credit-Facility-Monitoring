@@ -202,6 +202,47 @@ namespace Credit_Monitor.APICore
             }
         }
 
+        public async Task<List<FinacleRecord>?> GetCMOReviewByRegion(string region)
+        {
+            var urlPath = $"api/Finacle/cmo-review/by-region/{region}";
+
+            _logger.LogInformation(
+                "Loan API: Fetching CMO review queue for Region: {Region}",
+                region);
+
+            try
+            {
+                var result =
+                    await _apiService.GetAsync<FinacleResponseWrapper>(urlPath);
+
+                if (result == null || !result.isSuccess)
+                {
+                    _logger.LogWarning(
+                        "Loan API: Failed to fetch CMO review queue for {Region}. Message: {Message}",
+                        region,
+                        result?.responseMessage ?? "No response");
+
+                    return null;
+                }
+
+                _logger.LogInformation(
+                    "Loan API: Retrieved {Count} CMO review record(s) for Region: {Region}",
+                    result.dataList?.Count ?? 0,
+                    region);
+
+                return result.dataList ?? new List<FinacleRecord>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Loan API: Error fetching CMO review queue for Region: {Region}",
+                    region);
+
+                return null;
+            }
+        }
+
         public async Task<List<FinacleRecord>?> GetResolvedLoansByRegion(string region)
         {
             var urlPath = $"api/Finacle/resolved/by-region/{region}";
@@ -227,6 +268,45 @@ namespace Credit_Monitor.APICore
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Loan API: Critical error fetching Resolved loans for {Region}", region);
+                return null;
+            }
+        }
+
+        public async Task<ServiceResponseDto?> SubmitDiscrepancyResponseAsync(SubmitDiscrepancyResponseDto request)
+        {
+            return await _apiService.PostAsync<ServiceResponseDto>(
+                request,
+                "/api/Dashboard/remarks/respond"
+            );
+        }
+
+        public async Task<ServiceResponseDto?> SubmitResolutionForReviewAsync(SubmitResolutionForReviewDto request)
+        {
+            return await _apiService.PostAsync<ServiceResponseDto>(
+                request,
+                "/api/Dashboard/remarks/submit-resolution"
+            );
+        }
+
+        public async Task<FullDashboardReportDataDto?> GetFullReportPreview(string region,string role)
+        {
+            try
+            {
+                var url =
+                    $"/api/Dashboard/full-report-preview" +
+                    $"?Region={Uri.EscapeDataString(region)}" +
+                    $"&Role={Uri.EscapeDataString(role)}" +
+                    $"&Format=PDF";
+
+                return await _apiService
+                    .GetAsync<FullDashboardReportDataDto>(url);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to retrieve report preview.");
+
                 return null;
             }
         }

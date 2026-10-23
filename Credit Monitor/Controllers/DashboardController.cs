@@ -1,17 +1,17 @@
-﻿using System.Data;
-using System.Linq;
-using System.Security.Claims;
-using AutoMapper;
+﻿using AutoMapper;
+using Credit_Monitor.APICore;
 using Credit_Monitor.APIDto;
 using Credit_Monitor.Interfaces;
 using Credit_Monitor.Models;
 using Credit_Monitor.Services;
 using Credit_Monitor.ViewModel;
-using Credit_Monitor.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
+using System.Linq;
+using System.Security.Claims;
 
 namespace Credit_Monitor.Controllers
 {
@@ -25,7 +25,7 @@ namespace Credit_Monitor.Controllers
         private string _storagePath;
         private readonly IBackendAPIService _apiService;
         private readonly IMapper _mapper;
-
+        private readonly IWebHostEnvironment _environment;
         public DashboardController(
             ILoanService loanService,
             IDashboardAPI dashboardapi,
@@ -33,24 +33,36 @@ namespace Credit_Monitor.Controllers
             ICovenantTrackerService covenantService,
             IConfiguration configuration,
             IBackendAPIService apiService,
-            IMapper mapper) 
+            IMapper mapper, IWebHostEnvironment environment) 
         {
             _loanService = loanService;
             _dashboardapi = dashboardapi;
             _fileService = fileService;
             _covenantService = covenantService;
             _apiService = apiService;
-            _storagePath = configuration["FileSettings:StoragePath"];
+            //_storagePath = configuration["FileSettings:StoragePath"];
             _mapper = mapper;
+            _environment = environment;
+            var configuredPath =
+            configuration["FileSettings:StoragePath"] ?? "UploadedFiles";
+
+            _storagePath = Path.IsPathRooted(configuredPath)
+                ? configuredPath
+                : Path.Combine(
+                    _environment.ContentRootPath,
+                    configuredPath);
         }
 
         [Authorize(Roles = "CMO")]
         public async Task<IActionResult> CMODashboard(string status)
         {
             var region = User.FindFirst("Region")?.Value;
-            if (status == null) status = "Unreviewed";
 
-            if (string.IsNullOrEmpty(region)) return View(new List<PendingConfirmedLoanViewModel>());
+            if (status == null)
+                status = "Unreviewed";
+
+            if (string.IsNullOrEmpty(region))
+                return View(new CMODashboardViewModel());
 
             ViewData["Title"] = status switch
             {
@@ -58,14 +70,19 @@ namespace Credit_Monitor.Controllers
                 "Reviewed" => "Reviewed & Confirmed Loans",
                 "Unresolved" => "Unresolved (Rejected) Loans",
                 "Resolved" => "Resolved Applications",
+
+                // NEW
+                "CMOReview" => "Resolution Review Queue",
+
                 "WithinTATUnreviewed" => "Unreviewed Loans (Within TAT)",
                 "WithinTATUnresolved" => "Unresolved Loans (Within TAT)",
                 "BeyondTATUnreviewed" => "Unreviewed Loans (Beyond TAT)",
                 "BeyondTATUnresolved" => "Unresolved Loans (Beyond TAT)",
-                _ => " Unreviewed Loan Applications"
+                _ => "Unreviewed Loan Applications"
             };
-            var loan = await _loanService.GetPendingConfirmedLoansByRegion(region);
-            return View(await GetCMODashboardData(null, 1, region, status));
+
+            return View(
+                await GetCMODashboardData(null, 1, region, status));
         }
 
         [Authorize(Roles = "AO")]
@@ -193,13 +210,26 @@ namespace Credit_Monitor.Controllers
 
         [HttpPost]
         [HttpPost]
-        public async Task<IActionResult> AddFileProperties(Guid appId, string fileName, string docType, string contentType)
+        public async Task<IActionResult> AddFileProperties(Guid appId,string fileName,string docType,string contentType)
         {
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
-            if (appId == Guid.Empty || string.IsNullOrEmpty(fileName))
+            if (appId == Guid.Empty || string.IsNullOrWhiteSpace(fileName))
             {
                 return BadRequest("Missing required file information.");
             }
+
+            // Retrieve authenticated user claims
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
+
+            var username =
+                User.FindFirst(ClaimTypes.Name)?.Value
+                ?? User.FindFirst("username")?.Value
+                ?? User.Identity?.Name
+                ?? "Unknown";
+
+            var region =
+                User.FindFirst("Region")?.Value
+                ?? User.FindFirst("region")?.Value
+                ?? "Unknown";
 
             var model = new FileItemDto
             {
@@ -207,28 +237,37 @@ namespace Credit_Monitor.Controllers
                 FileName = fileName,
                 DocType = docType,
                 ContentType = contentType,
-                isVeriFied = false
+
+                isVeriFied = false,
+
+                RequesterUsername = username,
+                Region = region
             };
 
             try
             {
-                // 1. Save the new file
                 var newId = await _fileService.UploadDocumentAsync(model);
 
                 if (newId != null)
                 {
-                    // 2. CRITICAL: Fetch the updated list immediately
-                    var updatedList = await _fileService.GetCustomerDocumentsAsync(appId);
+                    var updatedList =
+                        await _fileService.GetCustomerDocumentsAsync(appId);
+
                     ViewBag.Role = userRole;
-                    // 3. Return the HTML of the table, not just a JSON success message
-                    return PartialView("_DocumentStatusPartial", updatedList);
+
+                    return PartialView(
+                        "_DocumentStatusPartial",
+                        updatedList);
                 }
 
-                return BadRequest("The API service could not save the record.");
+                return BadRequest(
+                    "The API service could not save the record.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, "Internal Server Error");
+                return StatusCode(
+                    500,
+                    "Internal Server Error");
             }
         }
 
@@ -317,56 +356,103 @@ namespace Credit_Monitor.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddFile(Guid appId, Guid fileId, IFormFile file)
+        public async Task<IActionResult> AddFile(Guid appId,Guid fileId,IFormFile file)
         {
-            // 1. Basic Validation
-            if (appId == Guid.Empty || fileId == Guid.Empty || file == null)
+            if (appId == Guid.Empty ||
+                fileId == Guid.Empty ||
+                file == null ||
+                file.Length == 0)
             {
                 return BadRequest("Missing required file or identifiers.");
             }
 
-            // 2. Constraint: File Size (e.g., 10MB limit)
-            const long MaxFileSize = 10 * 1024 * 1024; // 10MB in bytes
-            if (file.Length > MaxFileSize)
+            const long maxFileSize = 10 * 1024 * 1024;
+
+            if (file.Length > maxFileSize)
             {
                 return BadRequest("File size exceeds the 10MB limit.");
             }
 
+            // Only allow document types expected by Credit Monitoring
+            var allowedExtensions = new[]
+            {
+                ".pdf",
+                ".doc",
+                ".docx",
+                ".xls",
+                ".xlsx"
+            };
+
+            var extension = Path
+                .GetExtension(file.FileName)
+                .ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(extension))
+            {
+                return BadRequest("Unsupported file type.");
+            }
+
             try
             {
-                // 3. Ensure Folder Exists
-                string folderPath = Path.Combine(_storagePath, appId.ToString());
-                if (!Directory.Exists(folderPath))
-                {
-                    Directory.CreateDirectory(folderPath);
-                }
+                // Application-specific folder
+                var folderPath = Path.Combine(
+                    _storagePath,
+                    appId.ToString());
 
-                // 4. Clean up existing file with this ID (regardless of extension)
-                var existingFiles = Directory.EnumerateFiles(folderPath, $"{fileId}.*");
+                Directory.CreateDirectory(folderPath);
+
+                // Remove previous version of this requested document
+                var existingFiles = Directory.EnumerateFiles(
+                    folderPath,
+                    $"{fileId}.*");
+
                 foreach (var existingFile in existingFiles)
                 {
                     System.IO.File.Delete(existingFile);
                 }
 
-                // 5. Save New File
-                // Get extension from the uploaded file (e.g., .pdf)
-                string extension = Path.GetExtension(file.FileName).ToLower();
-                string fileName = $"{fileId}{extension}";
-                string fullPath = Path.Combine(folderPath, fileName);
+                // Store using LoanFileItem.Id rather than original filename
+                var fileName = $"{fileId}{extension}";
 
-                using (var stream = new FileStream(fullPath, FileMode.Create))
+                var fullPath = Path.Combine(
+                    folderPath,
+                    fileName);
+
+                await using (var stream = new FileStream(
+                    fullPath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None))
                 {
                     await file.CopyToAsync(stream);
                 }
 
-                // 6. Refresh UI (Matching your Delete logic)
                 ViewBag.AppId = appId;
-                var updatedList = await _fileService.GetCustomerDocumentsAsync(appId);
-                return PartialView("_DocumentStatusPartial", updatedList);
+
+                var updatedList =
+                    await _fileService.GetCustomerDocumentsAsync(appId);
+
+                return PartialView(
+                    "_DocumentStatusPartial",
+                    updatedList);
             }
-            catch (Exception ex)
+            catch (UnauthorizedAccessException)
             {
-                return StatusCode(500, "An error occurred while saving the file.");
+                return StatusCode(
+                    500,
+                    "The application does not have permission to access the document storage location.");
+            }
+            catch (IOException)
+            {
+                return StatusCode(
+                    500,
+                    "An error occurred while writing the document to storage.");
+            }
+            catch (Exception)
+            {
+                return StatusCode(
+                    500,
+                    "An error occurred while saving the file.");
             }
         }
 
@@ -648,6 +734,39 @@ namespace Credit_Monitor.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> CMOReviewQueue()
+        {
+            try
+            {
+                var region =
+                    User.FindFirst("Region")?.Value
+                    ?? User.FindFirst("region")?.Value;
+
+                if (string.IsNullOrWhiteSpace(region))
+                {
+                    TempData["Error"] =
+                        "Your region could not be determined.";
+
+                    return RedirectToAction("Index");
+                }
+
+                var loans =
+                    await _loanService.GetCMOReviewLoanByRegion(region);
+
+                return View(loans);
+            }
+            catch (Exception ex)
+            {
+
+                TempData["Error"] =
+                    "Unable to load the CMO review queue.";
+
+                return View(
+                    Enumerable.Empty<PendingConfirmedLoanViewModel>());
+            }
+        }
+
+        [HttpGet]
         public async Task<IActionResult> ExportReport(string format, string region, string role)
         {
             try
@@ -693,42 +812,160 @@ namespace Credit_Monitor.Controllers
                 return StatusCode(500, "Internal server error during report generation.");
             }
         }
-        private async Task<CMODashboardViewModel> GetCMODashboardData(string searchTerm, int page, string region, string status)
+
+        [Authorize(Roles = "CMS")]
+        [HttpGet]
+        public async Task<IActionResult> ReportPreview(Guid id)
+        {
+            if (id == Guid.Empty)
+                return BadRequest("Invalid application ID.");
+
+            // Loan service expects string
+            var profile = await _loanService
+                .GetPendingConfirmedLoanByIdAsync(id.ToString());
+
+            if (profile == null || profile.loan == null)
+                return NotFound("Loan record not found.");
+
+            // Only CMS-approved loans can generate reports
+            if (!profile.loan.approved)
+            {
+                TempData["ErrorMessage"] =
+                    "The report can only be generated after CMS approval.";
+
+                return RedirectToAction("CustomerDetails", new { id });
+            }
+
+            // File service expects Guid
+            var documents = await _fileService
+                .GetCustomerDocumentsAsync(id);
+
+            // Covenant service expects Guid
+            var covenants = await _covenantService
+                .GetCovenantDetailsAsync(id);
+
+            var model = new CreditMonitoringReportViewModel
+            {
+                CreditProfile = profile,
+
+                Documents = documents?.ToList()
+                            ?? new List<DocumentDetailsViewModel>(),
+
+                Covenants = covenants
+                            ?? new CovenantViewModel(),
+
+                GeneratedAt = DateTime.Now,
+
+                GeneratedBy = User.Identity?.Name
+            };
+
+            return View("ReportPreview", model);
+        }
+
+        [Authorize(Roles = "CMS")]
+        [HttpGet]
+        public async Task<IActionResult> DownloadCreditReport(Guid id)
+        {
+            if (id == Guid.Empty)
+                return BadRequest("Invalid application ID.");
+
+            try
+            {
+                var pdfBytes = await _fileService
+                    .DownloadCreditReportAsync(
+                        id,
+                        User.Identity?.Name);
+
+                return File(
+                    pdfBytes,
+                    "application/pdf",
+                    $"CreditMonitoringReport_{id}.pdf");
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound("Loan record not found.");
+            }
+            catch (InvalidOperationException)
+            {
+                return Forbid();
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(
+                    500,
+                    "Unable to generate the credit monitoring report.");
+            }
+        }
+        private async Task<CMODashboardViewModel> GetCMODashboardData(string searchTerm,int page,string region,string status)
         {
             int pageSize = 10;
-            IEnumerable<PendingConfirmedLoanViewModel> allLoans = new List<PendingConfirmedLoanViewModel>();
-            allLoans = await GetPendingLoanFromStatus(status, region);
+
+            IEnumerable<PendingConfirmedLoanViewModel> allLoans =
+                await GetPendingLoanFromStatus(status, region);
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 allLoans = allLoans.Where(l =>
-                    l.accounT_NAME.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    l.id.ToString().Contains(searchTerm)
+                    (!string.IsNullOrEmpty(l.accounT_NAME) &&
+                     l.accounT_NAME.Contains(
+                         searchTerm,
+                         StringComparison.OrdinalIgnoreCase))
+                    ||
+                    l.id.ToString().Contains(
+                        searchTerm,
+                        StringComparison.OrdinalIgnoreCase)
                 ).ToList();
             }
 
             int totalItems = allLoans.Count();
+
             var pagedLoans = allLoans
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
 
+            // CMO re-review queue count
+            var cmoReviewLoans =
+                await _loanService.GetCMOReviewLoanByRegion(region);
+
             return new CMODashboardViewModel
             {
-                TotalUnreviewedLoans = await _dashboardapi.GetTotalPending(region),
-                TotalReviewedLoans = await _dashboardapi.GetTotalConfirmed(region), 
-                TotalUnresolvedLoans = await _dashboardapi.GetTotalRejected(region),
-                TotalResolvedLoans = await _dashboardapi.GetTotalResolved(region),
-                WithinTATUnreviewed = await _dashboardapi.GetWithinTATUnReview(region),
-                WithinTATUnresolved = await _dashboardapi.GetWithinTATUnResolve(region),
-                BeyondTATUnresolved = await _dashboardapi.GetBeyondTATUnResolve(region),
-                BeyondTATUnreviewed = await _dashboardapi.GetBeyondTATUnReview(region),                
+                TotalUnreviewedLoans =
+                    await _dashboardapi.GetTotalPending(region),
+
+                TotalReviewedLoans =
+                    await _dashboardapi.GetTotalConfirmed(region),
+
+                TotalUnresolvedLoans =
+                    await _dashboardapi.GetTotalRejected(region),
+
+                TotalResolvedLoans =
+                    await _dashboardapi.GetTotalResolved(region),
+
+                // NEW
+                TotalCMOReview = cmoReviewLoans?.Count() ?? 0,
+
+                WithinTATUnreviewed =
+                    await _dashboardapi.GetWithinTATUnReview(region),
+
+                WithinTATUnresolved =
+                    await _dashboardapi.GetWithinTATUnResolve(region),
+
+                BeyondTATUnresolved =
+                    await _dashboardapi.GetBeyondTATUnResolve(region),
+
+                BeyondTATUnreviewed =
+                    await _dashboardapi.GetBeyondTATUnReview(region),
 
                 loans = pagedLoans,
                 CurrentPage = page,
                 TotalItems = totalItems,
-                TotalPages = (int)Math.Ceiling((double)totalItems / pageSize),
-                SearchTerm = searchTerm
+                TotalPages =
+                    (int)Math.Ceiling((double)totalItems / pageSize),
+                SearchTerm = searchTerm,
+                
+                CurrentStatus = status
             };
         }
 
@@ -822,50 +1059,77 @@ namespace Credit_Monitor.Controllers
             };
         }
 
-        private async Task<IEnumerable<PendingConfirmedLoanViewModel>> GetPendingLoanFromStatus(string status, string region)
+        private async Task<IEnumerable<PendingConfirmedLoanViewModel>>GetPendingLoanFromStatus(string status, string region)
         {
-            IEnumerable<PendingConfirmedLoanViewModel> allLoans = new List<PendingConfirmedLoanViewModel>();
+            IEnumerable<PendingConfirmedLoanViewModel> allLoans =
+                new List<PendingConfirmedLoanViewModel>();
+
             if (status == "Unreviewed" || status == "")
             {
-                allLoans = await _loanService.GetPendingConfirmedLoansByRegion(region);
-
+                allLoans =
+                    await _loanService.GetPendingConfirmedLoansByRegion(region);
             }
             else if (status == "Reviewed")
             {
-                allLoans = await _loanService.GetConfirmedLoanByRegion(region);
+                allLoans =
+                    await _loanService.GetConfirmedLoanByRegion(region);
             }
             else if (status == "Unresolved")
             {
-                allLoans = await _loanService.GetRejectedLoanByRegion(region);
+                allLoans =
+                    await _loanService.GetRejectedLoanByRegion(region);
             }
+
+            // NEW - RM/AO has submitted resolution back to CMO
+            else if (status == "CMOReview")
+            {
+                allLoans =
+                    await _loanService.GetCMOReviewLoanByRegion(region);
+            }
+
             else if (status == "Approved")
             {
-                allLoans = await _loanService.GetApprovedLoanByRegion(region);
+                allLoans =
+                    await _loanService.GetApprovedLoanByRegion(region);
             }
             else if (status == "Resolved")
             {
-                allLoans = await _loanService.GetResolvedLoanByRegion(region);
+                allLoans =
+                    await _loanService.GetResolvedLoanByRegion(region);
             }
             else if (status == "WithinTATUnresolved")
             {
-                var data = await _dashboardapi.GetWithinTATUnresolvedLoansByRegion(region);
-                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
+                var data =
+                    await _dashboardapi.GetWithinTATUnresolvedLoansByRegion(region);
+
+                allLoans =
+                    _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
             }
             else if (status == "BeyondTATUnreviewed")
             {
-                var data = await _dashboardapi.GetBeyondTATUnreviewedLoansByRegion(region);
-                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
+                var data =
+                    await _dashboardapi.GetBeyondTATUnreviewedLoansByRegion(region);
+
+                allLoans =
+                    _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
             }
             else if (status == "BeyondTATUnresolved")
             {
-                var data = await _dashboardapi.GetBeyondTATUnresolvedLoansByRegion(region);
-                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
+                var data =
+                    await _dashboardapi.GetBeyondTATUnresolvedLoansByRegion(region);
+
+                allLoans =
+                    _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
             }
             else if (status == "WithinTATUnreviewed")
             {
-                var data = await _dashboardapi.GetWithinTATUnreviewedLoansByRegion(region);
-                allLoans = _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
+                var data =
+                    await _dashboardapi.GetWithinTATUnreviewedLoansByRegion(region);
+
+                allLoans =
+                    _mapper.Map<IEnumerable<PendingConfirmedLoanViewModel>>(data);
             }
+
             return allLoans;
         }
 

@@ -1,0 +1,87 @@
+﻿@model IEnumerable<Credit_Monitor.ViewModel.PendingConfirmedLoanViewModel>
+
+@{
+    ViewData["Title"] = "CMO Resolution Review";
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="mb-4">
+        <h3>Resolution Review Queue</h3>
+        <p class="text-muted">
+            Applications returned by RM/AO for CMO re-review.
+        </p>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">
+            There are currently no applications awaiting CMO review.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <table class="table table-hover align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>Account Number</th>
+                            <th>Customer</th>
+                            <th>Facility Type</th>
+                            <th>Region</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    @foreach (var item in Model)
+{
+    <tr>
+        <td>
+            @item.accounT_NUMBER
+        </td>
+
+        <td>
+            @item.accounT_NAME
+        </td>
+
+        <td>
+            @item.facilitY_TYPE
+        </td>
+
+        <td>
+            @item.regioN_NAME
+        </td>
+
+        <td>
+            <span class="badge bg-warning text-dark">
+                Awaiting CMO Review
+            </span>
+        </td>
+
+        <td class="text-end">
+            <a asp-controller="Loan"
+               asp-action="ReviewResolution"
+               asp-route-id="@item.accounT_NUMBER"
+               class="btn btn-sm btn-primary">
+
+                Review Resolution
+            </a>
+        </td>
+    </tr>
+}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+    }
+
+</div>

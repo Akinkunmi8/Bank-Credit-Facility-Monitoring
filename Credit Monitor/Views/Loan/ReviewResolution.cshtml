@@ -1,0 +1,519 @@
+﻿@using Credit_Monitor.ViewModel
+@model Credit_Monitor.ViewModel.ValidateCATPageViewModel
+
+@{
+    ViewData["Title"] = "Resolution Review";
+
+    var resolutions =
+        ViewBag.ExistingResolutions as List<ResolutionItem>
+        ?? new List<ResolutionItem>();
+}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Resolution Review</h4>
+            <p class="text-muted mb-0">
+                Review corrective actions submitted by the Relationship Manager
+                and validate against the latest Finacle and CAT records.
+            </p>
+        </div>
+
+        <a asp-controller="Dashboard"
+           asp-action="CMODashboard"
+           asp-route-status="CMOReview"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Back to Queue
+        </a>
+    </div>
+
+    @{
+        async Task RenderReviewField(
+            string label,
+            dynamic result,
+            string? finacleValue,
+            string? catValue,
+            string remarkKey)
+        {
+            var resolution = resolutions.FirstOrDefault(x =>
+                !string.IsNullOrWhiteSpace(x.Discrepancy) &&
+                x.Discrepancy.Contains(
+                    remarkKey,
+                    StringComparison.OrdinalIgnoreCase));
+
+            // This page should only show discrepancies
+            // that were originally returned by CMO.
+            if (resolution == null)
+            {
+                return;
+            }
+
+            bool synchronized = result != null && result.IsValid;
+
+            <div class="card border-0 shadow-sm mb-4">
+
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <h6 class="fw-bold mb-0">@label</h6>
+
+                        @if (synchronized)
+                        {
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Synchronized
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Still Mismatched
+                            </span>
+                        }
+
+                    </div>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row g-3 mb-4">
+
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 h-100">
+                                <small class="text-muted text-uppercase">
+                                    Finacle Value
+                                </small>
+
+                                <div class="fw-bold mt-1">
+                                    @(finacleValue ?? "N/A")
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 h-100">
+                                <small class="text-muted text-uppercase">
+                                    CAT Value
+                                </small>
+
+                                <div class="fw-bold mt-1">
+                                    @(catValue ?? "N/A")
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Original CMO instruction -->
+                    <div class="bg-light rounded p-3 mb-3">
+
+                        <h6 class="fw-bold mb-3">
+                            <i class="bi bi-person-check me-1"></i>
+                            CMO Instruction
+                        </h6>
+
+                        <div class="row">
+
+                            <div class="col-md-4">
+                                <small class="text-muted">
+                                    Recommended Action
+                                </small>
+
+                                <p class="mb-0 fw-medium">
+                                    @(resolution.RecommendedAction ?? "N/A")
+                                </p>
+                            </div>
+
+                            <div class="col-md-4">
+                                <small class="text-muted">
+                                    Responsibility
+                                </small>
+
+                                <p class="mb-0 fw-medium">
+                                    @(resolution.Responsibility ?? "N/A")
+                                </p>
+                            </div>
+
+                            <div class="col-md-4">
+                                <small class="text-muted">
+                                    Remarks
+                                </small>
+
+                                <p class="mb-0 fw-medium">
+                                    @(resolution.Remarks ?? "N/A")
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- AO/RM response -->
+                    <div class="border rounded p-3">
+
+                        <div class="d-flex justify-content-between mb-3">
+
+                            <h6 class="fw-bold mb-0">
+                                <i class="bi bi-reply me-1"></i>
+                                AO/RM Response
+                            </h6>
+
+                            @if (resolution.RespondedAt.HasValue)
+                            {
+                                <span>
+                                    @(
+                                        resolution.RespondedAt.Value
+                                            .ToLocalTime()
+                                            .ToString("dd-MMM-yyyy HH:mm")
+                                    )
+                                </span>
+                            }                           
+
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    Corrective Action Taken
+                                </small>
+
+                                <p class="fw-medium mb-0">
+                                    @(resolution.ResolutionAction
+                                        ?? "No response submitted.")
+                                </p>
+                            </div>
+
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    Resolution Remarks
+                                </small>
+
+                                <p class="fw-medium mb-0">
+                                    @(resolution.ResolutionRemarks
+                                        ?? "No remarks submitted.")
+                                </p>
+                            </div>
+
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(resolution.RespondedBy))
+                        {
+                            <div class="mt-3 pt-3 border-top">
+                                <small class="text-muted">
+                                    Submitted by
+                                    <strong>@resolution.RespondedBy</strong>
+                                </small>
+                            </div>
+                        }
+
+                    </div>
+
+                </div>
+            </div>
+        }
+    }
+
+    @{
+        await RenderReviewField(
+            "Customer Name",
+            Model.Discrepancies.CustomerName,
+            Model.FinacleData?.AccountName,
+            Model.CatData?.CustomerName,
+            "Customer Name");
+
+        await RenderReviewField(
+            "Directorate/SBU",
+            Model.Discrepancies.Directorate,
+            Model.FinacleData?.SbuName,
+            Model.CatData?.Directorate,
+            "Directorate/SBU");
+
+        await RenderReviewField(
+            "Facility Type",
+            Model.Discrepancies.FacilityType,
+            Model.FinacleData?.FacilityType,
+            Model.CatData?.FacilityType,
+            "Facility Type");
+
+        await RenderReviewField(
+            "Approval Limit",
+            Model.Discrepancies.ApprovalLimit,
+            Model.FinacleData?.SanctionLimit.ToString("N2"),
+            Model.CatData?.ApprovalLimit.ToString("N2"),
+            "Approval Limit");
+
+        decimal finBalance =
+            (Model.FinacleData?.TotalBalanceLcy ?? 0) == 0
+                ? (Model.FinacleData?.TotalBalanceFcy ?? 0)
+                : (Model.FinacleData?.TotalBalanceLcy ?? 0);
+
+        await RenderReviewField(
+            "Disbursed Amount",
+            Model.Discrepancies.DisbursmentRequired,
+            finBalance.ToString("N2"),
+            Model.CatData?.DisbursementRequired.ToString("N2"),
+            "Disbursed Amount");
+
+        await RenderReviewField(
+            "Fees",
+            Model.Discrepancies.Fee,
+            Model.FinacleData?.FxRate.ToString("N2"),
+            Model.CatData?.Fees.ToString("N2"),
+            "Fee");
+
+        await RenderReviewField(
+            "Interest Rate",
+            Model.Discrepancies.Interest,
+            (Model.FinacleData?.IntRateDisplay ?? "0") + "%",
+            (Model.CatData?.Interest ?? 0) + "%",
+            "Interest Rate");
+
+        await RenderReviewField(
+            "Value Date",
+            Model.Discrepancies.ValueDate,
+            Model.FinacleData?.DateGranted.ToString("dd-MMM-yyyy"),
+            Model.CatData?.ValueDate.ToString("dd-MMM-yyyy"),
+            "Value Date");
+
+        await RenderReviewField(
+            "Maturity Date",
+            Model.Discrepancies.MaturityDate,
+            Model.FinacleData?.ExpiryDate.ToString("dd-MMM-yyyy"),
+            Model.CatData?.MaturityOrExpiry.ToString("dd-MMM-yyyy"),
+            "Maturity Date");
+    }
+
+    <!-- CMO FINAL DECISION -->
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h5 class="fw-bold mb-1">CMO Decision</h5>
+
+                    <p class="text-muted mb-0">
+                        Complete the re-review after assessing the latest
+                        system values and AO/RM response.
+                    </p>
+                </div>
+
+                <span class="badge bg-primary bg-opacity-10 text-primary">
+                    Final Review
+                </span>
+            </div>
+
+            <form asp-controller="Loan"
+                  asp-action="SubmitResolutionDecision"
+                  method="post"
+                  id="resolutionDecisionForm">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       name="ApplicationId"
+                       value="@Model.FinacleData?.Id" />
+
+                <input type="hidden"
+                       name="AccountNumber"
+                       value="@Model.FinacleData?.AccountNumber" />
+
+                <input type="hidden"
+                       name="Decision"
+                       id="decisionValue" />
+
+                <input type="hidden"
+                       name="Deadline"
+                       id="deadlineValue" />
+
+                <div class="alert alert-light border">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Accepting closes the discrepancy workflow.
+                    Returning sends the application back to AO/RM
+                    for further corrective action.
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+
+                    <button type="button"
+                            class="btn btn-outline-danger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#returnResolutionModal">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                        Return Again
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-success"
+                            data-bs-toggle="modal"
+                            data-bs-target="#acceptResolutionModal">
+                        <i class="bi bi-check-circle me-1"></i>
+                        Accept Resolution
+                    </button>
+
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Accept Resolution Confirmation Modal -->
+<div class="modal fade"
+     id="acceptResolutionModal"
+     tabindex="-1"
+     aria-labelledby="acceptResolutionModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+
+            <div class="modal-header border-0 px-4 pt-4">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="d-flex align-items-center justify-content-center
+                                bg-success bg-opacity-10 text-success rounded-circle"
+                         style="width:48px;height:48px;">
+
+                        <i class="bi bi-check-circle fs-4"></i>
+
+                    </div>
+
+                    <div>
+                        <h5 class="modal-title fw-bold mb-1"
+                            id="acceptResolutionModalLabel">
+                            Accept Resolution
+                        </h5>
+
+                        <small class="text-muted">
+                            Final CMO Review
+                        </small>
+                    </div>
+
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body px-4 py-4">
+
+                <p class="mb-3">
+                    You are about to accept the corrective response
+                    submitted by the AO/RM.
+                </p>
+
+                <div class="alert alert-light border-start border-4 border-primary mb-0">
+
+                    <div class="d-flex gap-2">
+
+                        <i class="bi bi-info-circle-fill text-primary"></i>
+
+                        <div>
+                            <strong>Workflow Confirmation</strong>
+
+                            <div class="small text-muted mt-1">
+                                This action confirms that the CMO has reviewed
+                                and accepted the AO/RM explanation and will close
+                                the discrepancy resolution workflow.
+                            </div>
+
+                            <div class="small text-danger mt-2">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Finacle and CAT values may still remain technically
+                                mismatched.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer border-0 px-4 pb-4">
+
+                <button type="button"
+                        class="btn btn-light border px-4"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        class="btn btn-success px-4"
+                        onclick="confirmAcceptResolution()">
+
+                    <i class="bi bi-check-circle me-1"></i>
+                    Accept & Close
+
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</div>
+
+@section Scripts
+{
+    <script>
+
+        function confirmAcceptResolution() {
+
+            const form = document.getElementById("resolutionDecisionForm");
+            const decision = document.getElementById("decisionValue");
+
+            if (!form) {
+                console.error("Resolution decision form was not found.");
+                return;
+            }
+
+            if (!decision) {
+                console.error("Decision field was not found.");
+                return;
+            }
+
+            decision.value = "Accept";
+
+            form.submit();
+        }
+
+
+        function returnResolution() {
+
+            const deadline =
+                document.getElementById(
+                    "newResolutionDeadline"
+                ).value;
+
+            if (!deadline) {
+                alert(
+                    "Please specify a new resolution deadline."
+                );
+
+                return;
+            }
+
+            document.getElementById("decisionValue").value =
+                "Return";
+
+            document.getElementById("deadlineValue").value =
+                deadline;
+
+            document.getElementById(
+                "resolutionDecisionForm"
+            ).submit();
+        }
+
+    </script>
+}

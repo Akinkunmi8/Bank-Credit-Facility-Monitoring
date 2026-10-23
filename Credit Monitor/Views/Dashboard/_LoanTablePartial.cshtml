@@ -77,6 +77,7 @@
                 <th>Status</th>
                 <th>Since</th>
                 <th>Branch</th>
+                <th class="text-end pe-3">Action</th>
             </tr>
         </thead>
 
@@ -121,12 +122,39 @@
 
                         <td>@loan.brancH_NAME</td>
                     </tr>
+                    <td class="text-end pe-3">
+
+                        @if (Model.CurrentStatus == "CMOReview")
+                        {
+                            <a asp-controller="Loan"
+                               asp-action="ReviewResolution"
+                               asp-route-id="@loan.accounT_NUMBER"
+                               class="btn btn-sm btn-primary">
+
+                                <i class="bi bi-clipboard-check me-1"></i>
+                                Review Resolution
+
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="CustomerDetails"
+                               asp-route-id="@loan.id"
+                               class="btn btn-sm btn-outline-primary">
+
+                                <i class="bi bi-eye me-1"></i>
+                                View
+
+                            </a>
+                        }
+
+                    </td>
                 }
             }
             else
             {
                 <tr>
-                    <td colspan="7" class="py-5">
+                    <td colspan="8" class="py-5">
                         <div class="d-flex flex-column align-items-center empty-state">
                             <i class="bi bi-search mb-3" style="font-size: 3rem;"></i>
                             <h6 class="fw-semibold text-muted">No records found</h6>
@@ -135,7 +163,7 @@
                             </p>
                             <button type="button"
                                     class="btn btn-sm btn-outline-primary"
-                                    onclick="$('#searchInput').val(''); loadTable('', 1);">
+                                    onclick="$('#searchInput').val(''); loadTable('', 1, currentStatus);">
                                 Clear Search
                             </button>
                         </div>

@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using Credit_Monitor.APICore;
 using Credit_Monitor.Interfaces;
 using Credit_Monitor.Repository;
@@ -6,6 +5,8 @@ using Credit_Monitor.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using NLog;
 using NLog.Web;
+using QuestPDF.Infrastructure;
+using System.Text.Json.Serialization;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 
@@ -64,6 +65,9 @@ try
     builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
     builder.Services.AddHttpContextAccessor();
+
+    QuestPDF.Settings.License = LicenseType.Community;
+    QuestPDF.Settings.UseSystemFonts = false;
 
     var app = builder.Build();
 

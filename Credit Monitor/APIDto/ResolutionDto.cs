@@ -4,22 +4,46 @@ using System.Collections.Generic;
 
 namespace Credit_Monitor.APIDto
 {
-    // This matches your standard API response pattern
     public class ResolutionResponseWrapper
     {
         [JsonProperty("$values")]
         public List<ExistingResolutionDto> DataList { get; set; } = new();
+
         [JsonProperty("$id")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
     }
 
     public class ExistingResolutionDto
     {
+        [JsonProperty("id")]
         public Guid? Id { get; set; }
-        public Guid appId { get; set; }
-        public string discrepancies { get; set; }
-        public string remarks { get; set; }
-        public string recomendedAction { get; set; } // Note: Check if your API uses 'recomendedAction' (one 'm') vs 'recommentedAction'
-        public string responsibility { get; set; }
+
+        [JsonProperty("appId")]
+        public Guid? AppId { get; set; }
+
+        [JsonProperty("discrepancies")]
+        public string? Discrepancies { get; set; }
+
+        [JsonProperty("remarks")]
+        public string? Remarks { get; set; }
+
+        [JsonProperty("recomendedAction")]
+        public string? RecomendedAction { get; set; }
+
+        [JsonProperty("responsibility")]
+        public string? Responsibility { get; set; }
+
+        // RM/AO response
+        [JsonProperty("resolutionAction")]
+        public string? ResolutionAction { get; set; }
+
+        [JsonProperty("resolutionRemarks")]
+        public string? ResolutionRemarks { get; set; }
+
+        [JsonProperty("respondedBy")]
+        public string? RespondedBy { get; set; }
+
+        [JsonProperty("respondedAt")]
+        public DateTime? RespondedAt { get; set; }
     }
 }

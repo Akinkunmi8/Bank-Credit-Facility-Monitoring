@@ -45,6 +45,8 @@ namespace Credit_Monitor.APIDto
         // Mapping the specific casing from your JSON
         [JsonPropertyName("isVeriFied")]
         public bool isVeriFied { get; set; }
+        public string? Region { get; set; }
+        public string? RequesterUsername { get; set; }
     }
 
     public class DeleteFileResponseDto

@@ -11,6 +11,8 @@
         public int WithinTATUnresolved { get; set; }
         public int BeyondTATUnreviewed { get; set; }
         public int BeyondTATUnresolved { get; set; }
+        public int TotalCMOReview { get; set; }
+        public string CurrentStatus { get; set; } = "Unreviewed";
 
 
         // --- ADD THESE FOR PAGINATION & SEARCH ---

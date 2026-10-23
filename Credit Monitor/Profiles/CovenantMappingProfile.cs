@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Credit_Monitor.APIDto;
-using Credit_Monitor.ViewModels;
+using Credit_Monitor.ViewModel;
 
 namespace Credit_Monitor.Mappings
 {

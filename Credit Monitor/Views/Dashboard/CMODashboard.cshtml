@@ -88,7 +88,7 @@
 
     <!-- ===== KPI CARDS ===== -->
     <ul class="nav nav-pills row g-3 mb-4 border-0" id="kpiNav">
-        <li class="nav-item col-xl-4 col-md-6">
+        <li class="nav-item col-xl-3 col-md-6">
             <button class="nav-link active p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'Unreviewed')">
                 <div class="stat-card accent-primary p-3 h-100 text-start">
                     <div class="d-flex justify-content-between align-items-center">
@@ -135,7 +135,36 @@
                 </div>
             </button>
         </li>
+        <li class="nav-item col-xl-3 col-md-6">
 
+    <button class="nav-link p-0 w-100 border-0"
+            data-bs-toggle="pill"
+            onclick="loadTable('', 1, 'CMOReview')">
+
+        <div class="stat-card accent-warning p-3 h-100 text-start">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+                    <small class="text-muted text-uppercase">
+                        Awaiting Re-Review
+                    </small>
+
+                    <h3 class="fw-bold mb-0 text-dark">
+                        @Model.TotalCMOReview
+                    </h3>
+                </div>
+
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+
+            </div>
+
+        </div>
+
+    </button>
+</li>
         @* <li class="nav-item col-xl-3 col-md-6">
             <button class="nav-link p-0 w-100 border-0" data-bs-toggle="pill" onclick="loadTable('', 1, 'Resolved')">
                 <div class="stat-card accent-info p-3 h-100 text-start">

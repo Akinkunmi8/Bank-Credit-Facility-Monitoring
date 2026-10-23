@@ -1,4 +1,4 @@
-﻿namespace Credit_Monitor.ViewModels
+﻿namespace Credit_Monitor.ViewModel
 {
     public class CovenantViewModel
     {

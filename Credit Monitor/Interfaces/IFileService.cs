@@ -10,5 +10,6 @@ namespace Credit_Monitor.Interfaces
         Task<List<DocumentDetailsViewModel>> UpdateDocumentAsync(Guid appId, FileItemDto fileDto);
         Task<bool> ToggleVerificationAsync(Guid fileId, bool status);
         Task<bool> DeleteDocumentAsync(Guid appId, Guid fileId);
+        Task<byte[]> DownloadCreditReportAsync(Guid appId, string? generatedBy);
     }
 }

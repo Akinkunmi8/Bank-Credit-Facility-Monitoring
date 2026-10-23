@@ -3,6 +3,10 @@ using Credit_Monitor.APICore;
 using Credit_Monitor.APIDto;
 using Credit_Monitor.Interfaces;
 using Credit_Monitor.ViewModel;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using Credit_Monitor.Reports;
 
 namespace Credit_Monitor.Services
 {
@@ -10,12 +14,17 @@ namespace Credit_Monitor.Services
     {
         private readonly IFileAPIService _fileAPIService;
         private readonly IMapper _mapper;
+        private readonly ILoanService _loanService;
+        private readonly ICovenantTrackerService _covenantService;
         private readonly ILogger<FileService> _logger; // 1. Add Logger
 
-        public FileService(IFileAPIService fileAPIService, IMapper mapper, ILogger<FileService> logger)
+        public FileService(IFileAPIService fileAPIService, IMapper mapper, ILogger<FileService> logger,
+            ILoanService loanService,ICovenantTrackerService covenantService)
         {
             _fileAPIService = fileAPIService;
             _mapper = mapper;
+            _covenantService = covenantService;
+            _loanService = loanService;
             _logger = logger;
         }
 
@@ -93,6 +102,77 @@ namespace Credit_Monitor.Services
             var success = await _fileAPIService.DeleteFile(appId, fileId);
 
             return success;
+        }
+
+        public async Task<byte[]> DownloadCreditReportAsync(
+    Guid appId,
+    string? generatedBy)
+        {
+            if (appId == Guid.Empty)
+                throw new ArgumentException(
+                    "Invalid application ID.", nameof(appId));
+
+            try
+            {
+                // 1. Retrieve customer and loan information
+                var profile = await _loanService
+                    .GetPendingConfirmedLoanByIdAsync(appId.ToString());
+
+                if (profile?.loan == null)
+                    throw new KeyNotFoundException(
+                        "Loan record not found.");
+
+                // 2. Validate CMS approval
+                if (!profile.loan.approved)
+                    throw new InvalidOperationException(
+                        "Credit Monitoring Report cannot be generated before CMS approval.");
+
+                // 3. Retrieve documents and covenants
+                var documents = await GetCustomerDocumentsAsync(appId);
+
+                var covenants = await _covenantService
+                    .GetCovenantDetailsAsync(appId);
+
+                // 4. Build report model
+                var reportModel = new CreditMonitoringReportViewModel
+                {
+                    CreditProfile = profile,
+
+                    Documents = documents,
+
+                    Covenants = covenants ?? new CovenantViewModel(),
+
+                    GeneratedAt = DateTime.Now,
+
+                    GeneratedBy = generatedBy
+                };
+
+                // 5. Configure QuestPDF license
+                //QuestPDF.Settings.License = LicenseType.Community;
+
+                // 6. Generate corporate PDF
+                byte[] pdfBytes = new CorporateCreditReportDocument(reportModel)
+                    .GeneratePdf();
+
+                // 7. Log successful generation
+                _logger.LogInformation(
+                    "Credit report generated successfully for AppId {AppId} by {User}. Size: {Size} bytes",
+                    appId,
+                    generatedBy,
+                    pdfBytes.Length);
+
+                // 8. Return PDF
+                return pdfBytes;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to generate credit report for AppId {AppId}",
+                    appId);
+
+                throw;
+            }
         }
 
     }

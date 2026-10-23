@@ -21,10 +21,10 @@ namespace Credit_Monitor.Profiles
             CreateMap<FinacleDataResponseDto, FinacleDataViewModel>();
             CreateMap<CatDataDto, CATViewModel>();
             CreateMap<ExistingResolutionDto, ResolutionItem>()
-            .ForMember(dest => dest.Discrepancy, opt => opt.MapFrom(src => src.discrepancies))
-            .ForMember(dest => dest.RecommendedAction, opt => opt.MapFrom(src => src.recomendedAction))
-            .ForMember(dest => dest.Remarks, opt => opt.MapFrom(src => src.remarks))
-            .ForMember(dest => dest.Responsibility, opt => opt.MapFrom(src => src.responsibility));
+            .ForMember(dest => dest.Discrepancy, opt => opt.MapFrom(src => src.Discrepancies))
+            .ForMember(dest => dest.RecommendedAction, opt => opt.MapFrom(src => src.RecomendedAction))
+            .ForMember(dest => dest.Remarks, opt => opt.MapFrom(src => src.Remarks))
+            .ForMember(dest => dest.Responsibility, opt => opt.MapFrom(src => src.Responsibility));
     
             // If you had different names, you would use:
             // .ForMember(dest => dest.accounT_NAME, opt => opt.MapFrom(src => src.FullName));

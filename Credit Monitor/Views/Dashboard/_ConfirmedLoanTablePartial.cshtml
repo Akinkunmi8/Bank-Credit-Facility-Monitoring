@@ -25,6 +25,7 @@
                         <th>Status</th>
                         <th>Since</th>
                         <th>Branch</th>
+                        <th>ACTION</th>
                     </tr>
                 </thead>
 
@@ -78,13 +79,28 @@
                                 <td class="text-muted">
                                     @loan.brancH_NAME
                                 </td>
+                                <td>
+                                @if (User.IsInRole("CMS") && loan.approved)
+                                {
+                                    <a asp-controller="Dashboard"
+                                       asp-action="ReportPreview"
+                                       asp-route-id="@loan.id"
+                                       class="btn btn-sm btn-outline-primary fw-bold"
+                                       title="View Approved Credit Monitoring Report">
+
+                                        <i class="bi bi-file-earmark-text me-1"></i>
+                                        View Report
+
+                                    </a>
+                                }
+                            </td>
                             </tr>
                         }
                     }
                     else
                     {
                         <tr>
-                            <td colspan="7" class="text-center py-5">
+                            <td colspan="8" class="text-center py-5">
                                 <div class="d-flex flex-column align-items-center">
                                     <i class="bi bi-folder-x text-muted mb-2"
                                        style="font-size:3rem; opacity:.3;"></i>
